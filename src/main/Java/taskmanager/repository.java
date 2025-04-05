@@ -1,11 +1,7 @@
-package main.Java.taskmanager;
+package com.example.taskmanager.repository;
 
-import main.Java.taskmanager.model.Task;
+import com.example.taskmanager.model.Task;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-//DBアクセス
-public class repository {
-	@Repository
-	public interface TaskRepository extends JpaRepository<Task, Integer> {
-	    // JPAがSQLを自動生成してくれる！
-	}
+public interface TaskRepository extends JpaRepository<Task, Long> {
 }

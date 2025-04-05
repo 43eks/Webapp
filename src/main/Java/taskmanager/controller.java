@@ -1,30 +1,25 @@
-package main.Java.taskmanager;
-//APIのエンドポイント
-public class controller {
-	@RestController
-	@RequestMapping("/api/tasks")
-	public class TaskController {
-	    @Autowired
-	    private TaskService service;
+package com.example.taskmanager.controller;
 
-	    @GetMapping
-	    public List<Task> getAll() {
-	        return service.findAll();
-	    }
+import com.example.taskmanager.model.Task;
+import com.example.taskmanager.repository.TaskRepository;
+import org.springframework.web.bind.annotation.*;
 
-	    @PostMapping
-	    public Task create(@RequestBody Task task) {
-	        return service.addTask(task);
-	    }
+import java.util.List;
 
-	    @DeleteMapping("/{id}")
-	    public void delete(@PathVariable int id) {
-	        service.deleteTask(id);
-	    }
+@RestController
+@RequestMapping("/tasks")
+@CrossOrigin // フロントと繋げるときに必要やで
+public class TaskController {
 
-	    @PutMapping("/{id}")
-	    public Task update(@PathVariable int id, @RequestBody Task updatedTask) {
-	        return service.updateTask(id, updatedTask.getTaskName());
-	    }
-	}
+    private final TaskRepository repository;
+
+    public TaskController(TaskRepository repository) {
+        this.repository = repository;
+    }
+
+    // 一覧取得API
+    @GetMapping
+    public List<Task> getAllTasks() {
+        return repository.findAll();
+    }
 }
