@@ -1,33 +1,23 @@
-package main.Java.taskmanager;
+package com.example.taskmanager.service;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import com.example.taskmanager.model.Task;
+import com.example.taskmanager.repository.TaskRepository;
 
 import java.util.List;
 
-import main.Java.taskmanager.model.Task;
-import main.Java.taskmanager.repository.TaskRepository;
+@Service
+public class TaskService {
 
-//ビジネスロジック
-public class service {
-	@Service
-	public class TaskService {
-	    @Autowired
-	    private TaskRepository repository;
+    @Autowired
+    private TaskRepository taskRepository;
 
-	    public List<Task> findAll() {
-	        return repository.findAll();
-	    }
+    public List<Task> getAllTasks() {
+        return taskRepository.findAll();
+    }
 
-	    public Task addTask(Task task) {
-	        return repository.save(task);
-	    }
-
-	    public void deleteTask(int id) {
-	        repository.deleteById(id);
-	    }
-
-	    public Task updateTask(int id, String newName) {
-	        Task task = repository.findById(id).orElseThrow();
-	        task.setTaskName(newName);
-	        return repository.save(task);
-	    }
-	}
+    public Task createTask(Task task) {
+        return taskRepository.save(task);
+    }
 }
