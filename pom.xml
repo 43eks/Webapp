@@ -5,10 +5,10 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-   <groupId>org.springframework.boot</groupId>
-   <artifactId>spring-boot-starter-parent</artifactId>
-   <version>3.2.4</version>
-   <relativePath/> <!-- ローカルに親プロジェクトがないことを明示 -->
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>3.2.4</version>
+    <relativePath/> <!-- ローカルに親プロジェクトがないことを明示 -->
   </parent>
 
   <groupId>Webapp</groupId>
@@ -49,8 +49,8 @@
     <dependency>
       <groupId>org.hibernate</groupId>
       <artifactId>hibernate-core</artifactId>
-    <version>6.4.4.Final</version> <!-- 例：最新版（2025年4月時点） -->
-</dependency>
+      <version>6.4.4.Final</version> <!-- 例：最新版（2025年4月時点） -->
+    </dependency>
 
     <!-- MySQLドライバ -->
     <dependency>
