@@ -3,6 +3,7 @@ package taskmanager.model;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;  // ← これを忘れずに追加！
 
 @Entity
 public class Task {
