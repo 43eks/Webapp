@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import taskmanager.model.Task;
-import taskmanager.respository.TaskRepository;
+import taskmanager.repository.TaskRepository;  // ✅ パッケージ名のタイポを修正
 
 @Service
 public class TaskService {
