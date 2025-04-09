@@ -22,11 +22,22 @@
 
   <build>
     <plugins>
+      <!-- ✅ コンパイラ設定 -->
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.13.0</version>
         <configuration>
           <release>21</release>
+        </configuration>
+      </plugin>
+
+      <!-- ✅ Spring Boot 起動用プラグイン -->
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+        <version>3.2.4</version>
+        <configuration>
+          <mainClass>taskmanager.TaskManagerApp</mainClass> <!-- ★ 起動したいMainクラスに応じて変更 -->
         </configuration>
       </plugin>
     </plugins>
