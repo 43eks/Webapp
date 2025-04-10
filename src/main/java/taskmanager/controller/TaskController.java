@@ -3,7 +3,6 @@ package taskmanager.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.CrossOrigin;  // 追加
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,13 +17,12 @@ import taskmanager.service.TaskService;
 
 @RestController
 @RequestMapping("/tasks")
-@CrossOrigin(origins = "http://localhost:3000")  // 追加: Reactアプリケーションがアクセスできるように設定
 public class TaskController {
 
     @Autowired
     private TaskService taskService;
 
-    // タスクの一覧取得
+    // タスクの取得
     @GetMapping
     public List<Task> getTasks() {
         return taskService.getAllTasks();
@@ -38,8 +36,8 @@ public class TaskController {
 
     // タスクの更新
     @PutMapping("/{id}")
-    public Task updateTask(@PathVariable Long id, @RequestBody Task task) {
-        return taskService.updateTask(id, task);
+    public Task updateTask(@PathVariable Long id, @RequestBody Task taskDetails) {
+        return taskService.updateTask(id, taskDetails);
     }
 
     // タスクの削除
