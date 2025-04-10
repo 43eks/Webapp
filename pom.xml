@@ -37,7 +37,7 @@
         <artifactId>spring-boot-maven-plugin</artifactId>
         <version>3.2.4</version>
         <configuration>
-          <mainClass>taskmanager.TaskManagerApp</mainClass> <!-- ★ 起動したいMainクラスに応じて変更 -->
+          <mainClass>taskmanager.TaskManagerApp</mainClass>
         </configuration>
       </plugin>
     </plugins>
