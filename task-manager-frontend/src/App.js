@@ -1,88 +1,87 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 function App() {
-  const [tasks, setTasks] = useState([]);  // タスクの一覧
-  const [taskName, setTaskName] = useState("");  // 新しいタスク名
-  const [isLoading, setIsLoading] = useState(false);  // ローディング状態
+  const [tasks, setTasks] = useState([]);
+  const [newTaskName, setNewTaskName] = useState('');
+  const [editTaskName, setEditTaskName] = useState('');
+  const [isEditing, setIsEditing] = useState(false);
+  const [currentTaskId, setCurrentTaskId] = useState(null);
 
-  // バックエンドAPIからタスクを取得
-  const fetchTasks = () => {
-    setIsLoading(true);
+  // 初期タスクをロード
+  useEffect(() => {
     fetch('http://localhost:8080/tasks')
       .then(response => response.json())
-      .then(data => {
-        setTasks(data);
-        setIsLoading(false);
-      })
-      .catch(error => {
-        console.error('Error fetching tasks:', error);
-        setIsLoading(false);
-      });
-  };
+      .then(data => setTasks(data))
+      .catch(error => console.error('Error:', error));
+  }, []);
 
-  // タスクをバックエンドに追加
-  const handleAddTask = (e) => {
+  // タスクの追加
+  const addTask = (e) => {
     e.preventDefault();
-    const newTask = { taskName: taskName, completed: false };
-
     fetch('http://localhost:8080/tasks', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(newTask),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ taskName: newTaskName, completed: false }),
     })
       .then(response => response.json())
-      .then(() => {
-        setTaskName("");  // フォームをクリア
-        fetchTasks();  // 最新のタスク一覧を取得
+      .then(data => {
+        setTasks([...tasks, data]);
+        setNewTaskName('');
       })
-      .catch(error => console.error('Error adding task:', error));
+      .catch(error => console.error('Error:', error));
   };
 
-  // タスクを削除
-  const handleDelete = (id) => {
+  // タスクの更新
+  const updateTask = (e) => {
+    e.preventDefault();
+    fetch(`http://localhost:8080/tasks/${currentTaskId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ taskName: editTaskName, completed: false }),
+    })
+      .then(response => response.json())
+      .then(data => {
+        setTasks(tasks.map(task => (task.id === currentTaskId ? data : task)));
+        setIsEditing(false);
+        setEditTaskName('');
+      })
+      .catch(error => console.error('Error:', error));
+  };
+
+  // タスクの削除
+  const deleteTask = (id) => {
     fetch(`http://localhost:8080/tasks/${id}`, {
       method: 'DELETE',
     })
       .then(() => {
-        fetchTasks();  // 最新のタスク一覧を取得
+        setTasks(tasks.filter(task => task.id !== id));
       })
-      .catch(error => console.error('Error deleting task:', error));
+      .catch(error => console.error('Error:', error));
   };
-
-  // コンポーネントがマウントされた時にタスクを取得
-  useEffect(() => {
-    fetchTasks();
-  }, []);
 
   return (
     <div className="App">
       <h1>Task Manager</h1>
 
-      {/* タスク追加フォーム */}
-      <form onSubmit={handleAddTask}>
+      <h2>{isEditing ? 'Edit Task' : 'Add New Task'}</h2>
+
+      <form onSubmit={isEditing ? updateTask : addTask}>
         <input
           type="text"
-          placeholder="Add a new task"
-          value={taskName}
-          onChange={(e) => setTaskName(e.target.value)}
+          value={isEditing ? editTaskName : newTaskName}
+          onChange={e => isEditing ? setEditTaskName(e.target.value) : setNewTaskName(e.target.value)}
+          placeholder="Enter task name"
         />
-        <button type="submit">Add Task</button>
+        <button type="submit">{isEditing ? 'Update Task' : 'Add Task'}</button>
       </form>
 
-      {/* タスク一覧表示ボタン */}
-      <button onClick={fetchTasks} disabled={isLoading}>
-        {isLoading ? "Loading..." : "Show Tasks"}
-      </button>
-
-      {/* タスク一覧 */}
+      <h2>Task List</h2>
       <ul>
-        {tasks.length === 0 && <li>No tasks available</li>}
-        {tasks.map((task) => (
+        {tasks.map(task => (
           <li key={task.id}>
-            {task.taskName}{" "}
-            <button onClick={() => handleDelete(task.id)}>Delete</button>
+            {task.taskName} 
+            <button onClick={() => { setIsEditing(true); setEditTaskName(task.taskName); setCurrentTaskId(task.id); }}>Edit</button>
+            <button onClick={() => deleteTask(task.id)}>Delete</button>
           </li>
         ))}
       </ul>
