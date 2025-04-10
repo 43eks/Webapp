@@ -1,87 +1,56 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 
 function App() {
   const [tasks, setTasks] = useState([]);
-  const [newTaskName, setNewTaskName] = useState('');
-  const [editTaskName, setEditTaskName] = useState('');
-  const [isEditing, setIsEditing] = useState(false);
-  const [currentTaskId, setCurrentTaskId] = useState(null);
+  const [taskName, setTaskName] = useState('');
+  const [completed, setCompleted] = useState(false);
 
-  // 初期タスクをロード
   useEffect(() => {
     fetch('http://localhost:8080/tasks')
       .then(response => response.json())
       .then(data => setTasks(data))
-      .catch(error => console.error('Error:', error));
+      .catch(error => console.error('エラー:', error));
   }, []);
 
-  // タスクの追加
-  const addTask = (e) => {
-    e.preventDefault();
+  const handleAddTask = () => {
+    const newTask = { taskName, completed };
     fetch('http://localhost:8080/tasks', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ taskName: newTaskName, completed: false }),
+      body: JSON.stringify(newTask),
     })
       .then(response => response.json())
       .then(data => {
         setTasks([...tasks, data]);
-        setNewTaskName('');
+        setTaskName('');
+        setCompleted(false);
       })
-      .catch(error => console.error('Error:', error));
+      .catch(error => console.error('エラー:', error));
   };
 
-  // タスクの更新
-  const updateTask = (e) => {
-    e.preventDefault();
-    fetch(`http://localhost:8080/tasks/${currentTaskId}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ taskName: editTaskName, completed: false }),
-    })
-      .then(response => response.json())
-      .then(data => {
-        setTasks(tasks.map(task => (task.id === currentTaskId ? data : task)));
-        setIsEditing(false);
-        setEditTaskName('');
-      })
-      .catch(error => console.error('Error:', error));
-  };
-
-  // タスクの削除
-  const deleteTask = (id) => {
-    fetch(`http://localhost:8080/tasks/${id}`, {
-      method: 'DELETE',
-    })
+  const handleDeleteTask = (id) => {
+    fetch(`http://localhost:8080/tasks/${id}`, { method: 'DELETE' })
       .then(() => {
         setTasks(tasks.filter(task => task.id !== id));
       })
-      .catch(error => console.error('Error:', error));
+      .catch(error => console.error('エラー:', error));
   };
 
   return (
     <div className="App">
-      <h1>Task Manager</h1>
-
-      <h2>{isEditing ? 'Edit Task' : 'Add New Task'}</h2>
-
-      <form onSubmit={isEditing ? updateTask : addTask}>
-        <input
-          type="text"
-          value={isEditing ? editTaskName : newTaskName}
-          onChange={e => isEditing ? setEditTaskName(e.target.value) : setNewTaskName(e.target.value)}
-          placeholder="Enter task name"
-        />
-        <button type="submit">{isEditing ? 'Update Task' : 'Add Task'}</button>
-      </form>
-
-      <h2>Task List</h2>
+      <h1>タスクリスト</h1>
+      <input
+        type="text"
+        placeholder="タスク名を入力"
+        value={taskName}
+        onChange={(e) => setTaskName(e.target.value)}
+      />
+      <button onClick={handleAddTask}>タスクを追加</button>
       <ul>
         {tasks.map(task => (
           <li key={task.id}>
-            {task.taskName} 
-            <button onClick={() => { setIsEditing(true); setEditTaskName(task.taskName); setCurrentTaskId(task.id); }}>Edit</button>
-            <button onClick={() => deleteTask(task.id)}>Delete</button>
+            {task.taskName} - {task.completed ? '完了' : '未完了'}
+            <button onClick={() => handleDeleteTask(task.id)}>削除</button>
           </li>
         ))}
       </ul>
