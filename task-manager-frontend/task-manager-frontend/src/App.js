@@ -1,8 +1,9 @@
-// App.js
 import React, { useEffect, useState } from 'react';
 import {
-  Container,
+  AppBar,
+  Toolbar,
   Typography,
+  Container,
   TextField,
   Button,
   List,
@@ -10,15 +11,15 @@ import {
   ListItemText,
   IconButton,
   Paper,
-  Box,
+  Box
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
-import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd';
 
 function App() {
   const [tasks, setTasks] = useState([]);
   const [taskName, setTaskName] = useState('');
 
+  // タスクの取得
   useEffect(() => {
     fetch('http://localhost:8080/tasks')
       .then(response => response.json())
@@ -26,14 +27,17 @@ function App() {
       .catch(error => console.error('エラー:', error));
   }, []);
 
+  // タスクの追加
   const addTask = () => {
-    if (!taskName.trim()) return;
+    if (!taskName) return;
 
-    const newTask = { taskName: taskName.trim(), completed: false };
+    const newTask = { taskName: taskName, completed: false };
 
     fetch('http://localhost:8080/tasks', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify(newTask),
     })
       .then(response => response.json())
@@ -44,6 +48,7 @@ function App() {
       .catch(error => console.error('エラー:', error));
   };
 
+  // タスクの削除
   const deleteTask = (id) => {
     fetch(`http://localhost:8080/tasks/${id}`, {
       method: 'DELETE',
@@ -55,53 +60,51 @@ function App() {
   };
 
   return (
-    <Container maxWidth="sm" sx={{ mt: 5 }}>
-      <Typography variant="h4" align="center" gutterBottom>
-        タスク管理アプリ
-      </Typography>
+    <div>
+      <AppBar position="static">
+        <Toolbar>
+          <Typography variant="h6">タスク管理アプリ</Typography>
+        </Toolbar>
+      </AppBar>
 
-      <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
-        <TextField
-          label="新しいタスクを入力"
-          variant="outlined"
-          fullWidth
-          value={taskName}
-          onChange={(e) => setTaskName(e.target.value)}
-        />
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={addTask}
-          startIcon={<PlaylistAddIcon />}
-        >
-          追加
-        </Button>
-      </Box>
+      <Container maxWidth="sm" sx={{ marginTop: 4 }}>
+        <Paper elevation={3} sx={{ padding: 3 }}>
+          <Typography variant="h6" gutterBottom>
+            新しいタスクを追加
+          </Typography>
+          <Box display="flex" gap={2}>
+            <TextField
+              label="タスク名"
+              variant="outlined"
+              fullWidth
+              value={taskName}
+              onChange={(e) => setTaskName(e.target.value)}
+            />
+            <Button variant="contained" onClick={addTask}>
+              追加
+            </Button>
+          </Box>
+        </Paper>
 
-      <Paper elevation={3} sx={{ p: 2 }}>
-        <Typography variant="h6" gutterBottom>
-          現在のタスク
+        <Typography variant="h6" sx={{ marginTop: 4 }}>
+          タスク一覧
         </Typography>
-        {tasks.length === 0 ? (
-          <Typography color="text.secondary">タスクはありません</Typography>
-        ) : (
-          <List>
-            {tasks.map((task) => (
-              <ListItem
-                key={task.id}
-                secondaryAction={
-                  <IconButton edge="end" onClick={() => deleteTask(task.id)} color="error">
-                    <DeleteIcon />
-                  </IconButton>
-                }
-              >
-                <ListItemText primary={task.taskName} />
-              </ListItem>
-            ))}
-          </List>
-        )}
-      </Paper>
-    </Container>
+        <List>
+          {tasks.map((task) => (
+            <ListItem
+              key={task.id}
+              secondaryAction={
+                <IconButton edge="end" color="error" onClick={() => deleteTask(task.id)}>
+                  <DeleteIcon />
+                </IconButton>
+              }
+            >
+              <ListItemText primary={task.taskName} />
+            </ListItem>
+          ))}
+        </List>
+      </Container>
+    </div>
   );
 }
 
