@@ -20,7 +20,7 @@ public class TaskService {
         return taskRepository.findAll();
     }
 
-    // タスクの作成
+    // タスクの作成（作成したTaskを返す）
     public Task createTask(Task task) {
         return taskRepository.save(task);
     }
