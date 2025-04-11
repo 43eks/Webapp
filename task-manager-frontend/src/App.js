@@ -1,4 +1,18 @@
+// App.js
 import React, { useEffect, useState } from 'react';
+import {
+  Container,
+  Typography,
+  TextField,
+  Button,
+  List,
+  ListItem,
+  ListItemText,
+  IconButton,
+  Paper,
+  Box,
+} from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 function App() {
   const [tasks, setTasks] = useState([]);
@@ -15,14 +29,12 @@ function App() {
   // タスクの追加
   const addTask = () => {
     if (!taskName) return;
-    
+
     const newTask = { taskName: taskName, completed: false };
-    
+
     fetch('http://localhost:8080/tasks', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(newTask),
     })
       .then(response => response.json())
@@ -45,33 +57,43 @@ function App() {
   };
 
   return (
-    <div className="App">
-      <h1>タスク管理</h1>
-      
+    <Container maxWidth="sm" sx={{ mt: 5 }}>
+      <Typography variant="h4" align="center" gutterBottom>
+        タスク管理ツール
+      </Typography>
+
       {/* タスク追加フォーム */}
-      <div>
-        <input 
-          type="text" 
-          placeholder="新しいタスク" 
-          value={taskName} 
-          onChange={(e) => setTaskName(e.target.value)} 
+      <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
+        <TextField
+          label="新しいタスク"
+          variant="outlined"
+          fullWidth
+          value={taskName}
+          onChange={(e) => setTaskName(e.target.value)}
         />
-        <button onClick={addTask}>タスクを追加</button>
-      </div>
+        <Button variant="contained" onClick={addTask}>
+          追加
+        </Button>
+      </Box>
 
       {/* タスク一覧 */}
-      <div>
-        <button onClick={() => setTasks([])}>タスク一覧を表示</button>
-        <ul>
-          {tasks.map(task => (
-            <li key={task.id}>
-              {task.taskName} 
-              <button onClick={() => deleteTask(task.id)}>削除</button>
-            </li>
+      <Paper elevation={3}>
+        <List>
+          {tasks.map((task) => (
+            <ListItem
+              key={task.id}
+              secondaryAction={
+                <IconButton edge="end" onClick={() => deleteTask(task.id)}>
+                  <DeleteIcon />
+                </IconButton>
+              }
+            >
+              <ListItemText primary={task.taskName} />
+            </ListItem>
           ))}
-        </ul>
-      </div>
-    </div>
+        </List>
+      </Paper>
+    </Container>
   );
 }
 
