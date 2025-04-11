@@ -1,4 +1,3 @@
-// App.js
 import React, { useEffect, useState } from 'react';
 import {
   Container,
@@ -11,6 +10,7 @@ import {
   IconButton,
   Paper,
   Box,
+  Checkbox, // 追加
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 
@@ -59,6 +59,22 @@ function App() {
       .catch(error => console.error('Error:', error));
   };
 
+  // タスクの完了状態の更新
+  const toggleTaskCompletion = (id) => {
+    const updatedTask = tasks.find(task => task.id === id);
+    if (!updatedTask) return;
+
+    updatedTask.completed = !updatedTask.completed;
+
+    fetch(`http://localhost:8080/tasks/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updatedTask),
+    })
+      .then(() => fetchTasks()) // 状態更新後、再度タスクを取得
+      .catch(error => console.error('Error:', error));
+  };
+
   return (
     <Container maxWidth="sm" sx={{ mt: 5 }}>
       <Typography variant="h4" align="center" gutterBottom>
@@ -91,7 +107,14 @@ function App() {
                 </IconButton>
               }
             >
-              <ListItemText primary={task.taskName} />
+              <Checkbox
+                checked={task.completed} // チェックボックスの状態を反映
+                onChange={() => toggleTaskCompletion(task.id)} // 完了状態の切り替え
+              />
+              <ListItemText
+                primary={task.taskName}
+                secondary={task.completed ? '完了' : '未完了'} // 完了/未完了の表示
+              />
             </ListItem>
           ))}
         </List>
