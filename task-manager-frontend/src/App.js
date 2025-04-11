@@ -19,14 +19,18 @@ function App() {
   const [taskName, setTaskName] = useState('');
 
   // タスクの取得
-  useEffect(() => {
+  const fetchTasks = () => {
     fetch('http://localhost:8080/tasks')
       .then(response => response.json())
       .then(data => setTasks(data))
       .catch(error => console.error('Error:', error));
+  };
+
+  useEffect(() => {
+    fetchTasks();
   }, []);
 
-  // タスクの追加
+  // タスクの追加（修正済み）
   const addTask = () => {
     if (!taskName) return;
 
@@ -37,9 +41,8 @@ function App() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(newTask),
     })
-      .then(response => response.json())
-      .then(data => {
-        setTasks([...tasks, data]);
+      .then(() => {
+        fetchTasks(); // ← 追加後に再取得
         setTaskName('');
       })
       .catch(error => console.error('Error:', error));
