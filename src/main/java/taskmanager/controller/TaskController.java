@@ -29,14 +29,14 @@ public class TaskController {
         return taskService.getAllTasks();
     }
 
-    // タスクの作成
+    // タスクの作成（修正済み：タスクオブジェクトを返す）
     @PostMapping
-    public ResponseEntity<String> createTask(@RequestBody Task task) {
+    public ResponseEntity<Task> createTask(@RequestBody Task task) {
         try {
-            taskService.createTask(task);
-            return ResponseEntity.ok("タスクが正常に作成されました");
+            Task createdTask = taskService.createTask(task);
+            return ResponseEntity.ok(createdTask);
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("タスクの作成中にエラーが発生しました");
+            return ResponseEntity.status(500).build();
         }
     }
 
