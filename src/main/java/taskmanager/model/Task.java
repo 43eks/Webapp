@@ -3,7 +3,7 @@ package taskmanager.model;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;  // ← これを忘れずに追加！
+import jakarta.persistence.Id;
 
 @Entity
 public class Task {
@@ -13,7 +13,7 @@ public class Task {
     private Long id;
 
     private String taskName;
-    private boolean completed;
+    private boolean completed; // ✅ 完了フラグを追加！
 
     // GetterとSetter
     public Long getId() {
