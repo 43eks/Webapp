@@ -8,7 +8,7 @@
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
     <version>3.2.4</version>
-    <relativePath/> <!-- ローカルに親プロジェクトがないことを明示 -->
+    <relativePath/>
   </parent>
 
   <groupId>Webapp</groupId>
@@ -37,6 +37,7 @@
         <artifactId>spring-boot-maven-plugin</artifactId>
         <version>3.2.4</version>
         <configuration>
+          <!-- あなたの main クラスが正しければこのままでOK -->
           <mainClass>taskmanager.TaskManagerApp</mainClass>
         </configuration>
       </plugin>
@@ -68,7 +69,7 @@
       <artifactId>spring-boot-starter-jdbc</artifactId>
     </dependency>
 
-    <!-- ✅ Hibernate（JPA実装） -->
+    <!-- ✅ Hibernate -->
     <dependency>
       <groupId>org.hibernate</groupId>
       <artifactId>hibernate-core</artifactId>
