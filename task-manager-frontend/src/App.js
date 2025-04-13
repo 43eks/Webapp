@@ -1,126 +1,78 @@
-import React, { useEffect, useState } from 'react';
-import {
-  Container,
-  Typography,
-  TextField,
-  Button,
-  List,
-  ListItem,
-  ListItemText,
-  IconButton,
-  Paper,
-  Box,
-  Checkbox, // 追加
-} from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 
-function App() {
-  const [tasks, setTasks] = useState([]);
-  const [taskName, setTaskName] = useState('');
+  <modelVersion>4.0.0</modelVersion>
 
-  // タスクの取得
-  const fetchTasks = () => {
-    fetch('http://localhost:8080/tasks')
-      .then(response => response.json())
-      .then(data => setTasks(data))
-      .catch(error => console.error('Error:', error));
-  };
+  <parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>3.2.4</version>
+    <relativePath/>
+  </parent>
 
-  useEffect(() => {
-    fetchTasks();
-  }, []);
+  <groupId>Webapp</groupId>
+  <artifactId>Webapp</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <name>Webapp</name>
 
-  // タスクの追加（修正済み）
-  const addTask = () => {
-    if (!taskName) return;
+  <properties>
+    <java.version>21</java.version>
+  </properties>
 
-    const newTask = { taskName: taskName, completed: false };
+  <dependencies>
+    <!-- Webアプリに必要な依存関係 -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
 
-    fetch('http://localhost:8080/tasks', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newTask),
-    })
-      .then(() => {
-        fetchTasks(); // ← 追加後に再取得
-        setTaskName('');
-      })
-      .catch(error => console.error('Error:', error));
-  };
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-thymeleaf</artifactId>
+    </dependency>
 
-  // タスクの削除
-  const deleteTask = (id) => {
-    fetch(`http://localhost:8080/tasks/${id}`, {
-      method: 'DELETE',
-    })
-      .then(() => {
-        setTasks(tasks.filter(task => task.id !== id));
-      })
-      .catch(error => console.error('Error:', error));
-  };
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-data-jpa</artifactId>
+    </dependency>
 
-  // タスクの完了状態の更新
-  const toggleTaskCompletion = (id) => {
-    const updatedTask = tasks.find(task => task.id === id);
-    if (!updatedTask) return;
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-jdbc</artifactId>
+    </dependency>
 
-    updatedTask.completed = !updatedTask.completed;
+    <dependency>
+      <groupId>org.hibernate</groupId>
+      <artifactId>hibernate-core</artifactId>
+      <version>6.4.4.Final</version>
+    </dependency>
 
-    fetch(`http://localhost:8080/tasks/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(updatedTask),
-    })
-      .then(() => fetchTasks()) // 状態更新後、再度タスクを取得
-      .catch(error => console.error('Error:', error));
-  };
+    <dependency>
+      <groupId>com.mysql</groupId>
+      <artifactId>mysql-connector-j</artifactId>
+      <version>8.0.33</version>
+    </dependency>
+  </dependencies>
 
-  return (
-    <Container maxWidth="sm" sx={{ mt: 5 }}>
-      <Typography variant="h4" align="center" gutterBottom>
-        タスク管理ツール
-      </Typography>
+  <build>
+    <plugins>
+      <!-- コンパイラ設定 -->
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.13.0</version>
+        <configuration>
+          <release>21</release>
+        </configuration>
+      </plugin>
 
-      {/* タスク追加フォーム */}
-      <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
-        <TextField
-          label="新しいタスク"
-          variant="outlined"
-          fullWidth
-          value={taskName}
-          onChange={(e) => setTaskName(e.target.value)}
-        />
-        <Button variant="contained" onClick={addTask}>
-          追加
-        </Button>
-      </Box>
+      <!-- Spring Boot 起動プラグイン -->
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+        <version>3.2.4</version>
+      </plugin>
+    </plugins>
+  </build>
 
-      {/* タスク一覧 */}
-      <Paper elevation={3}>
-        <List>
-          {tasks.map((task) => (
-            <ListItem
-              key={task.id}
-              secondaryAction={
-                <IconButton edge="end" onClick={() => deleteTask(task.id)}>
-                  <DeleteIcon />
-                </IconButton>
-              }
-            >
-              <Checkbox
-                checked={task.completed} // チェックボックスの状態を反映
-                onChange={() => toggleTaskCompletion(task.id)} // 完了状態の切り替え
-              />
-              <ListItemText
-                primary={task.taskName}
-                secondary={task.completed ? '完了' : '未完了'} // 完了/未完了の表示
-              />
-            </ListItem>
-          ))}
-        </List>
-      </Paper>
-    </Container>
-  );
-}
-
-export default App;
+</project>
