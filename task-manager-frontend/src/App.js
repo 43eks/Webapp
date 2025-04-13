@@ -17,8 +17,9 @@ import DeleteIcon from '@mui/icons-material/Delete';
 function App() {
   const [tasks, setTasks] = useState([]);
   const [taskName, setTaskName] = useState('');
+  const [dueDate, setDueDate] = useState('');
+  const [category, setCategory] = useState('');
 
-  // タスクの取得
   const fetchTasks = () => {
     fetch('http://localhost:8080/tasks')
       .then(response => response.json())
@@ -30,11 +31,15 @@ function App() {
     fetchTasks();
   }, []);
 
-  // タスクの追加
   const addTask = () => {
     if (!taskName) return;
 
-    const newTask = { taskName: taskName, completed: false };
+    const newTask = {
+      taskName: taskName,
+      completed: false,
+      dueDate: dueDate || null,
+      category: category || '',
+    };
 
     fetch('http://localhost:8080/tasks', {
       method: 'POST',
@@ -44,11 +49,12 @@ function App() {
       .then(() => {
         fetchTasks();
         setTaskName('');
+        setDueDate('');
+        setCategory('');
       })
       .catch(error => console.error('Error:', error));
   };
 
-  // タスクの削除
   const deleteTask = (id) => {
     fetch(`http://localhost:8080/tasks/${id}`, {
       method: 'DELETE',
@@ -59,7 +65,6 @@ function App() {
       .catch(error => console.error('Error:', error));
   };
 
-  // 完了状態の切り替え
   const toggleTaskCompletion = (id) => {
     const updatedTask = tasks.find(task => task.id === id);
     if (!updatedTask) return;
@@ -81,19 +86,33 @@ function App() {
         タスク管理ツール
       </Typography>
 
-      <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
+      {/* タスク追加フォーム */}
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: 3 }}>
         <TextField
-          label="新しいタスク"
+          label="タスク名"
           variant="outlined"
-          fullWidth
           value={taskName}
           onChange={(e) => setTaskName(e.target.value)}
+        />
+        <TextField
+          label="カテゴリ"
+          variant="outlined"
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+        />
+        <TextField
+          label="期日"
+          type="date"
+          InputLabelProps={{ shrink: true }}
+          value={dueDate}
+          onChange={(e) => setDueDate(e.target.value)}
         />
         <Button variant="contained" onClick={addTask}>
           追加
         </Button>
       </Box>
 
+      {/* タスク一覧 */}
       <Paper elevation={3}>
         <List>
           {tasks.map((task) => (
@@ -110,8 +129,8 @@ function App() {
                 onChange={() => toggleTaskCompletion(task.id)}
               />
               <ListItemText
-                primary={task.taskName}
-                secondary={task.completed ? '完了' : '未完了'}
+                primary={`${task.taskName} (${task.category || '未分類'})`}
+                secondary={`期日: ${task.dueDate || 'なし'} ／ ${task.completed ? '完了' : '未完了'}`}
               />
             </ListItem>
           ))}
