@@ -1,5 +1,7 @@
 package taskmanager.model;
 
+import java.time.LocalDate;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -13,7 +15,10 @@ public class Task {
     private Long id;
 
     private String taskName;
-    private boolean completed; // ✅ 完了フラグを追加！
+    private boolean completed;
+
+    private LocalDate dueDate; // ✅ 期日（期限）を追加
+    private String category;   // ✅ カテゴリ名を追加
 
     // GetterとSetter
     public Long getId() {
@@ -38,5 +43,21 @@ public class Task {
 
     public void setCompleted(boolean completed) {
         this.completed = completed;
+    }
+
+    public LocalDate getDueDate() {
+        return dueDate;
+    }
+
+    public void setDueDate(LocalDate dueDate) {
+        this.dueDate = dueDate;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
     }
 }
