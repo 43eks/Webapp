@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import taskmanager.model.Task;
 import taskmanager.service.TaskService;
 
+@CrossOrigin(origins = "http://localhost:3000") // ← Reactからの通信を許可！
 @RestController
 @RequestMapping("/tasks")
 public class TaskController {
@@ -29,12 +31,12 @@ public class TaskController {
         return taskService.getAllTasks();
     }
 
-    // タスクの作成（修正済み：タスクオブジェクトを返す）
+    // タスクの作成
     @PostMapping
     public ResponseEntity<Task> createTask(@RequestBody Task task) {
         try {
             Task createdTask = taskService.createTask(task);
-            return ResponseEntity.ok(createdTask);
+            return ResponseEntity.ok(createdTask); // 作成したタスクを返す
         } catch (Exception e) {
             return ResponseEntity.status(500).build();
         }
