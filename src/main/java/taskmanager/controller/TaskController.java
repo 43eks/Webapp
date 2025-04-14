@@ -17,9 +17,9 @@ import org.springframework.web.bind.annotation.RestController;
 import taskmanager.model.Task;
 import taskmanager.service.TaskService;
 
-@CrossOrigin(origins = "http://localhost:3000") // ← Reactからの通信を許可！
+@CrossOrigin(origins = "http://localhost:3000")
 @RestController
-@RequestMapping("/tasks")
+@RequestMapping("/api/tasks")
 public class TaskController {
 
     @Autowired
