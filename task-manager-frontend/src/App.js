@@ -1,8 +1,9 @@
-
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import Home from './pages/Home';
 import CreateTask from './pages/CreateTask';
+import TaskDetail from './pages/TaskDetail';
+import EditTask from './pages/EditTask';
 
 function App() {
   return (
@@ -15,6 +16,8 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/create" element={<CreateTask />} />
+        <Route path="/tasks/:id" element={<TaskDetail />} />
+        <Route path="/tasks/:id/edit" element={<EditTask />} />
       </Routes>
     </Router>
   );
