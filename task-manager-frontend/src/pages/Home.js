@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 
 function Home() {
   const [tasks, setTasks] = useState([]);
@@ -40,23 +41,29 @@ function Home() {
   return (
     <div style={{ padding: '20px' }}>
       <h2>タスク一覧</h2>
-      <ul>
-        {tasks.map(task => (
-          <li key={task.id}>
-            <span
-              onClick={() => toggleTaskCompletion(task.id)}
-              style={{
-                textDecoration: task.completed ? 'line-through' : 'none',
-                marginRight: '10px',
-                cursor: 'pointer'
-              }}
-            >
-              {task.taskName}（{task.dueDate || '期限なし'} / {task.category || '未分類'}）
-            </span>
-            <button onClick={() => deleteTask(task.id)}>削除</button>
-          </li>
-        ))}
-      </ul>
+      {tasks.length === 0 ? (
+        <p>タスクがありません。</p>
+      ) : (
+        <ul>
+          {tasks.map(task => (
+            <li key={task.id} style={{ marginBottom: '10px' }}>
+              <span
+                onClick={() => toggleTaskCompletion(task.id)}
+                style={{
+                  textDecoration: task.completed ? 'line-through' : 'none',
+                  marginRight: '10px',
+                  cursor: 'pointer'
+                }}
+              >
+                {task.taskName}（{task.dueDate || '期限なし'} / {task.category || '未分類'}）
+              </span>
+              <Link to={`/tasks/${task.id}`} style={{ marginRight: '10px' }}>詳細</Link>
+              <Link to={`/tasks/${task.id}/edit`} style={{ marginRight: '10px' }}>編集</Link>
+              <button onClick={() => deleteTask(task.id)}>削除</button>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
