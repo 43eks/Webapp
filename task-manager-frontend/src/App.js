@@ -1,51 +1,85 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import Home from './pages/Home';
-import TaskList from './pages/TaskList';
-import CreateTask from './pages/CreateTask';
-import TaskDetail from './pages/TaskDetail';
-import EditTask from './pages/EditTask';
-import BlogList from './pages/BlogList'; // 新規追加
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 
-function App() {
+function BlogList() {
+  const [blogs, setBlogs] = useState([]);
+
+  const fetchBlogs = () => {
+    fetch('http://localhost:8080/api/blogs')
+      .then(response => response.json())
+      .then(data => setBlogs(data))
+      .catch(error => console.error('Error:', error));
+  };
+
+  useEffect(() => {
+    fetchBlogs();
+  }, []);
+
+  const deleteBlog = (id) => {
+    if (window.confirm('この記事を削除しますか？')) {
+      fetch(`http://localhost:8080/api/blogs/${id}`, {
+        method: 'DELETE'
+      })
+        .then(() => fetchBlogs())
+        .catch(error => console.error('削除エラー:', error));
+    }
+  };
+
   return (
-    <Router>
-      <nav style={{
-        padding: '10px 20px',
-        borderBottom: '1px solid #ccc',
-        backgroundColor: '#f9f9f9',
-        display: 'flex',
-        gap: '15px',
-        alignItems: 'center'
-      }}>
-        <Link to="/" style={navLinkStyle}>🏠 ホーム</Link>
-        <Link to="/tasks" style={navLinkStyle}>📋 タスク一覧</Link>
-        <Link to="/create" style={navLinkStyle}>➕ タスク追加</Link>
-        <Link to="/blogs" style={navLinkStyle}>📚 ナレッジ</Link>
-        {/* 今後追加予定のリンクをコメントで残すのも◎ */}
-        {/* <Link to="/habits">🔥 習慣</Link> */}
-        {/* <Link to="/diary">📔 日記</Link> */}
-      </nav>
-
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/tasks" element={<TaskList />} />
-        <Route path="/create" element={<CreateTask />} />
-        <Route path="/tasks/:id" element={<TaskDetail />} />
-        <Route path="/tasks/:id/edit" element={<EditTask />} />
-        <Route path="/blogs" element={<BlogList />} /> {/* 新規追加ルート */}
-      </Routes>
-    </Router>
+    <div style={{ padding: '20px' }}>
+      <h2>📚 ナレッジ一覧</h2>
+      <Link to="/blogs/create">
+        <button style={buttonStyle}>➕ 新規記事作成</button>
+      </Link>
+      <div style={{ marginTop: '20px' }}>
+        {blogs.length === 0 ? (
+          <p>記事がまだありません。</p>
+        ) : (
+          blogs.map(blog => (
+            <div key={blog.id} style={cardStyle}>
+              <h3>{blog.title}</h3>
+              <p>{blog.category || '未分類'} / {new Date(blog.createdAt).toLocaleDateString()}</p>
+              <div style={{ marginTop: '10px' }}>
+                <Link to={`/blogs/${blog.id}/edit`}>
+                  <button style={smallButtonStyle}>✏️ 編集</button>
+                </Link>
+                <button onClick={() => deleteBlog(blog.id)} style={smallButtonStyle}>🗑️ 削除</button>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
   );
 }
 
-const navLinkStyle = {
-  textDecoration: 'none',
-  color: '#333',
-  fontWeight: 'bold',
-  padding: '8px 12px',
+const buttonStyle = {
+  padding: '10px 16px',
+  fontSize: '16px',
+  backgroundColor: '#4CAF50',
+  color: 'white',
+  border: 'none',
   borderRadius: '6px',
-  transition: 'background-color 0.3s',
+  cursor: 'pointer'
 };
 
-export default App;
+const cardStyle = {
+  border: '1px solid #ddd',
+  padding: '15px',
+  borderRadius: '8px',
+  marginBottom: '15px',
+  backgroundColor: '#fff',
+  boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+};
+
+const smallButtonStyle = {
+  marginRight: '10px',
+  padding: '6px 10px',
+  fontSize: '14px',
+  cursor: 'pointer',
+  borderRadius: '6px',
+  border: '1px solid #ccc',
+  backgroundColor: '#f1f1f1'
+};
+
+export default BlogList;
