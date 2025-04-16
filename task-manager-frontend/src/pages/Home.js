@@ -2,34 +2,49 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 
 function Home() {
-  return (
-    <div style={{ padding: '20px' }}>
-      <h1>タスク管理アプリへようこそ</h1>
-      <p>機能を選んでください:</p>
+  const gridStyle = {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+    gap: '20px',
+    padding: '20px',
+  };
 
-      <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-        <Link to="/tasks">
-          <button style={buttonStyle}>📋 タスク一覧</button>
-        </Link>
-        <Link to="/create">
-          <button style={buttonStyle}>➕ タスクを追加</button>
-        </Link>
-        {/* ここに新機能があれば増やしていける */}
-        <button style={buttonStyle} disabled>📅 月間ビュー（準備中）</button>
-        <button style={buttonStyle} disabled>🏷️ カテゴリ別（準備中）</button>
+  const cardStyle = {
+    backgroundColor: '#f0f0f0',
+    borderRadius: '12px',
+    padding: '30px',
+    textAlign: 'center',
+    textDecoration: 'none',
+    color: '#333',
+    fontWeight: 'bold',
+    fontSize: '18px',
+    boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+    transition: 'all 0.3s ease',
+  };
+
+  const disabledCardStyle = {
+    ...cardStyle,
+    color: '#999',
+    backgroundColor: '#e0e0e0',
+    cursor: 'not-allowed',
+    pointerEvents: 'none',
+  };
+
+  return (
+    <div>
+      <h1 style={{ textAlign: 'center', marginTop: '30px' }}>マイライフ管理アプリ</h1>
+      <p style={{ textAlign: 'center' }}>使いたい機能を選んでください：</p>
+      <div style={gridStyle}>
+        <Link to="/tasks" style={cardStyle}>📝 タスク管理</Link>
+        <Link to="/create" style={cardStyle}>➕ タスクを追加</Link>
+        <Link to="/blogs" style={cardStyle}>📚 ナレッジ管理</Link>
+        <div style={disabledCardStyle}>📅 月間ビュー（準備中）</div>
+        <div style={disabledCardStyle}>🏷️ カテゴリ別（準備中）</div>
+        <div style={disabledCardStyle}>🔥 習慣トラッカー（予定）</div>
+        <div style={disabledCardStyle}>📔 日記（予定）</div>
       </div>
     </div>
   );
 }
-
-const buttonStyle = {
-  padding: '10px 20px',
-  fontSize: '16px',
-  cursor: 'pointer',
-  borderRadius: '8px',
-  border: '1px solid #ccc',
-  backgroundColor: '#f8f8f8',
-  transition: 'all 0.3s',
-};
 
 export default Home;
