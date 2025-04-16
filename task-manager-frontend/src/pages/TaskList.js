@@ -1,4 +1,3 @@
-// src/pages/TaskList.js
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -41,29 +40,35 @@ function TaskList() {
 
   return (
     <div style={{ padding: '20px' }}>
-      <h2>タスク一覧</h2>
-      <ul>
+      <h2>📋 タスク一覧</h2>
+      <div style={{ display: 'grid', gap: '15px', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
         {tasks.map(task => (
-          <li key={task.id}>
-            <span
-              onClick={() => toggleTaskCompletion(task.id)}
-              style={{
-                textDecoration: task.completed ? 'line-through' : 'none',
-                marginRight: '10px',
-                cursor: 'pointer'
-              }}
-            >
-              {task.taskName}（{task.dueDate || '期限なし'} / {task.category || '未分類'}）
-            </span>
-            <Link to={`/tasks/${task.id}`}>
-              <button style={{ marginLeft: '10px' }}>詳細</button>
-            </Link>
-            <button onClick={() => deleteTask(task.id)} style={{ marginLeft: '5px' }}>削除</button>
-          </li>
+          <div key={task.id} style={cardStyle}>
+            <h3 style={{ textDecoration: task.completed ? 'line-through' : 'none' }}>{task.taskName}</h3>
+            <p>🗓️ 期限: {task.dueDate || 'なし'}</p>
+            <p>🏷️ カテゴリ: {task.category || '未分類'}</p>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px' }}>
+              <button onClick={() => toggleTaskCompletion(task.id)}>
+                {task.completed ? '未完了にする' : '完了にする'}
+              </button>
+              <Link to={`/tasks/${task.id}`}>
+                <button>詳細</button>
+              </Link>
+              <button onClick={() => deleteTask(task.id)}>削除</button>
+            </div>
+          </div>
         ))}
-      </ul>
+      </div>
     </div>
   );
 }
+
+const cardStyle = {
+  padding: '15px',
+  border: '1px solid #ddd',
+  borderRadius: '10px',
+  boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
+  backgroundColor: '#fff',
+};
 
 export default TaskList;
