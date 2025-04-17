@@ -4,17 +4,20 @@ import { Link } from 'react-router-dom';
 function BlogList() {
   const [blogs, setBlogs] = useState([]);
 
+  // 記事一覧を取得
   const fetchBlogs = () => {
     fetch('http://localhost:8080/api/blogs')
       .then(response => response.json())
       .then(data => setBlogs(data))
-      .catch(error => console.error('Error:', error));
+      .catch(error => console.error('取得エラー:', error));
   };
 
+  // 初回マウント時に実行
   useEffect(() => {
     fetchBlogs();
   }, []);
 
+  // 削除処理
   const deleteBlog = (id) => {
     if (window.confirm('この記事を削除しますか？')) {
       fetch(`http://localhost:8080/api/blogs/${id}`, {
@@ -28,9 +31,11 @@ function BlogList() {
   return (
     <div style={{ padding: '20px' }}>
       <h2>📚 ナレッジ一覧</h2>
+      
       <Link to="/blogs/create">
         <button style={buttonStyle}>➕ 新規記事作成</button>
       </Link>
+
       <div style={{ marginTop: '20px' }}>
         {blogs.length === 0 ? (
           <p>記事がまだありません。</p>
@@ -38,7 +43,9 @@ function BlogList() {
           blogs.map(blog => (
             <div key={blog.id} style={cardStyle}>
               <h3>{blog.title}</h3>
-              <p>{blog.category || '未分類'} / {new Date(blog.createdAt).toLocaleDateString()}</p>
+              <p style={{ color: '#666' }}>
+                {blog.category || '未分類'} / {new Date(blog.createdAt).toLocaleDateString()}
+              </p>
               <div style={{ marginTop: '10px' }}>
                 <Link to={`/blogs/${blog.id}/edit`}>
                   <button style={smallButtonStyle}>✏️ 編集</button>
@@ -53,6 +60,7 @@ function BlogList() {
   );
 }
 
+// スタイル定義
 const buttonStyle = {
   padding: '10px 16px',
   fontSize: '16px',
