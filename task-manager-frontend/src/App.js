@@ -10,6 +10,7 @@ function App() {
         <Routes>
           <Route path="/" element={<BlogList />} />
           <Route path="/blogs/create" element={<CreateBlog />} />
+		  <Route path="/blogs/:id/edit" element={<EditBlog />} />
           {/* 今後編集ページを追加するときはこちらも追加 */}
           {/* <Route path="/blogs/:id/edit" element={<EditBlog />} /> */}
         </Routes>
