@@ -1,7 +1,9 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import BlogList from './components/BlogList';
-import CreateBlog from './components/CreateBlog'; // まだ未実装なら後ほど作成します
+import BlogList from './pages/BlogList';
+import CreateBlog from './pages/CreateBlog';
+import EditBlog from './pages/EditBlog';
+import ViewBlog from './pages/ViewBlog';
 
 function App() {
   return (
@@ -10,9 +12,8 @@ function App() {
         <Routes>
           <Route path="/" element={<BlogList />} />
           <Route path="/blogs/create" element={<CreateBlog />} />
-		  <Route path="/blogs/:id/edit" element={<EditBlog />} />
-          {/* 今後編集ページを追加するときはこちらも追加 */}
-          {/* <Route path="/blogs/:id/edit" element={<EditBlog />} /> */}
+          <Route path="/blogs/:id/edit" element={<EditBlog />} />
+          <Route path="/blogs/:id" element={<ViewBlog />} />
         </Routes>
       </div>
     </Router>
