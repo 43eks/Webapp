@@ -35,9 +35,12 @@ function Home() {
       <h1 style={{ textAlign: 'center', marginTop: '30px' }}>マイライフ管理アプリ</h1>
       <p style={{ textAlign: 'center' }}>使いたい機能を選んでください：</p>
       <div style={gridStyle}>
-        <Link to="/tasks" style={cardStyle}>📝 タスク管理</Link>
-        <Link to="/create" style={cardStyle}>➕ タスクを追加</Link>
+        {/* 実装済みのルートへリンク */}
         <Link to="/blogs" style={cardStyle}>📚 ナレッジ管理</Link>
+        <Link to="/blogs/create" style={cardStyle}>➕ ナレッジを追加</Link>
+
+        {/* 将来対応予定（未実装） */}
+        <div style={disabledCardStyle}>📝 タスク管理（準備中）</div>
         <div style={disabledCardStyle}>📅 月間ビュー（準備中）</div>
         <div style={disabledCardStyle}>🏷️ カテゴリ別（準備中）</div>
         <div style={disabledCardStyle}>🔥 習慣トラッカー（予定）</div>
