@@ -4,7 +4,9 @@ import BlogList from './pages/BlogList';
 import CreateBlog from './pages/CreateBlog';
 import EditBlog from './pages/EditBlog';
 import ViewBlog from './pages/ViewBlog';
-import Home from './pages/Home'; // ← 機能選択ページを読み込む
+import Home from './pages/Home'; // 機能選択ページ
+import TaskList from './pages/TaskList'; // ← タスク一覧ページ
+import CreateTask from './pages/CreateTask'; // ← タスク追加ページ
 
 function App() {
   return (
@@ -17,11 +19,15 @@ function App() {
       {/* ページルーティング */}
       <div>
         <Routes>
-          <Route path="/" element={<Home />} /> {/* ← ホームを機能選択ページに変更 */}
+          <Route path="/" element={<Home />} />
+          {/* ナレッジ機能 */}
           <Route path="/blogs" element={<BlogList />} />
           <Route path="/blogs/create" element={<CreateBlog />} />
           <Route path="/blogs/:id/edit" element={<EditBlog />} />
           <Route path="/blogs/:id" element={<ViewBlog />} />
+          {/* タスク機能 */}
+          <Route path="/tasks" element={<TaskList />} />
+          <Route path="/tasks/create" element={<CreateTask />} />
         </Routes>
       </div>
     </Router>
