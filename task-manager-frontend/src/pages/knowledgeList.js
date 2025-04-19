@@ -6,7 +6,7 @@ function BlogList() {
 
   // 記事一覧を取得
   const fetchBlogs = () => {
-    fetch('http://localhost:8080/api/blogs')
+    fetch('http://localhost:8080/api/knowledge')
       .then(response => response.json())
       .then(data => setBlogs(data))
       .catch(error => console.error('取得エラー:', error));

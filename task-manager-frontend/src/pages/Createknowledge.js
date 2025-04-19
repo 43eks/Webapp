@@ -17,7 +17,7 @@ function CreateBlog() {
       createdAt: new Date().toISOString()
     };
 
-    fetch('http://localhost:8080/api/blogs', {
+    fetch('http://localhost:8080/api/knowledge', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(newBlog)
