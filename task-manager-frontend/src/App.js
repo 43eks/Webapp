@@ -1,9 +1,9 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import BlogList from './pages/BlogList';
-import CreateBlog from './pages/CreateBlog';
-import EditBlog from './pages/EditBlog';
-import ViewBlog from './pages/ViewBlog';
+import BlogList from './pages/knowledgeList';
+import CreateBlog from './pages/Createknowledge';
+import EditBlog from './pages/Editknowledge';
+import ViewBlog from './pages/Viewknowledge';
 import Home from './pages/Home'; // 機能選択ページ
 import TaskList from './pages/TaskList'; // ← タスク一覧ページ
 import CreateTask from './pages/CreateTask'; // ← タスク追加ページ
