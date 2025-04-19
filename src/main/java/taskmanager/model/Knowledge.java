@@ -1,11 +1,11 @@
 package taskmanager.model;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Size;
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 @Entity
 public class Knowledge {
@@ -24,7 +24,7 @@ public class Knowledge {
 
     private String category;  // 例えば「プログラミング」「ビジネス」などのカテゴリー
 
-    // コンストラクタ
+    // デフォルトコンストラクタ
     public Knowledge() {}
 
     public Knowledge(Long id, String title, String content, String category) {

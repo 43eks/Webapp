@@ -82,6 +82,21 @@
       <artifactId>mysql-connector-j</artifactId>
       <version>8.0.33</version>
     </dependency>
+
+    <!-- ✅ Jakarta Validation API (旧 javax.validation) -->
+    <dependency>
+      <groupId>jakarta.validation</groupId>
+      <artifactId>jakarta.validation-api</artifactId>
+      <version>3.0.2</version>
+    </dependency>
+
+    <!-- ✅ Hibernate Validator (実装ライブラリ) -->
+    <dependency>
+      <groupId>org.hibernate.validator</groupId>
+      <artifactId>hibernate-validator</artifactId>
+      <version>7.0.5.Final</version>
+    </dependency>
+
   </dependencies>
 
 </project>
