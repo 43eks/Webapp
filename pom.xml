@@ -8,21 +8,76 @@
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
     <version>3.2.4</version>
-    <relativePath/>
+    <relativePath/> <!-- spring-boot-starter-parentの場所（空でOK） -->
   </parent>
 
   <groupId>Webapp</groupId>
   <artifactId>Webapp</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <name>Webapp</name>
+  <description>Spring Boot タスク管理アプリ</description>
 
   <properties>
     <java.version>21</java.version>
   </properties>
 
+  <dependencies>
+    <!-- Spring Boot Web Starter -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+
+    <!-- Thymeleaf -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-thymeleaf</artifactId>
+    </dependency>
+
+    <!-- Spring Data JPA -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-data-jpa</artifactId>
+    </dependency>
+
+    <!-- JDBC -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-jdbc</artifactId>
+    </dependency>
+
+    <!-- Hibernate Core -->
+    <dependency>
+      <groupId>org.hibernate</groupId>
+      <artifactId>hibernate-core</artifactId>
+      <version>6.4.4.Final</version>
+    </dependency>
+
+    <!-- MySQL Connector -->
+    <dependency>
+      <groupId>com.mysql</groupId>
+      <artifactId>mysql-connector-j</artifactId>
+      <version>8.0.33</version>
+    </dependency>
+
+    <!-- Jakarta Validation API -->
+    <dependency>
+      <groupId>jakarta.validation</groupId>
+      <artifactId>jakarta.validation-api</artifactId>
+      <version>3.0.2</version>
+    </dependency>
+
+    <!-- Hibernate Validator -->
+    <dependency>
+      <groupId>org.hibernate.validator</groupId>
+      <artifactId>hibernate-validator</artifactId>
+      <version>7.0.5.Final</version>
+    </dependency>
+  </dependencies>
+
   <build>
     <plugins>
-      <!-- ✅ コンパイラ設定 -->
+      <!-- コンパイラ設定 -->
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.13.0</version>
@@ -31,72 +86,16 @@
         </configuration>
       </plugin>
 
-      <!-- ✅ Spring Boot 起動用プラグイン -->
+      <!-- Spring Boot Maven Plugin -->
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
         <version>3.2.4</version>
         <configuration>
-          <!-- あなたの main クラスが正しければこのままでOK -->
           <mainClass>taskmanager.TaskManagerApp</mainClass>
         </configuration>
       </plugin>
     </plugins>
   </build>
-
-  <dependencies>
-    <!-- ✅ Spring Boot Web Starter -->
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-web</artifactId>
-    </dependency>
-
-    <!-- ✅ Thymeleaf (テンプレートエンジン) -->
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-thymeleaf</artifactId>
-    </dependency>
-
-    <!-- ✅ Spring Boot JPA -->
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-data-jpa</artifactId>
-    </dependency>
-
-    <!-- ✅ JDBCドライバ -->
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-jdbc</artifactId>
-    </dependency>
-
-    <!-- ✅ Hibernate -->
-    <dependency>
-      <groupId>org.hibernate</groupId>
-      <artifactId>hibernate-core</artifactId>
-      <version>6.4.4.Final</version>
-    </dependency>
-
-    <!-- ✅ MySQLドライバ -->
-    <dependency>
-      <groupId>com.mysql</groupId>
-      <artifactId>mysql-connector-j</artifactId>
-      <version>8.0.33</version>
-    </dependency>
-
-    <!-- ✅ Jakarta Validation API (旧 javax.validation) -->
-    <dependency>
-      <groupId>jakarta.validation</groupId>
-      <artifactId>jakarta.validation-api</artifactId>
-      <version>3.0.2</version>
-    </dependency>
-
-    <!-- ✅ Hibernate Validator (実装ライブラリ) -->
-    <dependency>
-      <groupId>org.hibernate.validator</groupId>
-      <artifactId>hibernate-validator</artifactId>
-      <version>7.0.5.Final</version>
-    </dependency>
-
-  </dependencies>
 
 </project>
