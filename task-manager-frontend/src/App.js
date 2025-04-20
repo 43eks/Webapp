@@ -8,6 +8,9 @@ import Home from './pages/Home';  // 機能選択ページ
 import TaskList from './pages/TaskList';  // タスク一覧ページ
 import CreateTask from './pages/CreateTask';  // タスク追加ページ
 
+// ✅ ここに追加（どのファイルからでも使えるように後でexportしてもOK）
+export const API_BASE_URL = 'http://localhost:8080';
+
 function App() {
   return (
     <Router>
