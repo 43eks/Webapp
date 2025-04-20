@@ -11,8 +11,8 @@
     <relativePath/> <!-- spring-boot-starter-parentの場所（空でOK） -->
   </parent>
 
-  <groupId>Webapp</groupId>
-  <artifactId>Webapp</artifactId>
+  <groupId>com.example</groupId>
+  <artifactId>webapp</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <name>Webapp</name>
   <description>Spring Boot タスク管理アプリ</description>
@@ -40,17 +40,10 @@
       <artifactId>spring-boot-starter-data-jpa</artifactId>
     </dependency>
 
-    <!-- JDBC -->
+    <!-- Spring Boot Starter Validation -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-jdbc</artifactId>
-    </dependency>
-
-    <!-- Hibernate Core -->
-    <dependency>
-      <groupId>org.hibernate</groupId>
-      <artifactId>hibernate-core</artifactId>
-      <version>6.4.4.Final</version>
+      <artifactId>spring-boot-starter-validation</artifactId>
     </dependency>
 
     <!-- MySQL Connector -->
@@ -60,25 +53,20 @@
       <version>8.0.33</version>
     </dependency>
 
-    <!-- Jakarta Validation API -->
+    <!-- Jakarta Bean Validation API（任意だが IDE エラー防止に役立つ） -->
     <dependency>
       <groupId>jakarta.validation</groupId>
       <artifactId>jakarta.validation-api</artifactId>
       <version>3.0.2</version>
     </dependency>
 
-    <!-- Hibernate Validator -->
-    <dependency>
-      <groupId>org.hibernate.validator</groupId>
-      <artifactId>hibernate-validator</artifactId>
-      <version>7.0.5.Final</version>
-    </dependency>
   </dependencies>
 
   <build>
     <plugins>
-      <!-- コンパイラ設定 -->
+      <!-- Maven Compiler Plugin -->
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.13.0</version>
         <configuration>
