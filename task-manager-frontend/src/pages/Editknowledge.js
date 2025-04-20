@@ -9,7 +9,7 @@ function EditKnowledge() {
   const [category, setCategory] = useState('');
 
   useEffect(() => {
-    fetch(`http://localhost:8080/api/blogs/${id}`)
+    fetch(`http://localhost:8080/knowledges/${id}`)
       .then(response => response.json())
       .then(data => {
         setTitle(data.title);
@@ -25,17 +25,17 @@ function EditKnowledge() {
   const handleUpdate = (e) => {
     e.preventDefault();
 
-    const updatedBlog = {
+    const updatedknowledge = {
       title,
       content,
       category,
       updatedAt: new Date().toISOString()
     };
 
-    fetch(`http://localhost:8080/api/blogs/${id}`, {
+    fetch(`http://localhost:8080/knowledge/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(updatedBlog)
+      body: JSON.stringify(updatedknowledge)
     })
       .then(response => {
         if (response.ok) {

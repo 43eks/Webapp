@@ -5,16 +5,16 @@ function knowledgeList() {
   const [knowledges, setknowledges] = useState([]);
 
   // 記事一覧を取得
-  const fetchBlogs = () => {
+  const fetchKnowledges = () => {
     fetch('http://localhost:8080/knowledge')
       .then(response => response.json())
-      .then(data => setBlogs(data))
+      .then(data => setKnowledges(data))
       .catch(error => console.error('取得エラー:', error));
   };
 
   // 初回マウント時に実行
   useEffect(() => {
-    fetchknowledges();
+    fetchKnowledges();
   }, []);
 
   // 削除処理
@@ -23,7 +23,7 @@ function knowledgeList() {
       fetch(`http://localhost:8080/knowledge/${id}`, {
         method: 'DELETE'
       })
-        .then(() => fetchknowledges())
+        .then(() => fetchKnowledges())
         .catch(error => console.error('削除エラー:', error));
     }
   };
