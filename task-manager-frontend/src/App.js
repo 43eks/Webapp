@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import knowledgeList from './pages/knowledgeList';  // ナレッジ一覧ページ
+import KnowledgeList from './pages/knowledgeList';  // ナレッジ一覧ページ
 import Createknowledge from './pages/Createknowledge';  // ナレッジ作成ページ
 import Editknowledge from './pages/Editknowledge';  // ナレッジ編集ページ
 import Viewknowledge from './pages/Viewknowledge';  // ナレッジ詳細表示ページ
@@ -24,7 +24,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           {/* ナレッジ機能 */}
-          <Route path="/knowledges" element={<knowledgeList />} />
+          <Route path="/knowledges" element={<KnowledgeList />} />
           <Route path="/knowledges/create" element={<Createknowledge />} />
           <Route path="/knowledges/:id/edit" element={<Editknowledge />} />
           <Route path="/knowledges/:id" element={<Viewknowledge />} />
