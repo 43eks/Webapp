@@ -1,9 +1,9 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import BlogList from './pages/knowledgeList';  // ナレッジ一覧ページ
-import CreateBlog from './pages/Createknowledge';  // ナレッジ作成ページ
-import EditBlog from './pages/Editknowledge';  // ナレッジ編集ページ
-import ViewBlog from './pages/Viewknowledge';  // ナレッジ詳細表示ページ
+import knowledgeList from './pages/knowledgeList';  // ナレッジ一覧ページ
+import Createknowledge from './pages/Createknowledge';  // ナレッジ作成ページ
+import Editknowledge from './pages/Editknowledge';  // ナレッジ編集ページ
+import Viewknowledge from './pages/Viewknowledge';  // ナレッジ詳細表示ページ
 import Home from './pages/Home';  // 機能選択ページ
 import TaskList from './pages/TaskList';  // タスク一覧ページ
 import CreateTask from './pages/CreateTask';  // タスク追加ページ
