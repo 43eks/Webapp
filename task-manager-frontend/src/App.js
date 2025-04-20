@@ -24,10 +24,10 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           {/* ナレッジ機能 */}
-          <Route path="/knowledges" element={<BlogList />} />
-          <Route path="/knowledges/create" element={<CreateBlog />} />
-          <Route path="/knowledges/:id/edit" element={<EditBlog />} />
-          <Route path="/knowledges/:id" element={<ViewBlog />} />
+          <Route path="/knowledges" element={<knowledgeList />} />
+          <Route path="/knowledges/create" element={<Createknowledge />} />
+          <Route path="/knowledges/:id/edit" element={<Editknowledge />} />
+          <Route path="/knowledges/:id" element={<Viewknowledge />} />
           {/* タスク機能 */}
           <Route path="/tasks" element={<TaskList />} />
           <Route path="/tasks/create" element={<CreateTask />} />
