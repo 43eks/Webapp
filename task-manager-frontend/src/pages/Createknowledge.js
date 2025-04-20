@@ -24,7 +24,7 @@ function CreateBlog() {
     })
       .then(response => {
         if (response.ok) {
-          navigate('/blogs');
+          navigate('/knowledges');
         } else {
           alert('記事の作成に失敗しました');
         }
