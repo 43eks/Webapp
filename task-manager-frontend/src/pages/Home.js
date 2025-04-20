@@ -38,8 +38,8 @@ function Home() {
         {/* 実装済みリンク */}
         <Link to="/tasks" style={cardStyle}>📝 タスク管理</Link>
         <Link to="/tasks/create" style={cardStyle}>➕ タスクを追加</Link>
-        <Link to="/blogs" style={cardStyle}>📚 ナレッジ管理</Link>
-        <Link to="/blogs/create" style={cardStyle}>➕ ナレッジを追加</Link>
+        <Link to="/Knowledges" style={cardStyle}>📚 ナレッジ管理</Link>
+        <Link to="/Knowledges/create" style={cardStyle}>➕ ナレッジを追加</Link>
 
         {/* 未実装（準備中） */}
         <div style={disabledCardStyle}>📅 月間ビュー（準備中）</div>

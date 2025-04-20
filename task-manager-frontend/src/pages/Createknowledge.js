@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-function CreateBlog() {
+function CreateKnowledge() {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [category, setCategory] = useState('');
@@ -17,7 +17,7 @@ function CreateBlog() {
       createdAt: new Date().toISOString()
     };
 
-    fetch('http://localhost:8080/api/knowledge', {
+    fetch('http://localhost:8080/knowledge', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(newBlog)
@@ -83,4 +83,4 @@ const submitButtonStyle = {
   cursor: 'pointer'
 };
 
-export default CreateBlog;
+export default CreateKnowledge;

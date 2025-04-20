@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
-function EditBlog() {
+function EditKnowledge() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [title, setTitle] = useState('');
@@ -98,4 +98,4 @@ const submitButtonStyle = {
   cursor: 'pointer'
 };
 
-export default EditBlog;
+export default EditKnowledge;

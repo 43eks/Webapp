@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
-function BlogList() {
-  const [blogs, setBlogs] = useState([]);
+function knowledgeList() {
+  const [knowledges, setknowledges] = useState([]);
 
   // 記事一覧を取得
   const fetchBlogs = () => {
-    fetch('http://localhost:8080/api/knowledge')
+    fetch('http://localhost:8080/knowledge')
       .then(response => response.json())
       .then(data => setBlogs(data))
       .catch(error => console.error('取得エラー:', error));
@@ -14,16 +14,16 @@ function BlogList() {
 
   // 初回マウント時に実行
   useEffect(() => {
-    fetchBlogs();
+    fetchknowledges();
   }, []);
 
   // 削除処理
-  const deleteBlog = (id) => {
+  const deleteknowledge = (id) => {
     if (window.confirm('この記事を削除しますか？')) {
-      fetch(`http://localhost:8080/api/blogs/${id}`, {
+      fetch(`http://localhost:8080/knowledge/${id}`, {
         method: 'DELETE'
       })
-        .then(() => fetchBlogs())
+        .then(() => fetchknowledges())
         .catch(error => console.error('削除エラー:', error));
     }
   };
@@ -32,25 +32,25 @@ function BlogList() {
     <div style={{ padding: '20px' }}>
       <h2>📚 ナレッジ一覧</h2>
       
-      <Link to="/blogs/create">
+      <Link to="/knowledges/create">
         <button style={buttonStyle}>➕ 新規記事作成</button>
       </Link>
 
       <div style={{ marginTop: '20px' }}>
-        {blogs.length === 0 ? (
+        {knowledges.length === 0 ? (
           <p>記事がまだありません。</p>
         ) : (
-          blogs.map(blog => (
-            <div key={blog.id} style={cardStyle}>
-              <h3>{blog.title}</h3>
+          knowledges.map(knowledge => (
+            <div key={knowledge.id} style={cardStyle}>
+              <h3>{knowledge.title}</h3>
               <p style={{ color: '#666' }}>
-                {blog.category || '未分類'} / {new Date(blog.createdAt).toLocaleDateString()}
+                {knowledge.category || '未分類'} / {new Date(knowledge.createdAt).toLocaleDateString()}
               </p>
               <div style={{ marginTop: '10px' }}>
-                <Link to={`/blogs/${blog.id}/edit`}>
+                <Link to={`/knowledges/${knowledge.id}/edit`}>
                   <button style={smallButtonStyle}>✏️ 編集</button>
                 </Link>
-                <button onClick={() => deleteBlog(blog.id)} style={smallButtonStyle}>🗑️ 削除</button>
+                <button onClick={() => deleteknowledge(knowledge.id)} style={smallButtonStyle}>🗑️ 削除</button>
               </div>
             </div>
           ))
@@ -90,4 +90,4 @@ const smallButtonStyle = {
   backgroundColor: '#f1f1f1'
 };
 
-export default BlogList;
+export default knowledgeList;

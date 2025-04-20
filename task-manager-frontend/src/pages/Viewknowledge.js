@@ -1,42 +1,42 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 
-function ViewBlog() {
+function Viewknowledge() {
   const { id } = useParams();
   const [blog, setBlog] = useState(null);
 
   useEffect(() => {
-    fetch(`http://localhost:8080/api/blogs/${id}`)
+    fetch(`http://localhost:8080/knowledges/${id}`)
       .then(response => {
         if (!response.ok) {
           throw new Error('記事が見つかりません');
         }
         return response.json();
       })
-      .then(data => setBlog(data))
+      .then(data => setknowledge(data))
       .catch(error => {
         console.error('取得エラー:', error);
         alert('記事の取得に失敗しました');
       });
   }, [id]);
 
-  if (!blog) {
+  if (!knowledge) {
     return <p style={{ padding: '20px' }}>読み込み中...</p>;
   }
 
   return (
     <div style={{ padding: '20px' }}>
-      <h2>{blog.title}</h2>
-      <p><strong>カテゴリ:</strong> {blog.category || '未分類'}</p>
-      <p><strong>作成日:</strong> {new Date(blog.createdAt).toLocaleDateString()}</p>
+      <h2>{knowledge.title}</h2>
+      <p><strong>カテゴリ:</strong> {knowledge.category || '未分類'}</p>
+      <p><strong>作成日:</strong> {new Date(knowledge.createdAt).toLocaleDateString()}</p>
       <div style={contentStyle}>
-        {blog.content}
+        {knowledge.content}
       </div>
       <div style={{ marginTop: '20px' }}>
-        <Link to={`/blogs/${blog.id}/edit`}>
+        <Link to={`/knowledges/${knowledge.id}/edit`}>
           <button style={buttonStyle}>✏️ 編集</button>
         </Link>
-        <Link to="/blogs">
+        <Link to="/knowledges">
           <button style={backButtonStyle}>← 戻る</button>
         </Link>
       </div>
@@ -73,4 +73,4 @@ const backButtonStyle = {
   cursor: 'pointer'
 };
 
-export default ViewBlog;
+export default Viewknowledge;
