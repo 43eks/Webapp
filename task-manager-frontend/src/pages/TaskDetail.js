@@ -7,7 +7,7 @@ function TaskDetail() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch(`http://localhost:8080/api/tasks/${id}`)
+    fetch(`http://localhost:8080/tasks/${id}`)
       .then((res) => {
         if (!res.ok) throw new Error('タスクが見つかりません');
         return res.json();
