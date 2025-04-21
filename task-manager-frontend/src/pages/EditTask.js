@@ -7,7 +7,7 @@ function EditTask() {
   const [task, setTask] = useState({ taskName: '', dueDate: '', category: '' });
 
   useEffect(() => {
-    fetch(`http://localhost:8080/api/tasks/${id}`)
+    fetch(`http://localhost:8080/tasks/${id}`)
       .then(res => {
         if (!res.ok) throw new Error('タスクが見つかりません');
         return res.json();
@@ -20,7 +20,7 @@ function EditTask() {
   }, [id]);
 
   const handleSave = () => {
-    fetch(`http://localhost:8080/api/tasks/${id}`, {
+    fetch(`http://localhost:8080/tasks/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(task),
