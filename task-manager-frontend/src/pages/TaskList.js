@@ -5,7 +5,7 @@ function TaskList() {
   const [tasks, setTasks] = useState([]);
 
   const fetchTasks = () => {
-    fetch('http://localhost:8080/api/tasks')
+    fetch('http://localhost:8080/tasks')
       .then(response => response.json())
       .then(data => setTasks(data))
       .catch(error => console.error('Error:', error));
@@ -16,7 +16,7 @@ function TaskList() {
   }, []);
 
   const deleteTask = (id) => {
-    fetch(`http://localhost:8080/api/tasks/${id}`, {
+    fetch(`http://localhost:8080/tasks/${id}`, {
       method: 'DELETE',
     })
       .then(() => fetchTasks())
@@ -29,7 +29,7 @@ function TaskList() {
 
     const newTask = { ...updatedTask, completed: !updatedTask.completed };
 
-    fetch(`http://localhost:8080/api/tasks/${id}`, {
+    fetch(`http://localhost:8080/tasks/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(newTask),
