@@ -1,10 +1,10 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 
-import KnowledgeList from './pages/KnowledgeList';        // ナレッジ一覧
-import CreateKnowledge from './pages/CreateKnowledge';    // ナレッジ作成
-import EditKnowledge from './pages/EditKnowledge';        // ナレッジ編集
-import ViewKnowledge from './pages/ViewKnowledge';        // ナレッジ詳細
+import KnowledgeList from './pages/knowledgeList';        // ナレッジ一覧
+import CreateKnowledge from './pages/Createknowledge';    // ナレッジ作成
+import EditKnowledge from './pages/Editknowledge';        // ナレッジ編集
+import ViewKnowledge from './pages/Viewknowledge';        // ナレッジ詳細
 
 import Home from './pages/Home';                          // ホーム画面
 
