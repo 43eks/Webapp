@@ -16,5 +16,24 @@
       "dueDate": "2025-04-22",
       "category": "食べ物"
     }
+  ],
+  "habits": [
+    {
+      "id": "habit1",
+      "name": "読書",
+      "records": {
+        "2025-04-20": true,
+        "2025-04-21": false,
+        "2025-04-22": true
+      }
+    },
+    {
+      "id": "habit2",
+      "name": "運動",
+      "records": {
+        "2025-04-20": false,
+        "2025-04-21": true
+      }
+    }
   ]
 }
