@@ -10,7 +10,9 @@ import Home from './pages/Home';                          // ホーム画面
 
 import TaskList from './pages/TaskList';                  // タスク一覧
 import CreateTask from './pages/CreateTask';              // タスク追加
-import TaskDetail from './pages/TaskDetail';              // タスク詳細 ← 追加！
+import TaskDetail from './pages/TaskDetail';              // タスク詳細
+
+import CreateHabit from './pages/CreateHabit';            // 習慣追加 ← ✅ 追加！
 
 // ✅ 共通APIエンドポイント
 export const API_BASE_URL = 'http://localhost:8080';
@@ -37,7 +39,10 @@ function App() {
           {/* タスク機能 */}
           <Route path="/tasks" element={<TaskList />} />
           <Route path="/tasks/create" element={<CreateTask />} />
-          <Route path="/tasks/:id" element={<TaskDetail />} /> {/* ← これが警告解消の鍵！ */}
+          <Route path="/tasks/:id" element={<TaskDetail />} />
+
+          {/* 習慣トラッカー機能 */}
+          <Route path="/habits/create" element={<CreateHabit />} /> {/* ← ✅ 習慣追加ルート */}
         </Routes>
       </div>
     </Router>
