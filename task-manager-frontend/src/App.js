@@ -12,7 +12,8 @@ import TaskList from './pages/TaskList';                  // タスク一覧
 import CreateTask from './pages/CreateTask';              // タスク追加
 import TaskDetail from './pages/TaskDetail';              // タスク詳細
 
-import CreateHabit from './pages/CreateHabit';            // 習慣追加 ← ✅ 追加！
+import CreateHabit from './pages/CreateHabit';            // 習慣追加
+import HabitTracker from './pages/HabitTracker';          // 習慣一覧 ← ✅ 追加！
 
 // ✅ 共通APIエンドポイント
 export const API_BASE_URL = 'http://localhost:8080';
@@ -42,7 +43,8 @@ function App() {
           <Route path="/tasks/:id" element={<TaskDetail />} />
 
           {/* 習慣トラッカー機能 */}
-          <Route path="/habits/create" element={<CreateHabit />} /> {/* ← ✅ 習慣追加ルート */}
+          <Route path="/habits" element={<HabitTracker />} />         {/* ← ✅ 一覧ページ */}
+          <Route path="/habits/create" element={<CreateHabit />} />  {/* ← ✅ 作成ページ */}
         </Routes>
       </div>
     </Router>
