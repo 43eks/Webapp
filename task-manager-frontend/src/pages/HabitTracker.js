@@ -9,6 +9,7 @@ function HabitTracker() {
   const [editingHabitId, setEditingHabitId] = useState(null);
   const [editingName, setEditingName] = useState('');
 
+  // 習慣取得
   useEffect(() => {
     fetch(`${API_BASE_URL}/habits`)
       .then(res => res.json())
@@ -16,6 +17,7 @@ function HabitTracker() {
       .catch(err => console.error('習慣の取得に失敗しました:', err));
   }, []);
 
+  // 日付生成
   useEffect(() => {
     const today = new Date();
     const recentDates = Array.from({ length: DAYS }).map((_, i) => {
@@ -26,10 +28,10 @@ function HabitTracker() {
     setDates(recentDates);
   }, []);
 
+  // ✅ トグル
   const handleToggle = (habitId, date) => {
     const habit = habits.find(h => h.id === habitId);
     const current = habit.records?.[date] || false;
-
     const updatedRecords = {
       ...habit.records,
       [date]: !current
@@ -50,12 +52,14 @@ function HabitTracker() {
       });
   };
 
+  // 📊 達成率
   const calculateRate = (habit) => {
     const total = dates.length;
     const success = dates.filter(date => habit.records?.[date]).length;
     return Math.round((success / total) * 100);
   };
 
+  // 📝 編集
   const startEdit = (habit) => {
     setEditingHabitId(habit.id);
     setEditingName(habit.name);
@@ -79,6 +83,7 @@ function HabitTracker() {
       });
   };
 
+  // 🗑️ 削除
   const deleteHabit = (habitId) => {
     if (!window.confirm('本当にこの習慣を削除しますか？')) return;
 
@@ -94,9 +99,57 @@ function HabitTracker() {
       });
   };
 
+  // 📤 エクスポート
+  const handleExport = () => {
+    const blob = new Blob([JSON.stringify(habits, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'habits_backup.json';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // 📥 インポート
+  const handleImport = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const importedHabits = JSON.parse(event.target.result);
+
+        for (const habit of importedHabits) {
+          await fetch(`${API_BASE_URL}/habits`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(habit)
+          });
+        }
+
+        const res = await fetch(`${API_BASE_URL}/habits`);
+        const data = await res.json();
+        setHabits(data);
+        alert('インポートが完了しました！');
+      } catch (err) {
+        console.error('インポートエラー:', err);
+        alert('インポートに失敗しました');
+      }
+    };
+    reader.readAsText(file);
+  };
+
   return (
     <div style={{ padding: '20px' }}>
       <h2>📅 習慣トラッカー</h2>
+
+      {/* インポート／エクスポート */}
+      <div style={{ marginBottom: '10px' }}>
+        <button onClick={handleExport}>📤 エクスポート</button>
+        <input type="file" accept="application/json" onChange={handleImport} />
+      </div>
 
       <table style={{ borderCollapse: 'collapse', width: '100%' }}>
         <thead>
