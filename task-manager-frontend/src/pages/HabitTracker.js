@@ -7,7 +7,6 @@ function HabitTracker() {
   const [habits, setHabits] = useState([]);
   const [dates, setDates] = useState([]);
 
-  // 習慣データ取得
   useEffect(() => {
     fetch(`${API_BASE_URL}/habits`)
       .then(res => res.json())
@@ -15,7 +14,6 @@ function HabitTracker() {
       .catch(err => console.error('習慣の取得に失敗しました:', err));
   }, []);
 
-  // 日付一覧生成
   useEffect(() => {
     const today = new Date();
     const recentDates = Array.from({ length: DAYS }).map((_, i) => {
@@ -26,7 +24,6 @@ function HabitTracker() {
     setDates(recentDates);
   }, []);
 
-  // ✅ トグル処理
   const handleToggle = (habitId, date) => {
     const habit = habits.find(h => h.id === habitId);
     const current = habit.records?.[date] || false;
@@ -53,6 +50,12 @@ function HabitTracker() {
       });
   };
 
+  const calculateRate = (habit) => {
+    const total = dates.length;
+    const success = dates.filter(date => habit.records?.[date]).length;
+    return Math.round((success / total) * 100);
+  };
+
   return (
     <div style={{ padding: '20px' }}>
       <h2>📅 習慣トラッカー</h2>
@@ -69,6 +72,7 @@ function HabitTracker() {
                 })}
               </th>
             ))}
+            <th style={cellStyle}>🏆 達成率</th> {/* ✅ 追加 */}
           </tr>
         </thead>
         <tbody>
@@ -84,6 +88,7 @@ function HabitTracker() {
                   {habit.records?.[date] ? '✅' : '❌'}
                 </td>
               ))}
+              <td style={cellStyle}>{calculateRate(habit)}%</td> {/* ✅ 追加 */}
             </tr>
           ))}
         </tbody>
@@ -92,7 +97,6 @@ function HabitTracker() {
   );
 }
 
-// スタイル定義
 const cellStyle = {
   border: '1px solid #ccc',
   padding: '8px',
