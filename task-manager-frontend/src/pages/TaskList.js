@@ -39,10 +39,7 @@ function TaskList() {
       .catch(error => console.error('Error:', error));
   };
 
-  // カテゴリ一覧を生成（重複排除）
   const categories = ['すべて', ...Array.from(new Set(tasks.map(task => task.category || '未分類')))];
-
-  // カテゴリで絞り込み
   const filteredTasks =
     filterCategory === 'すべて'
       ? tasks
@@ -66,7 +63,6 @@ function TaskList() {
         </select>
       </div>
 
-      {/* タスクカード一覧 */}
       <div style={{ display: 'grid', gap: '15px', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
         {filteredTasks.length === 0 ? (
           <p>該当するタスクはありません。</p>
@@ -95,7 +91,13 @@ function TaskList() {
   );
 }
 
+// 💡 ここの定義が途中で終わっていたので修正！
 const cardStyle = {
   padding: '15px',
   border: '1px solid #ddd',
- 
+  borderRadius: '10px',
+  boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
+  backgroundColor: '#fff'
+};
+
+export default TaskList;
