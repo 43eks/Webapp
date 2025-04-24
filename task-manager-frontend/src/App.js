@@ -1,92 +1,63 @@
-import React, { useEffect, useState } from 'react';
-import { API_BASE_URL } from '../App';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 
-function MonthlyView() {
-  const [habits, setHabits] = useState([]);
-  const [selectedHabitId, setSelectedHabitId] = useState('');
-  const [currentMonth, setCurrentMonth] = useState(new Date());
+import KnowledgeList from './pages/knowledgeList';        // ナレッジ一覧
+import CreateKnowledge from './pages/Createknowledge';    // ナレッジ作成
+import EditKnowledge from './pages/Editknowledge';        // ナレッジ編集
+import ViewKnowledge from './pages/Viewknowledge';        // ナレッジ詳細
 
-  useEffect(() => {
-    fetch(`${API_BASE_URL}/habits`)
-      .then(res => res.json())
-      .then(data => setHabits(data))
-      .catch(err => console.error('習慣の取得に失敗しました:', err));
-  }, []);
+import Home from './pages/Home';                          // ホーム画面
 
-  const getDatesInMonth = (year, month) => {
-    const date = new Date(year, month, 1);
-    const result = [];
-    while (date.getMonth() === month) {
-      result.push(new Date(date));
-      date.setDate(date.getDate() + 1);
-    }
-    return result;
-  };
+import TaskList from './pages/TaskList';                  // タスク一覧
+import CreateTask from './pages/CreateTask';              // タスク追加
+import TaskDetail from './pages/TaskDetail';              // タスク詳細
 
-  const changeMonth = (amount) => {
-    const newMonth = new Date(currentMonth);
-    newMonth.setMonth(currentMonth.getMonth() + amount);
-    setCurrentMonth(newMonth);
-  };
+import CreateHabit from './pages/CreateHabit';            // 習慣追加
+import HabitTracker from './pages/HabitTracker';          // 習慣トラッカー一覧
+import MonthlyView from './pages/MonthlyView';            // 月間ビュー ← ✅ 追加！
 
-  const selectedHabit = habits.find(h => h.id === selectedHabitId);
-  const year = currentMonth.getFullYear();
-  const month = currentMonth.getMonth();
-  const days = getDatesInMonth(year, month);
+// ✅ 共通APIエンドポイント
+export const API_BASE_URL = 'http://localhost:8080';
 
+function App() {
   return (
-    <div style={{ padding: '20px' }}>
-      <h2>📅 月間習慣ビュー</h2>
-
-      {/* 月切り替え & 習慣選択 */}
-      <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', alignItems: 'center' }}>
-        <button onClick={() => changeMonth(-1)}>⏮️ 前月</button>
-        <strong>{year}年 {month + 1}月</strong>
-        <button onClick={() => changeMonth(1)}>⏭️ 翌月</button>
-        <select
-          value={selectedHabitId}
-          onChange={(e) => setSelectedHabitId(e.target.value)}
-          style={{ marginLeft: 'auto', fontSize: '16px' }}
-        >
-          <option value="">-- 習慣を選択 --</option>
-          {habits.map(habit => (
-            <option key={habit.id} value={habit.id}>{habit.name}</option>
-          ))}
-        </select>
+    <Router>
+      {/* ナビゲーションバー */}
+      <div style={{ padding: '10px', backgroundColor: '#eee' }}>
+        <Link to="/" style={navLinkStyle}>🏠 ホーム</Link>
       </div>
 
-      {/* カレンダー */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(7, 1fr)',
-        gap: '10px'
-      }}>
-        {days.map(date => {
-          const key = date.toISOString().split('T')[0];
-          const status = selectedHabit?.records?.[key];
-          return (
-            <div
-              key={key}
-              style={{
-                border: '1px solid #ccc',
-                borderRadius: '8px',
-                padding: '10px',
-                textAlign: 'center',
-                backgroundColor: status ? '#e8ffe8' : '#fff'
-              }}
-            >
-              <div style={{ fontWeight: 'bold' }}>{date.getDate()}</div>
-              {selectedHabitId && (
-                <div style={{ fontSize: '20px' }}>
-                  {status ? '✅' : '❌'}
-                </div>
-              )}
-            </div>
-          );
-        })}
+      {/* ページルーティング */}
+      <div>
+        <Routes>
+          <Route path="/" element={<Home />} />
+
+          {/* ナレッジ機能 */}
+          <Route path="/knowledges" element={<KnowledgeList />} />
+          <Route path="/knowledges/create" element={<CreateKnowledge />} />
+          <Route path="/knowledges/:id/edit" element={<EditKnowledge />} />
+          <Route path="/knowledges/:id" element={<ViewKnowledge />} />
+
+          {/* タスク機能 */}
+          <Route path="/tasks" element={<TaskList />} />
+          <Route path="/tasks/create" element={<CreateTask />} />
+          <Route path="/tasks/:id" element={<TaskDetail />} />
+
+          {/* 習慣トラッカー機能 */}
+          <Route path="/habits/create" element={<CreateHabit />} />
+          <Route path="/habits" element={<HabitTracker />} />
+          <Route path="/habits/monthly" element={<MonthlyView />} /> {/* ← ✅ 月間ビュー追加 */}
+        </Routes>
       </div>
-    </div>
+    </Router>
   );
 }
 
-export default MonthlyView;
+const navLinkStyle = {
+  textDecoration: 'none',
+  color: '#333',
+  fontSize: '18px',
+  fontWeight: 'bold'
+};
+
+export default App;

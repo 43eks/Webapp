@@ -42,9 +42,9 @@ function Home() {
         <Link to="/knowledges/create" style={cardStyle}>➕ ナレッジを追加</Link>
         <Link to="/habits" style={cardStyle}>🔥 習慣トラッカー</Link>
         <Link to="/habits/create" style={cardStyle}>➕ 習慣を追加</Link>
+        <Link to="/habits/monthly" style={cardStyle}>📅 月間ビュー</Link> {/* ← ✅ 追加済み */}
 
         {/* 未実装（準備中） */}
-        <div style={disabledCardStyle}>📅 月間ビュー（準備中）</div>
         <div style={disabledCardStyle}>🏷️ カテゴリ別（準備中）</div>
         <div style={disabledCardStyle}>📔 日記（予定）</div>
       </div>
