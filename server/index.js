@@ -40,9 +40,39 @@ app.get('/tasks', (req, res) => {
   res.json(db.tasks);
 });
 
+// タスク追加
+app.post('/tasks', (req, res) => {
+  const newTask = req.body;
+  db.tasks.push(newTask);
+
+  try {
+    fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2));
+    console.log('✅ 新しいタスク追加:', newTask);
+    res.status(201).json(newTask);
+  } catch (error) {
+    console.error('❌ タスク保存エラー:', error);
+    res.status(500).json({ error: 'タスクの保存に失敗しました' });
+  }
+});
+
 // ナレッジ一覧取得
 app.get('/knowledge', (req, res) => {
   res.json(db.knowledge);
+});
+
+// ナレッジ追加
+app.post('/knowledge', (req, res) => {
+  const newKnowledge = req.body;
+  db.knowledge.push(newKnowledge);
+
+  try {
+    fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2));
+    console.log('✅ 新しいナレッジ追加:', newKnowledge);
+    res.status(201).json(newKnowledge);
+  } catch (error) {
+    console.error('❌ ナレッジ保存エラー:', error);
+    res.status(500).json({ error: 'ナレッジの保存に失敗しました' });
+  }
 });
 
 // （※必要なら習慣一覧も追加できるよ）
