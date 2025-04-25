@@ -1,0 +1,37 @@
+{
+  "knowledge": [
+    {
+      "id": "1070",
+      "title": "データウェアハウス",
+      "content": "データウェアハウスとは...",
+      "category": "仕事",
+      "createdAt": "2025-04-20T04:04:58.756Z"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "96c4",
+      "taskName": "たこ焼き",
+      "completed": false,
+      "dueDate": "2025-04-22",
+      "category": "食べ物"
+    }
+  ],
+  "habits": [
+    {
+      "id": "habit1",
+      "name": "読書",
+      "records": { "2025-04-20": false, "2025-04-21": false }
+    },
+    {
+      "id": "habit2",
+      "name": "運動",
+      "records": { "2025-04-20": true, "2025-04-21": false }
+    },
+    {
+      "id": "be6f3bf8-eb47-47ed-9997-e08471d34cb3",
+      "name": "勉強",
+      "records": { "2025-04-18": true, "2025-04-23": true }
+    }
+  ]
+}
