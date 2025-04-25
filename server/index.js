@@ -3,19 +3,54 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
+const fs = require('fs');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// APIキーが正しく設定されているか確認
-if (!process.env.OPENAI_API_KEY) {
-  console.error('❌ エラー: OPENAI_API_KEY が設定されていません (.env を確認してください)');
-  process.exit(1); // サーバー起動を停止
+// データファイルのパス
+const DATA_FILE = './data.json';
+
+// 初期データ読み込み
+let db = { knowledge: [], tasks: [], habits: [] };
+try {
+  if (fs.existsSync(DATA_FILE)) {
+    const data = fs.readFileSync(DATA_FILE, 'utf-8');
+    db = JSON.parse(data);
+    console.log('✅ データファイル読み込み成功');
+  } else {
+    console.log('⚠️ データファイルが存在しないため、新規作成されます');
+  }
+} catch (error) {
+  console.error('❌ データファイル読み込みエラー:', error);
 }
 
+// --- APIキー確認 ---
+if (!process.env.OPENAI_API_KEY) {
+  console.error('❌ エラー: OPENAI_API_KEY が設定されていません (.env を確認してください)');
+  process.exit(1); // サーバー起動停止
+}
 console.log('✅ 環境変数 OPENAI_API_KEY 読み込み成功');
 
+// --- ルーティング ---
+
+// タスク一覧取得
+app.get('/tasks', (req, res) => {
+  res.json(db.tasks);
+});
+
+// ナレッジ一覧取得
+app.get('/knowledge', (req, res) => {
+  res.json(db.knowledge);
+});
+
+// （※必要なら習慣一覧も追加できるよ）
+// app.get('/habits', (req, res) => {
+//   res.json(db.habits);
+// });
+
+// タスク提案（AI呼び出し）
 app.post('/suggest', async (req, res) => {
   const { userSummary } = req.body;
   console.log('💬 受信した userSummary:', userSummary);
@@ -42,7 +77,7 @@ app.post('/suggest', async (req, res) => {
     const suggestions = suggestionText
       .split('\n')
       .filter(line => line.trim() !== '')
-      .map(line => line.replace(/^\d+\.\s*/, '')); // 「1. ○○」みたいな番号を取り除く
+      .map(line => line.replace(/^\d+\.\s*/, '')); // 「1. ○○」の番号を除去
 
     console.log('✅ AI提案取得成功:', suggestions);
 
@@ -53,6 +88,7 @@ app.post('/suggest', async (req, res) => {
   }
 });
 
+// サーバー起動
 app.listen(8080, () => {
   console.log('✅ サーバー起動！http://localhost:8080 で待機中');
 });
