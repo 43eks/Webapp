@@ -95,6 +95,32 @@ app.post('/habits', (req, res) => {
   }
 });
 
+// 🌟🌟 ここから新しく追加！ 🌟🌟
+
+// 習慣更新（PATCH）
+app.patch('/habits/:id', (req, res) => {
+  const habitId = req.params.id;
+  const { done } = req.body;
+
+  const habit = db.habits.find(h => h.id === habitId);
+  if (!habit) {
+    return res.status(404).json({ error: '指定された習慣が見つかりません' });
+  }
+
+  habit.done = done;
+
+  try {
+    fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2));
+    console.log(`✅ 習慣ID ${habitId} の状態を更新:`, habit);
+    res.json(habit);
+  } catch (error) {
+    console.error('❌ 習慣更新保存エラー:', error);
+    res.status(500).json({ error: '習慣の保存に失敗しました' });
+  }
+});
+
+// 🌟🌟 追加ここまで 🌟🌟
+
 // タスク提案（AI呼び出し）
 app.post('/suggest', async (req, res) => {
   const { userSummary } = req.body;
@@ -122,7 +148,7 @@ app.post('/suggest', async (req, res) => {
     const suggestions = suggestionText
       .split('\n')
       .filter(line => line.trim() !== '')
-      .map(line => line.replace(/^\d+\.\s*/, '')); // 「1. ○○」の番号を除去
+      .map(line => line.replace(/^\d+\.\s*/, ''));
 
     console.log('✅ AI提案取得成功:', suggestions);
 
