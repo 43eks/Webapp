@@ -76,9 +76,9 @@ app.post('/knowledge', (req, res) => {
 });
 
 // （※必要なら習慣一覧も追加できるよ）
-// app.get('/habits', (req, res) => {
-//   res.json(db.habits);
-// });
+ app.get('/habits', (req, res) => {
+   res.json(db.habits);
+ });
 
 // タスク提案（AI呼び出し）
 app.post('/suggest', async (req, res) => {
