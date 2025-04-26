@@ -75,10 +75,25 @@ app.post('/knowledge', (req, res) => {
   }
 });
 
-// （※必要なら習慣一覧も追加できるよ）
- app.get('/habits', (req, res) => {
-   res.json(db.habits);
- });
+// 習慣一覧取得
+app.get('/habits', (req, res) => {
+  res.json(db.habits);
+});
+
+// 習慣追加
+app.post('/habits', (req, res) => {
+  const newHabit = req.body;
+  db.habits.push(newHabit);
+
+  try {
+    fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2));
+    console.log('✅ 新しい習慣追加:', newHabit);
+    res.status(201).json(newHabit);
+  } catch (error) {
+    console.error('❌ 習慣保存エラー:', error);
+    res.status(500).json({ error: '習慣の保存に失敗しました' });
+  }
+});
 
 // タスク提案（AI呼び出し）
 app.post('/suggest', async (req, res) => {
