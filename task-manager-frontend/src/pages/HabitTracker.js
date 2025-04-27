@@ -7,15 +7,20 @@ function HabitTracker() {
   const [habits, setHabits] = useState([]);
   const [dates, setDates] = useState([]);
 
-  // 習慣一覧取得
   useEffect(() => {
     fetch(`${API_BASE_URL}/habits`)
       .then(res => res.json())
-      .then(data => setHabits(data))
+      .then(data => {
+        // ✅ recordsがないhabitには空のrecordsを追加しておく！
+        const initialized = data.map(habit => ({
+          ...habit,
+          records: habit.records || {}
+        }));
+        setHabits(initialized);
+      })
       .catch(err => console.error('習慣の取得に失敗しました:', err));
   }, []);
 
-  // 日付一覧作成（直近7日）
   useEffect(() => {
     const today = new Date();
     const recentDates = Array.from({ length: DAYS }).map((_, i) => {
@@ -26,7 +31,6 @@ function HabitTracker() {
     setDates(recentDates);
   }, []);
 
-  // ✅ 日付ごとの達成トグル
   const handleToggle = async (habitId, date) => {
     const habit = habits.find(h => h.id === habitId);
     if (!habit) return;
@@ -36,6 +40,11 @@ function HabitTracker() {
       ...habit.records,
       [date]: !current
     };
+
+    // ローカルを即更新
+    setHabits(prev =>
+      prev.map(h => (h.id === habitId ? { ...h, records: updatedRecords } : h))
+    );
 
     try {
       const res = await fetch(`${API_BASE_URL}/habits/${habitId}`, {
@@ -48,22 +57,17 @@ function HabitTracker() {
         throw new Error('更新に失敗しました');
       }
 
-      const updatedHabit = await res.json();
-
-      setHabits(prev =>
-        prev.map(h => (h.id === habitId ? updatedHabit : h))
-      );
+      console.log('✅ サーバー更新成功');
     } catch (err) {
       console.error('更新エラー:', err);
       alert('記録の更新に失敗しました');
     }
   };
 
-  // 📊 達成率計算
   const calculateRate = (habit) => {
     const total = dates.length;
     const success = dates.filter(date => habit.records?.[date]).length;
-    return Math.round((success / total) * 100);
+    return total === 0 ? 0 : Math.round((success / total) * 100);
   };
 
   return (
@@ -104,7 +108,6 @@ function HabitTracker() {
   );
 }
 
-// セルのスタイル共通設定
 const cellStyle = {
   border: '1px solid #ccc',
   padding: '8px',
