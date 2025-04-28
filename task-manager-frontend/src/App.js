@@ -14,7 +14,9 @@ import TaskDetail from './pages/TaskDetail';              // タスク詳細
 
 import CreateHabit from './pages/CreateHabit';            // 習慣追加
 import HabitTracker from './pages/HabitTracker';          // 習慣トラッカー一覧
-import MonthlyView from './pages/MonthlyView';            // 月間ビュー ← ✅ 追加！
+import MonthlyView from './pages/MonthlyView';            // 月間ビュー
+
+import GoalPage from './pages/GoalPage';                  // 🎯 ゴール一覧 ← ✅ 新規追加！
 
 // ✅ 共通APIエンドポイント
 export const API_BASE_URL = 'http://localhost:8080';
@@ -24,7 +26,11 @@ function App() {
     <Router>
       {/* ナビゲーションバー */}
       <div style={{ padding: '10px', backgroundColor: '#eee' }}>
-        <Link to="/" style={navLinkStyle}>🏠 ホーム</Link>
+        <Link to="/" style={navLinkStyle}>🏠 ホーム</Link>{' '}
+        <Link to="/tasks" style={navLinkStyle}>📝 タスク</Link>{' '}
+        <Link to="/knowledges" style={navLinkStyle}>📚 ナレッジ</Link>{' '}
+        <Link to="/habits" style={navLinkStyle}>📅 習慣</Link>{' '}
+        <Link to="/goals" style={navLinkStyle}>🎯 ゴール</Link> {/* ← ✅ 追加 */}
       </div>
 
       {/* ページルーティング */}
@@ -46,7 +52,10 @@ function App() {
           {/* 習慣トラッカー機能 */}
           <Route path="/habits/create" element={<CreateHabit />} />
           <Route path="/habits" element={<HabitTracker />} />
-          <Route path="/habits/monthly" element={<MonthlyView />} /> {/* ← ✅ 月間ビュー追加 */}
+          <Route path="/habits/monthly" element={<MonthlyView />} />
+
+          {/* 🎯 ゴール管理機能 ← ✅ 追加 */}
+          <Route path="/goals" element={<GoalPage />} />
         </Routes>
       </div>
     </Router>
@@ -57,7 +66,8 @@ const navLinkStyle = {
   textDecoration: 'none',
   color: '#333',
   fontSize: '18px',
-  fontWeight: 'bold'
+  fontWeight: 'bold',
+  marginRight: '10px'
 };
 
 export default App;
