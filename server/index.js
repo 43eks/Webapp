@@ -13,11 +13,12 @@ app.use(express.json());
 const DATA_FILE = './data.json';
 
 // 初期データ読み込み
-let db = { knowledge: [], tasks: [], habits: [], goals: [] }; // 🆕 goals追加
+let db = { knowledge: [], tasks: [], habits: [], goals: [] }; // ✅ goalsも初期化
 try {
   if (fs.existsSync(DATA_FILE)) {
     const data = fs.readFileSync(DATA_FILE, 'utf-8');
     db = JSON.parse(data);
+    db.goals = db.goals || []; // ✅ もしgoalsが存在しない場合に備えて保険
     console.log('✅ データファイル読み込み成功');
   } else {
     console.log('⚠️ データファイルが存在しないため、新規作成されます');
@@ -29,7 +30,7 @@ try {
 // --- APIキー確認 ---
 if (!process.env.OPENAI_API_KEY) {
   console.error('❌ エラー: OPENAI_API_KEY が設定されていません (.env を確認してください)');
-  process.exit(1); // サーバー起動停止
+  process.exit(1);
 }
 console.log('✅ 環境変数 OPENAI_API_KEY 読み込み成功');
 
@@ -117,7 +118,7 @@ app.patch('/habits/:id', (req, res) => {
   }
 });
 
-// 🌟🌟 ここから新しく追加！ゴール管理API 🌟🌟
+// --- ゴール管理API --- ✅
 
 // ゴール一覧取得
 app.get('/goals', (req, res) => {
@@ -157,75 +158,3 @@ app.patch('/goals/:id', (req, res) => {
 
   try {
     fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2));
-    console.log(`✅ ゴールID ${goalId} の状態を更新:`, goal);
-    res.json(goal);
-  } catch (error) {
-    console.error('❌ ゴール更新保存エラー:', error);
-    res.status(500).json({ error: 'ゴールの保存に失敗しました' });
-  }
-});
-
-// ゴール削除
-app.delete('/goals/:id', (req, res) => {
-  const goalId = req.params.id;
-  const index = db.goals.findIndex(g => g.id === goalId);
-  if (index === -1) {
-    return res.status(404).json({ error: '指定されたゴールが見つかりません' });
-  }
-
-  db.goals.splice(index, 1);
-
-  try {
-    fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2));
-    console.log(`✅ ゴールID ${goalId} を削除`);
-    res.status(204).send();
-  } catch (error) {
-    console.error('❌ ゴール削除保存エラー:', error);
-    res.status(500).json({ error: 'ゴールの削除に失敗しました' });
-  }
-});
-
-// 🌟🌟 ゴール追加ここまで 🌟🌟
-
-// タスク提案（AI呼び出し）
-app.post('/suggest', async (req, res) => {
-  const { userSummary } = req.body;
-  console.log('💬 受信した userSummary:', userSummary);
-
-  try {
-    const response = await axios.post(
-      'https://api.openai.com/v1/chat/completions',
-      {
-        model: 'gpt-3.5-turbo',
-        messages: [
-          { role: 'system', content: 'あなたはユーザーの状況に応じて今週のタスクを提案するアシスタントです。' },
-          { role: 'user', content: `今週の状況：${userSummary}。やるべきことを5つ提案してください。` }
-        ]
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-          'Content-Type': 'application/json'
-        }
-      }
-    );
-
-    const suggestionText = response.data.choices[0].message.content;
-    const suggestions = suggestionText
-      .split('\n')
-      .filter(line => line.trim() !== '')
-      .map(line => line.replace(/^\d+\.\s*/, ''));
-
-    console.log('✅ AI提案取得成功:', suggestions);
-
-    res.json({ suggestions });
-  } catch (error) {
-    console.error('🔥 AIリクエスト失敗:', error.response?.data || error.message);
-    res.status(500).json({ error: '提案の取得に失敗しました' });
-  }
-});
-
-// サーバー起動
-app.listen(8080, () => {
-  console.log('✅ サーバー起動！http://localhost:8080 で待機中');
-});
