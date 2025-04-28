@@ -13,7 +13,7 @@ app.use(express.json());
 const DATA_FILE = './data.json';
 
 // 初期データ読み込み
-let db = { knowledge: [], tasks: [], habits: [] };
+let db = { knowledge: [], tasks: [], habits: [], goals: [] }; // 🆕 goals追加
 try {
   if (fs.existsSync(DATA_FILE)) {
     const data = fs.readFileSync(DATA_FILE, 'utf-8');
@@ -95,8 +95,6 @@ app.post('/habits', (req, res) => {
   }
 });
 
-// 🌟🌟 ここから新しく追加！ 🌟🌟
-
 // 習慣更新（PATCH）
 app.patch('/habits/:id', (req, res) => {
   const habitId = req.params.id;
@@ -119,7 +117,75 @@ app.patch('/habits/:id', (req, res) => {
   }
 });
 
-// 🌟🌟 追加ここまで 🌟🌟
+// 🌟🌟 ここから新しく追加！ゴール管理API 🌟🌟
+
+// ゴール一覧取得
+app.get('/goals', (req, res) => {
+  res.json(db.goals);
+});
+
+// ゴール追加
+app.post('/goals', (req, res) => {
+  const newGoal = req.body;
+  db.goals.push(newGoal);
+
+  try {
+    fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2));
+    console.log('✅ 新しいゴール追加:', newGoal);
+    res.status(201).json(newGoal);
+  } catch (error) {
+    console.error('❌ ゴール保存エラー:', error);
+    res.status(500).json({ error: 'ゴールの保存に失敗しました' });
+  }
+});
+
+// ゴール更新（タスク追加やタイトル編集）
+app.patch('/goals/:id', (req, res) => {
+  const goalId = req.params.id;
+  const { title, description, deadline, taskIds, completed } = req.body;
+
+  const goal = db.goals.find(g => g.id === goalId);
+  if (!goal) {
+    return res.status(404).json({ error: '指定されたゴールが見つかりません' });
+  }
+
+  if (title !== undefined) goal.title = title;
+  if (description !== undefined) goal.description = description;
+  if (deadline !== undefined) goal.deadline = deadline;
+  if (taskIds !== undefined) goal.taskIds = taskIds;
+  if (completed !== undefined) goal.completed = completed;
+
+  try {
+    fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2));
+    console.log(`✅ ゴールID ${goalId} の状態を更新:`, goal);
+    res.json(goal);
+  } catch (error) {
+    console.error('❌ ゴール更新保存エラー:', error);
+    res.status(500).json({ error: 'ゴールの保存に失敗しました' });
+  }
+});
+
+// ゴール削除
+app.delete('/goals/:id', (req, res) => {
+  const goalId = req.params.id;
+  const index = db.goals.findIndex(g => g.id === goalId);
+  if (index === -1) {
+    return res.status(404).json({ error: '指定されたゴールが見つかりません' });
+  }
+
+  db.goals.splice(index, 1);
+
+  try {
+    fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2));
+    console.log(`✅ ゴールID ${goalId} を削除`);
+    res.status(204).send();
+  } catch (error) {
+    console.error('❌ ゴール削除保存エラー:', error);
+    res.status(500).json({ error: 'ゴールの削除に失敗しました' });
+  }
+});
+
+// 🌟🌟 ゴール追加ここまで 🌟🌟
 
 // タスク提案（AI呼び出し）
 app.post('/suggest', async (req, res) => {
