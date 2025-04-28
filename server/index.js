@@ -157,4 +157,77 @@ app.patch('/goals/:id', (req, res) => {
   if (completed !== undefined) goal.completed = completed;
 
   try {
-    fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2));
+	fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2));
+	    console.log(`✅ ゴールID ${goalId} の状態を更新:`, goal);
+	    res.json(goal);
+	  } catch (error) {
+	    console.error('❌ ゴール更新保存エラー:', error);
+	    res.status(500).json({ error: 'ゴールの保存に失敗しました' });
+	  }
+	});
+
+	// ゴール削除
+	app.delete('/goals/:id', (req, res) => {
+	  const goalId = req.params.id;
+	  const index = db.goals.findIndex(g => g.id === goalId);
+	  if (index === -1) {
+	    return res.status(404).json({ error: '指定されたゴールが見つかりません' });
+	  }
+
+	  db.goals.splice(index, 1);
+
+	  try {
+	    fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2));
+	    console.log(`✅ ゴールID ${goalId} を削除`);
+	    res.status(204).send(); // 削除成功時は204 No Contentを返す
+	  } catch (error) {
+	    console.error('❌ ゴール削除保存エラー:', error);
+	    res.status(500).json({ error: 'ゴールの削除に失敗しました' });
+	  }
+	});
+
+	// --- ゴール管理API ここまで ✅ ---
+
+
+	// --- タスク提案（AI呼び出し） ---
+	app.post('/suggest', async (req, res) => {
+	  const { userSummary } = req.body;
+	  console.log('💬 受信した userSummary:', userSummary);
+
+	  try {
+	    const response = await axios.post(
+	      'https://api.openai.com/v1/chat/completions',
+	      {
+	        model: 'gpt-3.5-turbo',
+	        messages: [
+	          { role: 'system', content: 'あなたはユーザーの状況に応じて今週のタスクを提案するアシスタントです。' },
+	          { role: 'user', content: `今週の状況：${userSummary}。やるべきことを5つ提案してください。` }
+	        ]
+	      },
+	      {
+	        headers: {
+	          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+	          'Content-Type': 'application/json'
+	        }
+	      }
+	    );
+
+	    const suggestionText = response.data.choices[0].message.content;
+	    const suggestions = suggestionText
+	      .split('\n')
+	      .filter(line => line.trim() !== '')
+	      .map(line => line.replace(/^\d+\.\s*/, '')); // 1. タイトル → タイトルだけ取り出す
+
+	    console.log('✅ AI提案取得成功:', suggestions);
+
+	    res.json({ suggestions });
+	  } catch (error) {
+	    console.error('🔥 AIリクエスト失敗:', error.response?.data || error.message);
+	    res.status(500).json({ error: '提案の取得に失敗しました' });
+	  }
+	});
+
+	// --- サーバー起動 ---
+	app.listen(8080, () => {
+	  console.log('✅ サーバー起動！http://localhost:8080 で待機中');
+	});
