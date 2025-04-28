@@ -16,7 +16,8 @@ import CreateHabit from './pages/CreateHabit';            // 習慣追加
 import HabitTracker from './pages/HabitTracker';          // 習慣トラッカー一覧
 import MonthlyView from './pages/MonthlyView';            // 月間ビュー
 
-import GoalPage from './pages/GoalPage';                  // 🎯 ゴール一覧 ← ✅ 新規追加！
+import GoalPage from './pages/GoalPage';                  // 🎯 ゴール一覧
+import GoalForm from './pages/GoalForm';                  // ➕ ゴール作成 ← ✅ 新規追加！
 
 // ✅ 共通APIエンドポイント
 export const API_BASE_URL = 'http://localhost:8080';
@@ -30,7 +31,7 @@ function App() {
         <Link to="/tasks" style={navLinkStyle}>📝 タスク</Link>{' '}
         <Link to="/knowledges" style={navLinkStyle}>📚 ナレッジ</Link>{' '}
         <Link to="/habits" style={navLinkStyle}>📅 習慣</Link>{' '}
-        <Link to="/goals" style={navLinkStyle}>🎯 ゴール</Link> {/* ← ✅ 追加 */}
+        <Link to="/goals" style={navLinkStyle}>🎯 ゴール</Link> {/* ← ✅ 追加済み */}
       </div>
 
       {/* ページルーティング */}
@@ -54,8 +55,9 @@ function App() {
           <Route path="/habits" element={<HabitTracker />} />
           <Route path="/habits/monthly" element={<MonthlyView />} />
 
-          {/* 🎯 ゴール管理機能 ← ✅ 追加 */}
+          {/* 🎯 ゴール管理機能 */}
           <Route path="/goals" element={<GoalPage />} />
+          <Route path="/goals/new" element={<GoalForm />} /> {/* ← ✅ ゴール作成ページ追加 */}
         </Routes>
       </div>
     </Router>
