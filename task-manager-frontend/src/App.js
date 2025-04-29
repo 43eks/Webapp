@@ -17,7 +17,8 @@ import HabitTracker from './pages/HabitTracker';          // 習慣トラッカ�
 import MonthlyView from './pages/MonthlyView';            // 月間ビュー
 
 import GoalPage from './pages/GoalPage';                  // 🎯 ゴール一覧
-import GoalForm from './pages/GoalForm';                  // ➕ ゴール作成 ← ✅ 新規追加！
+import GoalForm from './pages/GoalForm';                  // ➕ ゴール作成
+import CreateSlideVideo from './pages/CreateSlideVideo';  // 🎞️ スライド動画作成 ← ✅ 追加！
 
 // ✅ 共通APIエンドポイント
 export const API_BASE_URL = 'http://localhost:8080';
@@ -31,7 +32,8 @@ function App() {
         <Link to="/tasks" style={navLinkStyle}>📝 タスク</Link>{' '}
         <Link to="/knowledges" style={navLinkStyle}>📚 ナレッジ</Link>{' '}
         <Link to="/habits" style={navLinkStyle}>📅 習慣</Link>{' '}
-        <Link to="/goals" style={navLinkStyle}>🎯 ゴール</Link> {/* ← ✅ 追加済み */}
+        <Link to="/goals" style={navLinkStyle}>🎯 ゴール</Link>{' '}
+        <Link to="/slides/create" style={navLinkStyle}>🎞️ スライド作成</Link> {/* ← ✅ ナビゲーションに追加 */}
       </div>
 
       {/* ページルーティング */}
@@ -55,9 +57,12 @@ function App() {
           <Route path="/habits" element={<HabitTracker />} />
           <Route path="/habits/monthly" element={<MonthlyView />} />
 
-          {/* 🎯 ゴール管理機能 */}
+          {/* ゴール管理機能 */}
           <Route path="/goals" element={<GoalPage />} />
-          <Route path="/goals/new" element={<GoalForm />} /> {/* ← ✅ ゴール作成ページ追加 */}
+          <Route path="/goals/new" element={<GoalForm />} />
+
+          {/* 🎞️ スライド動画作成機能 */}
+          <Route path="/slides/create" element={<CreateSlideVideo />} /> {/* ← ✅ 追加 */}
         </Routes>
       </div>
     </Router>
