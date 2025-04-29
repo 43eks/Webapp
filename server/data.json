@@ -47,5 +47,25 @@
       "name": "たい焼き",
       "records": {}
     }
+  ],
+  "goals": [
+    {
+      "id": "goal_1745804695524",
+      "title": "データウェアハウスの完成",
+      "description": "資料作成、基本設計、詳細設計から運用までを担当に引き継ぐこと。",
+      "deadline": "2025-06-30T00:00:00.000Z",
+      "taskIds": [],
+      "completed": false,
+      "createdAt": "2025-04-28T01:44:55.524Z"
+    },
+    {
+      "id": "goal_1745804755341",
+      "title": "動画楽々作成",
+      "description": "動画を10種作れるようにする。",
+      "deadline": "2025-05-16T00:00:00.000Z",
+      "taskIds": [],
+      "completed": false,
+      "createdAt": "2025-04-28T01:45:55.341Z"
+    }
   ]
 }
