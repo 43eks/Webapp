@@ -1,11 +1,17 @@
-// src/pages/CreateSlideVideo.jsx
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 
 function CreateSlideVideo() {
   const canvasRef = useRef(null);
   const [images, setImages] = useState([]);
   const [recordedChunks, setRecordedChunks] = useState([]);
   const [isRecording, setIsRecording] = useState(false);
+  const [history, setHistory] = useState([]);
+
+  // 初期ロード時に履歴を読み込み
+  useEffect(() => {
+    const savedHistory = JSON.parse(localStorage.getItem('slideHistory')) || [];
+    setHistory(savedHistory);
+  }, []);
 
   const handleFiles = (e) => {
     const files = Array.from(e.target.files);
@@ -26,6 +32,11 @@ function CreateSlideVideo() {
     mediaRecorder.onstop = () => {
       setRecordedChunks(chunks);
       setIsRecording(false);
+
+      // ✅ 録画完了後に履歴に保存
+      const newHistory = [...history, images];
+      setHistory(newHistory);
+      localStorage.setItem('slideHistory', JSON.stringify(newHistory));
     };
 
     mediaRecorder.start();
@@ -57,9 +68,20 @@ function CreateSlideVideo() {
     }
   };
 
+  const resetSlides = () => {
+    setImages([]);
+    setRecordedChunks([]);
+  };
+
+  const loadFromHistory = (index) => {
+    setImages(history[index]);
+    setRecordedChunks([]);
+  };
+
   return (
     <div style={{ padding: '20px' }}>
       <h2>🎞️ スライドショー動画作成</h2>
+
       <input type="file" accept="image/*" multiple onChange={handleFiles} />
       <br /><br />
       <canvas ref={canvasRef} width={640} height={480} style={{ border: '1px solid #ccc' }} />
@@ -70,6 +92,20 @@ function CreateSlideVideo() {
       <button onClick={downloadVideo} disabled={!recordedChunks.length}>
         💾 動画保存
       </button>
+      <button onClick={resetSlides} style={{ marginLeft: '10px' }}>
+        ♻️ リセット
+      </button>
+
+      <h3>🕑 過去の履歴から復元</h3>
+      <ul>
+        {history.map((h, index) => (
+          <li key={index}>
+            <button onClick={() => loadFromHistory(index)}>
+              {`履歴 ${index + 1} を読み込む`}
+            </button>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
