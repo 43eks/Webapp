@@ -13,12 +13,13 @@ app.use(express.json());
 const DATA_FILE = './data.json';
 
 // 初期データ読み込み
-let db = { knowledge: [], tasks: [], habits: [], goals: [] }; // ✅ goalsも初期化
+let db = { knowledge: [], tasks: [], habits: [], goals: [], history: [] }; // ✅ history追加
 try {
   if (fs.existsSync(DATA_FILE)) {
     const data = fs.readFileSync(DATA_FILE, 'utf-8');
     db = JSON.parse(data);
-    db.goals = db.goals || []; // ✅ もしgoalsが存在しない場合に備えて保険
+    db.goals = db.goals || [];
+    db.history = db.history || []; // ✅ 保険でhistoryも
     console.log('✅ データファイル読み込み成功');
   } else {
     console.log('⚠️ データファイルが存在しないため、新規作成されます');
@@ -45,6 +46,14 @@ app.get('/tasks', (req, res) => {
 app.post('/tasks', (req, res) => {
   const newTask = req.body;
   db.tasks.push(newTask);
+
+  // ✅ 履歴に追加
+  db.history.push({
+    type: 'task',
+    action: 'create',
+    data: newTask,
+    timestamp: new Date().toISOString()
+  });
 
   try {
     fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2));
@@ -118,7 +127,7 @@ app.patch('/habits/:id', (req, res) => {
   }
 });
 
-// --- ゴール管理API --- ✅
+// --- ゴール管理API ---
 
 // ゴール一覧取得
 app.get('/goals', (req, res) => {
@@ -130,6 +139,14 @@ app.post('/goals', (req, res) => {
   const newGoal = req.body;
   db.goals.push(newGoal);
 
+  // ✅ 履歴に追加
+  db.history.push({
+    type: 'goal',
+    action: 'create',
+    data: newGoal,
+    timestamp: new Date().toISOString()
+  });
+
   try {
     fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2));
     console.log('✅ 新しいゴール追加:', newGoal);
@@ -140,7 +157,7 @@ app.post('/goals', (req, res) => {
   }
 });
 
-// ゴール更新（タスク追加やタイトル編集）
+// ゴール更新
 app.patch('/goals/:id', (req, res) => {
   const goalId = req.params.id;
   const { title, description, deadline, taskIds, completed } = req.body;
@@ -157,77 +174,74 @@ app.patch('/goals/:id', (req, res) => {
   if (completed !== undefined) goal.completed = completed;
 
   try {
-	fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2));
-	    console.log(`✅ ゴールID ${goalId} の状態を更新:`, goal);
-	    res.json(goal);
-	  } catch (error) {
-	    console.error('❌ ゴール更新保存エラー:', error);
-	    res.status(500).json({ error: 'ゴールの保存に失敗しました' });
-	  }
-	});
+    fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2));
+    console.log(`✅ ゴールID ${goalId} の状態を更新:`, goal);
+    res.json(goal);
+  } catch (error) {
+    console.error('❌ ゴール更新保存エラー:', error);
+    res.status(500).json({ error: 'ゴールの保存に失敗しました' });
+  }
+});
 
-	// ゴール削除
-	app.delete('/goals/:id', (req, res) => {
-	  const goalId = req.params.id;
-	  const index = db.goals.findIndex(g => g.id === goalId);
-	  if (index === -1) {
-	    return res.status(404).json({ error: '指定されたゴールが見つかりません' });
-	  }
+// ゴール削除
+app.delete('/goals/:id', (req, res) => {
+  const goalId = req.params.id;
+  const index = db.goals.findIndex(g => g.id === goalId);
+  if (index === -1) {
+    return res.status(404).json({ error: '指定されたゴールが見つかりません' });
+  }
 
-	  db.goals.splice(index, 1);
+  db.goals.splice(index, 1);
 
-	  try {
-	    fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2));
-	    console.log(`✅ ゴールID ${goalId} を削除`);
-	    res.status(204).send(); // 削除成功時は204 No Contentを返す
-	  } catch (error) {
-	    console.error('❌ ゴール削除保存エラー:', error);
-	    res.status(500).json({ error: 'ゴールの削除に失敗しました' });
-	  }
-	});
+  try {
+    fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2));
+    console.log(`✅ ゴールID ${goalId} を削除`);
+    res.status(204).send();
+  } catch (error) {
+    console.error('❌ ゴール削除保存エラー:', error);
+    res.status(500).json({ error: 'ゴールの削除に失敗しました' });
+  }
+});
 
-	// --- ゴール管理API ここまで ✅ ---
+// --- AI提案API ---
+app.post('/suggest', async (req, res) => {
+  const { userSummary } = req.body;
+  console.log('💬 受信した userSummary:', userSummary);
 
+  try {
+    const response = await axios.post(
+      'https://api.openai.com/v1/chat/completions',
+      {
+        model: 'gpt-3.5-turbo',
+        messages: [
+          { role: 'system', content: 'あなたはユーザーの状況に応じて今週のタスクを提案するアシスタントです。' },
+          { role: 'user', content: `今週の状況：${userSummary}。やるべきことを5つ提案してください。` }
+        ]
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
 
-	// --- タスク提案（AI呼び出し） ---
-	app.post('/suggest', async (req, res) => {
-	  const { userSummary } = req.body;
-	  console.log('💬 受信した userSummary:', userSummary);
+    const suggestionText = response.data.choices[0].message.content;
+    const suggestions = suggestionText
+      .split('\n')
+      .filter(line => line.trim() !== '')
+      .map(line => line.replace(/^\d+\.\s*/, ''));
 
-	  try {
-	    const response = await axios.post(
-	      'https://api.openai.com/v1/chat/completions',
-	      {
-	        model: 'gpt-3.5-turbo',
-	        messages: [
-	          { role: 'system', content: 'あなたはユーザーの状況に応じて今週のタスクを提案するアシスタントです。' },
-	          { role: 'user', content: `今週の状況：${userSummary}。やるべきことを5つ提案してください。` }
-	        ]
-	      },
-	      {
-	        headers: {
-	          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-	          'Content-Type': 'application/json'
-	        }
-	      }
-	    );
+    console.log('✅ AI提案取得成功:', suggestions);
 
-	    const suggestionText = response.data.choices[0].message.content;
-	    const suggestions = suggestionText
-	      .split('\n')
-	      .filter(line => line.trim() !== '')
-	      .map(line => line.replace(/^\d+\.\s*/, '')); // 1. タイトル → タイトルだけ取り出す
+    res.json({ suggestions });
+  } catch (error) {
+    console.error('🔥 AIリクエスト失敗:', error.response?.data || error.message);
+    res.status(500).json({ error: '提案の取得に失敗しました' });
+  }
+});
 
-	    console.log('✅ AI提案取得成功:', suggestions);
-
-	    res.json({ suggestions });
-	  } catch (error) {
-	    console.error('🔥 AIリクエスト失敗:', error.response?.data || error.message);
-	    res.status(500).json({ error: '提案の取得に失敗しました' });
-	  }
-	});
-
-	// --- サーバー起動 ---
-	app.listen(8080, () => {
-	  console.log('✅ サーバー起動！http://localhost:8080 で待機中');
-	});
+// --- サーバー起動 ---
+app.listen(8080, () => {
+  console.log('✅ サーバー起動！http://localhost:8080 で待機中');
+});
