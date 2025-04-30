@@ -6,6 +6,7 @@ function CreateSlideVideo() {
   const [recordedChunks, setRecordedChunks] = useState([]);
   const [isRecording, setIsRecording] = useState(false);
   const [history, setHistory] = useState([]);
+  const [title, setTitle] = useState(''); // タイトル入力用
 
   useEffect(() => {
     const savedHistory = JSON.parse(localStorage.getItem('slideHistory')) || [];
@@ -21,7 +22,7 @@ function CreateSlideVideo() {
   const startRecording = async () => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
-    const stream = canvas.captureStream(60);
+    const stream = canvas.captureStream(60); // 高FPSでなめらか
     const mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
 
     const chunks = [];
@@ -31,7 +32,6 @@ function CreateSlideVideo() {
     mediaRecorder.onstop = () => {
       setRecordedChunks(chunks);
       setIsRecording(false);
-
       const newHistory = [...history, images];
       setHistory(newHistory);
       localStorage.setItem('slideHistory', JSON.stringify(newHistory));
@@ -45,17 +45,24 @@ function CreateSlideVideo() {
       img.src = images[i];
 
       await new Promise((resolve) => {
-        img.onload = () => {
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        img.onload = async () => {
+          // フェードイン処理
+          for (let alpha = 0; alpha <= 1.0; alpha += 0.05) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.globalAlpha = alpha;
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-          // ✅ テキスト描画を追加
-          ctx.font = '28px sans-serif';
-          ctx.fillStyle = 'white';
-          ctx.textAlign = 'center';
-          ctx.fillText(`スライド ${i + 1}`, canvas.width / 2, 40); // 上部中央に表示
+            // タイトル描画
+            ctx.font = '48px sans-serif';
+            ctx.fillStyle = 'white';
+            ctx.textAlign = 'center';
+            ctx.globalAlpha = 1;
+            ctx.fillText(`${title} - スライド ${i + 1}`, canvas.width / 2, 80);
 
-          setTimeout(resolve, 1000); // 1秒間表示
+            await new Promise(r => setTimeout(r, 50)); // 50msごとに描画
+          }
+
+          setTimeout(resolve, 1000); // 1秒表示
         };
       });
     }
@@ -77,6 +84,7 @@ function CreateSlideVideo() {
   const resetSlides = () => {
     setImages([]);
     setRecordedChunks([]);
+    setTitle('');
   };
 
   const loadFromHistory = (index) => {
@@ -88,10 +96,26 @@ function CreateSlideVideo() {
     <div style={{ padding: '20px' }}>
       <h2>🎞️ スライドショー動画作成</h2>
 
+      <input
+        type="text"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        placeholder="スライドタイトルを入力"
+        style={{ width: '300px', fontSize: '16px', marginBottom: '10px' }}
+      />
+      <br />
+
       <input type="file" accept="image/*" multiple onChange={handleFiles} />
       <br /><br />
-      <canvas ref={canvasRef} width={1920} height={1080} style={{ border: '1px solid #ccc' }} />
+
+      <canvas
+        ref={canvasRef}
+        width={1920}
+        height={1080}
+        style={{ border: '1px solid #ccc', maxWidth: '100%' }}
+      />
       <br /><br />
+
       <button onClick={startRecording} disabled={!images.length || isRecording}>
         🎥 録画スタート
       </button>
