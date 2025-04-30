@@ -7,7 +7,6 @@ function CreateSlideVideo() {
   const [isRecording, setIsRecording] = useState(false);
   const [history, setHistory] = useState([]);
 
-  // 初期ロード時に履歴を読み込み
   useEffect(() => {
     const savedHistory = JSON.parse(localStorage.getItem('slideHistory')) || [];
     setHistory(savedHistory);
@@ -22,7 +21,7 @@ function CreateSlideVideo() {
   const startRecording = async () => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
-    const stream = canvas.captureStream(60); // 30FPS
+    const stream = canvas.captureStream(60);
     const mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
 
     const chunks = [];
@@ -33,7 +32,6 @@ function CreateSlideVideo() {
       setRecordedChunks(chunks);
       setIsRecording(false);
 
-      // ✅ 録画完了後に履歴に保存
       const newHistory = [...history, images];
       setHistory(newHistory);
       localStorage.setItem('slideHistory', JSON.stringify(newHistory));
@@ -45,10 +43,18 @@ function CreateSlideVideo() {
     for (let i = 0; i < images.length; i++) {
       const img = new Image();
       img.src = images[i];
+
       await new Promise((resolve) => {
         img.onload = () => {
           ctx.clearRect(0, 0, canvas.width, canvas.height);
           ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+          // ✅ テキスト描画を追加
+          ctx.font = '28px sans-serif';
+          ctx.fillStyle = 'white';
+          ctx.textAlign = 'center';
+          ctx.fillText(`スライド ${i + 1}`, canvas.width / 2, 40); // 上部中央に表示
+
           setTimeout(resolve, 1000); // 1秒間表示
         };
       });
