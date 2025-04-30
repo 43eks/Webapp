@@ -7,9 +7,7 @@ function CreateSlideVideo() {
   const [isRecording, setIsRecording] = useState(false);
   const [history, setHistory] = useState([]);
   const [title, setTitle] = useState('');
-
-  // レイアウト：画像ごとにx, y, width, heightを設定
-  const [layout, setLayout] = useState([]);
+  const [layout, setLayout] = useState([]); // 各画像の位置とサイズを記録
 
   useEffect(() => {
     const savedHistory = JSON.parse(localStorage.getItem('slideHistory')) || [];
@@ -21,7 +19,6 @@ function CreateSlideVideo() {
     const urls = files.map(file => URL.createObjectURL(file));
     setImages(urls);
 
-    // デフォルトレイアウトを生成（2列並びに例示）
     const defaultLayout = urls.map((src, i) => ({
       src,
       x: (i % 2) * 960,
@@ -30,6 +27,14 @@ function CreateSlideVideo() {
       height: 540
     }));
     setLayout(defaultLayout);
+  };
+
+  const updateLayout = (index, key, value) => {
+    setLayout(prev =>
+      prev.map((item, i) =>
+        i === index ? { ...item, [key]: value } : item
+      )
+    );
   };
 
   const startRecording = async () => {
@@ -53,7 +58,6 @@ function CreateSlideVideo() {
     mediaRecorder.start();
     setIsRecording(true);
 
-    // 単一スライド（すべての画像を1ページに合成）
     const loadedImages = await Promise.all(layout.map(({ src }) => {
       return new Promise(resolve => {
         const img = new Image();
@@ -62,7 +66,6 @@ function CreateSlideVideo() {
       });
     }));
 
-    // フェードイン
     for (let alpha = 0; alpha <= 1.0; alpha += 0.05) {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.globalAlpha = alpha;
@@ -74,7 +77,6 @@ function CreateSlideVideo() {
         }
       }
 
-      // タイトル描画
       ctx.globalAlpha = 1;
       ctx.font = '48px sans-serif';
       ctx.fillStyle = 'white';
@@ -84,7 +86,7 @@ function CreateSlideVideo() {
       await new Promise(r => setTimeout(r, 50));
     }
 
-    await new Promise(r => setTimeout(r, 1000)); // 1秒表示
+    await new Promise(r => setTimeout(r, 1000));
     mediaRecorder.stop();
   };
 
@@ -134,6 +136,7 @@ function CreateSlideVideo() {
       <br />
       <input type="file" accept="image/*" multiple onChange={handleFiles} />
       <br /><br />
+
       <canvas
         ref={canvasRef}
         width={1920}
@@ -141,6 +144,7 @@ function CreateSlideVideo() {
         style={{ border: '1px solid #ccc', maxWidth: '100%' }}
       />
       <br /><br />
+
       <button onClick={startRecording} disabled={!images.length || isRecording}>
         🎥 録画スタート
       </button>
@@ -150,6 +154,45 @@ function CreateSlideVideo() {
       <button onClick={resetSlides} style={{ marginLeft: '10px' }}>
         ♻️ リセット
       </button>
+
+      <h3>🛠 画像の配置を編集</h3>
+      {layout.map((item, index) => (
+        <div key={index} style={{ marginBottom: '10px' }}>
+          <strong>画像 {index + 1}</strong><br />
+          <label>
+            X: <input
+              type="number"
+              value={item.x}
+              onChange={(e) => updateLayout(index, 'x', parseInt(e.target.value))}
+              style={{ width: '60px' }}
+            />
+          </label>
+          <label style={{ marginLeft: '10px' }}>
+            Y: <input
+              type="number"
+              value={item.y}
+              onChange={(e) => updateLayout(index, 'y', parseInt(e.target.value))}
+              style={{ width: '60px' }}
+            />
+          </label>
+          <label style={{ marginLeft: '10px' }}>
+            幅: <input
+              type="number"
+              value={item.width}
+              onChange={(e) => updateLayout(index, 'width', parseInt(e.target.value))}
+              style={{ width: '60px' }}
+            />
+          </label>
+          <label style={{ marginLeft: '10px' }}>
+            高さ: <input
+              type="number"
+              value={item.height}
+              onChange={(e) => updateLayout(index, 'height', parseInt(e.target.value))}
+              style={{ width: '60px' }}
+            />
+          </label>
+        </div>
+      ))}
 
       <h3>🕑 過去の履歴から復元</h3>
       <ul>
