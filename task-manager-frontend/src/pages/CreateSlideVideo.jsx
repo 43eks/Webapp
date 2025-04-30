@@ -22,7 +22,7 @@ function CreateSlideVideo() {
   const startRecording = async () => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
-    const stream = canvas.captureStream(30); // 30FPS
+    const stream = canvas.captureStream(60); // 30FPS
     const mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
 
     const chunks = [];
