@@ -90,7 +90,7 @@ function CreateSlideVideo() {
 
       <input type="file" accept="image/*" multiple onChange={handleFiles} />
       <br /><br />
-      <canvas ref={canvasRef} width={640} height={480} style={{ border: '1px solid #ccc' }} />
+      <canvas ref={canvasRef} width={1920} height={1080} style={{ border: '1px solid #ccc' }} />
       <br /><br />
       <button onClick={startRecording} disabled={!images.length || isRecording}>
         🎥 録画スタート
