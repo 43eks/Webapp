@@ -7,7 +7,7 @@ function CreateSlideVideo() {
   const [isRecording, setIsRecording] = useState(false);
   const [history, setHistory] = useState([]);
   const [title, setTitle] = useState('');
-  const [layout, setLayout] = useState([]); // 各画像の位置とサイズを記録
+  const [layout, setLayout] = useState([]);
 
   useEffect(() => {
     const savedHistory = JSON.parse(localStorage.getItem('slideHistory')) || [];
@@ -35,6 +35,14 @@ function CreateSlideVideo() {
         i === index ? { ...item, [key]: value } : item
       )
     );
+  };
+
+  const chunkArray = (array, size) => {
+    const chunks = [];
+    for (let i = 0; i < array.length; i += size) {
+      chunks.push(array.slice(i, i + size));
+    }
+    return chunks;
   };
 
   const startRecording = async () => {
@@ -66,27 +74,35 @@ function CreateSlideVideo() {
       });
     }));
 
-    for (let alpha = 0; alpha <= 1.0; alpha += 0.05) {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.globalAlpha = alpha;
+    const slides = chunkArray(layout, 4);
 
-      for (const item of layout) {
-        const loaded = loadedImages.find(l => l.src === item.src);
-        if (loaded) {
-          ctx.drawImage(loaded.img, item.x, item.y, item.width, item.height);
+    for (let slideIndex = 0; slideIndex < slides.length; slideIndex++) {
+      const currentSlide = slides[slideIndex];
+
+      // フェードイン
+      for (let alpha = 0; alpha <= 1.0; alpha += 0.05) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.globalAlpha = alpha;
+
+        for (const item of currentSlide) {
+          const loaded = loadedImages.find(l => l.src === item.src);
+          if (loaded) {
+            ctx.drawImage(loaded.img, item.x, item.y, item.width, item.height);
+          }
         }
+
+        ctx.globalAlpha = 1;
+        ctx.font = '48px sans-serif';
+        ctx.fillStyle = 'white';
+        ctx.textAlign = 'center';
+        ctx.fillText(`${title || 'マイライフスライド'} - スライド${slideIndex + 1}`, canvas.width / 2, 80);
+
+        await new Promise(r => setTimeout(r, 50));
       }
 
-      ctx.globalAlpha = 1;
-      ctx.font = '48px sans-serif';
-      ctx.fillStyle = 'white';
-      ctx.textAlign = 'center';
-      ctx.fillText(title || 'マイライフスライド', canvas.width / 2, 80);
-
-      await new Promise(r => setTimeout(r, 50));
+      await new Promise(r => setTimeout(r, 2000));
     }
 
-    await new Promise(r => setTimeout(r, 1000));
     mediaRecorder.stop();
   };
 
