@@ -6,7 +6,7 @@ function CreateSlideVideo() {
   const [recordedChunks, setRecordedChunks] = useState([]);
   const [isRecording, setIsRecording] = useState(false);
   const [history, setHistory] = useState([]);
-  const [title, setTitle] = useState([]);
+  const [title, setTitle] = useState('');
 
   useEffect(() => {
     const savedHistory = JSON.parse(localStorage.getItem('slideHistory')) || [];
@@ -70,16 +70,28 @@ function CreateSlideVideo() {
         currentSlide.forEach((item, i) => {
           const { img } = item;
 
-          // 中央配置の計算（2列×2行）
+          // セルごとの領域（2列×2行）
           const col = i % 2;
           const row = Math.floor(i / 2);
-          const centerX = (canvas.width / 2) * (col * 2 + 1) / 2;
-          const centerY = (canvas.height / 2) * (row * 2 + 1) / 2;
+          const cellWidth = canvas.width / 2;
+          const cellHeight = canvas.height / 2;
+          const cellX = col * cellWidth;
+          const cellY = row * cellHeight;
 
-          const x = centerX - img.width / 2;
-          const y = centerY - img.height / 2;
+          // アスペクト比を保って縮小（拡大はしない）
+          const scale = Math.min(
+            1,
+            cellWidth / img.width,
+            cellHeight / img.height
+          );
 
-          ctx.drawImage(img, x, y);
+          const drawWidth = img.width * scale;
+          const drawHeight = img.height * scale;
+
+          const drawX = cellX + (cellWidth - drawWidth) / 2;
+          const drawY = cellY + (cellHeight - drawHeight) / 2;
+
+          ctx.drawImage(img, drawX, drawY, drawWidth, drawHeight);
         });
 
         ctx.globalAlpha = 1;
@@ -122,7 +134,7 @@ function CreateSlideVideo() {
 
   return (
     <div style={{ padding: '20px' }}>
-      <h2>🎞️ 元サイズ配置スライドショー作成</h2>
+      <h2>🎞️ スライドショー動画（元画像サイズ調整）</h2>
 
       <input
         type="text"
