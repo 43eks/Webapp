@@ -18,7 +18,7 @@ function CreateSlideVideo() {
     const files = Array.from(e.target.files);
     const urls = files.map(file => URL.createObjectURL(file));
     setImages(urls);
-    setCaptions(urls.map(() => '')); // 各画像に空のキャプションを用意
+    setCaptions(urls.map(() => ''));
   };
 
   const updateCaption = (index, text) => {
@@ -51,15 +51,20 @@ function CreateSlideVideo() {
     for (let i = 0; i < images.length; i++) {
       const img = new Image();
       img.src = images[i];
+
       await new Promise(resolve => {
         img.onload = async () => {
           const duration = 2000;
           const steps = 30;
+
+          const imgX = (canvas.width - img.width) / 2;
+          const imgY = (canvas.height - img.height) / 2;
+
           for (let step = 0; step <= steps; step++) {
             const offset = canvas.width - (canvas.width * step) / steps;
 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.drawImage(img, offset, 0, img.width, img.height);
+            ctx.drawImage(img, imgX + offset, imgY, img.width, img.height);
 
             // タイトル
             ctx.font = '48px sans-serif';
@@ -74,7 +79,17 @@ function CreateSlideVideo() {
             await new Promise(r => setTimeout(r, duration / steps));
           }
 
-          // 2秒静止
+          // 2秒表示
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(img, imgX, imgY, img.width, img.height);
+
+          ctx.font = '48px sans-serif';
+          ctx.fillStyle = 'white';
+          ctx.textAlign = 'center';
+          ctx.fillText(title, canvas.width / 2, 60);
+          ctx.font = '32px sans-serif';
+          ctx.fillText(captions[i], canvas.width / 2, canvas.height - 60);
+
           await new Promise(r => setTimeout(r, 1000));
           resolve();
         };
@@ -104,7 +119,7 @@ function CreateSlideVideo() {
 
   return (
     <div style={{ padding: '20px' }}>
-      <h2>🎞️ スライドショー（スライド式 + キャプション）</h2>
+      <h2>🎞️ スライドショー（元サイズ＋スライド式）</h2>
 
       <input
         type="text"
