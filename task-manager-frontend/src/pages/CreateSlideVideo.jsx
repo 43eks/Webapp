@@ -7,7 +7,6 @@ function CreateSlideVideo() {
   const [isRecording, setIsRecording] = useState(false);
   const [history, setHistory] = useState([]);
   const [title, setTitle] = useState('');
-  const [layout, setLayout] = useState([]);
 
   useEffect(() => {
     const savedHistory = JSON.parse(localStorage.getItem('slideHistory')) || [];
@@ -18,24 +17,6 @@ function CreateSlideVideo() {
     const files = Array.from(e.target.files);
     const urls = files.map(file => URL.createObjectURL(file));
     setImages(urls);
-
-    const defaultLayout = urls.map((src, i) => ({
-      id: src,
-      src,
-      x: (i % 2) * 960,
-      y: Math.floor(i / 2) % 2 * 540,
-      width: 960,
-      height: 540
-    }));
-    setLayout(defaultLayout);
-  };
-
-  const updateLayout = (index, key, value) => {
-    setLayout(prev =>
-      prev.map((item, i) =>
-        i === index ? { ...item, [key]: value } : item
-      )
-    );
   };
 
   const chunkArray = (array, size) => {
@@ -67,35 +48,31 @@ function CreateSlideVideo() {
     mediaRecorder.start();
     setIsRecording(true);
 
-    // 画像の読み込み
-    const imageMap = {};
-    await Promise.all(layout.map(({ src }) =>
+    // 元サイズで画像を読み込む
+    const loadedImages = await Promise.all(images.map(src =>
       new Promise(resolve => {
         const img = new Image();
         img.src = src;
-        img.onload = () => {
-          imageMap[src] = img;
-          resolve();
-        };
+        img.onload = () => resolve({ src, img, width: img.width, height: img.height });
       })
     ));
 
-    const slides = chunkArray(layout, 4);
+    const slides = chunkArray(loadedImages, 4);
 
     for (let slideIndex = 0; slideIndex < slides.length; slideIndex++) {
-      const currentSlide = slides[slideIndex];
+      const slide = slides[slideIndex];
 
-      // フェードイン
+      // 自動配置（2列 × 2行中央揃え）
+      const positions = calculateAutoLayout(slide, canvas.width, canvas.height);
+
       for (let alpha = 0; alpha <= 1.0; alpha += 0.05) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.globalAlpha = alpha;
 
-        for (const item of currentSlide) {
-          const img = imageMap[item.src];
-          if (img) {
-            ctx.drawImage(img, item.x, item.y, item.width, item.height);
-          }
-        }
+        slide.forEach((item, i) => {
+          const { x, y } = positions[i];
+          ctx.drawImage(item.img, x, y, item.width, item.height);
+        });
 
         ctx.globalAlpha = 1;
         ctx.font = '48px sans-serif';
@@ -106,10 +83,38 @@ function CreateSlideVideo() {
         await new Promise(r => setTimeout(r, 50));
       }
 
-      await new Promise(r => setTimeout(r, 2000)); // 各スライド2秒表示
+      await new Promise(r => setTimeout(r, 2000));
     }
 
     mediaRecorder.stop();
+  };
+
+  // 自動レイアウト（最大4枚・中央配置）
+  const calculateAutoLayout = (images, canvasWidth, canvasHeight) => {
+    const positions = [];
+
+    const cols = 2;
+    const rows = 2;
+    const margin = 20;
+
+    const maxW = Math.max(...images.map(i => i.width));
+    const maxH = Math.max(...images.map(i => i.height));
+
+    const totalW = cols * maxW + (cols - 1) * margin;
+    const totalH = rows * maxH + (rows - 1) * margin;
+
+    const startX = (canvasWidth - totalW) / 2;
+    const startY = (canvasHeight - totalH) / 2;
+
+    for (let i = 0; i < images.length; i++) {
+      const col = i % cols;
+      const row = Math.floor(i / cols);
+      const x = startX + col * (maxW + margin);
+      const y = startY + row * (maxH + margin);
+      positions.push({ x, y });
+    }
+
+    return positions;
   };
 
   const downloadVideo = () => {
@@ -126,7 +131,6 @@ function CreateSlideVideo() {
   const resetSlides = () => {
     setImages([]);
     setRecordedChunks([]);
-    setLayout([]);
     setTitle('');
   };
 
@@ -134,19 +138,11 @@ function CreateSlideVideo() {
     const historySet = history[index];
     setImages(historySet);
     setRecordedChunks([]);
-    const defaultLayout = historySet.map((src, i) => ({
-      src,
-      x: (i % 2) * 960,
-      y: Math.floor(i / 2) % 2 * 540,
-      width: 960,
-      height: 540
-    }));
-    setLayout(defaultLayout);
   };
 
   return (
     <div style={{ padding: '20px' }}>
-      <h2>🎞️ 自由配置スライドショー動画作成</h2>
+      <h2>🎞️ 元サイズ維持スライドショー動画</h2>
 
       <input
         type="text"
@@ -176,45 +172,6 @@ function CreateSlideVideo() {
       <button onClick={resetSlides} style={{ marginLeft: '10px' }}>
         ♻️ リセット
       </button>
-
-      <h3>🛠 画像の配置を編集</h3>
-      {layout.map((item, index) => (
-        <div key={index} style={{ marginBottom: '10px' }}>
-          <strong>画像 {index + 1}</strong><br />
-          <label>
-            X: <input
-              type="number"
-              value={item.x}
-              onChange={(e) => updateLayout(index, 'x', parseInt(e.target.value))}
-              style={{ width: '60px' }}
-            />
-          </label>
-          <label style={{ marginLeft: '10px' }}>
-            Y: <input
-              type="number"
-              value={item.y}
-              onChange={(e) => updateLayout(index, 'y', parseInt(e.target.value))}
-              style={{ width: '60px' }}
-            />
-          </label>
-          <label style={{ marginLeft: '10px' }}>
-            幅: <input
-              type="number"
-              value={item.width}
-              onChange={(e) => updateLayout(index, 'width', parseInt(e.target.value))}
-              style={{ width: '60px' }}
-            />
-          </label>
-          <label style={{ marginLeft: '10px' }}>
-            高さ: <input
-              type="number"
-              value={item.height}
-              onChange={(e) => updateLayout(index, 'height', parseInt(e.target.value))}
-              style={{ width: '60px' }}
-            />
-          </label>
-        </div>
-      ))}
 
       <h3>🕑 過去の履歴から復元</h3>
       <ul>
