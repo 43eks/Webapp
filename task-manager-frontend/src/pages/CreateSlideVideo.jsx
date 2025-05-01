@@ -3,6 +3,7 @@ import React, { useRef, useState, useEffect } from 'react';
 function CreateSlideVideo() {
   const canvasRef = useRef(null);
   const [images, setImages] = useState([]);
+  const [captions, setCaptions] = useState([]);
   const [recordedChunks, setRecordedChunks] = useState([]);
   const [isRecording, setIsRecording] = useState(false);
   const [history, setHistory] = useState([]);
@@ -17,14 +18,13 @@ function CreateSlideVideo() {
     const files = Array.from(e.target.files);
     const urls = files.map(file => URL.createObjectURL(file));
     setImages(urls);
+    setCaptions(urls.map(() => '')); // 各画像に空のキャプションを用意
   };
 
-  const chunkArray = (array, size) => {
-    const chunks = [];
-    for (let i = 0; i < array.length; i += size) {
-      chunks.push(array.slice(i, i + size));
-    }
-    return chunks;
+  const updateCaption = (index, text) => {
+    setCaptions(prev =>
+      prev.map((cap, i) => (i === index ? text : cap))
+    );
   };
 
   const startRecording = async () => {
@@ -48,62 +48,37 @@ function CreateSlideVideo() {
     mediaRecorder.start();
     setIsRecording(true);
 
-    // 画像読み込み
-    const loadedImages = await Promise.all(images.map(src => {
-      return new Promise(resolve => {
-        const img = new Image();
-        img.src = src;
-        img.onload = () => resolve({ src, img });
+    for (let i = 0; i < images.length; i++) {
+      const img = new Image();
+      img.src = images[i];
+      await new Promise(resolve => {
+        img.onload = async () => {
+          const duration = 2000;
+          const steps = 30;
+          for (let step = 0; step <= steps; step++) {
+            const offset = canvas.width - (canvas.width * step) / steps;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, offset, 0, img.width, img.height);
+
+            // タイトル
+            ctx.font = '48px sans-serif';
+            ctx.fillStyle = 'white';
+            ctx.textAlign = 'center';
+            ctx.fillText(title, canvas.width / 2, 60);
+
+            // キャプション
+            ctx.font = '32px sans-serif';
+            ctx.fillText(captions[i], canvas.width / 2, canvas.height - 60);
+
+            await new Promise(r => setTimeout(r, duration / steps));
+          }
+
+          // 2秒静止
+          await new Promise(r => setTimeout(r, 1000));
+          resolve();
+        };
       });
-    }));
-
-    const slides = chunkArray(loadedImages, 4);
-
-    for (let slideIndex = 0; slideIndex < slides.length; slideIndex++) {
-      const currentSlide = slides[slideIndex];
-
-      // フェードイン
-      for (let alpha = 0; alpha <= 1.0; alpha += 0.05) {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.globalAlpha = alpha;
-
-        currentSlide.forEach((item, i) => {
-          const { img } = item;
-
-          // セルごとの領域（2列×2行）
-          const col = i % 2;
-          const row = Math.floor(i / 2);
-          const cellWidth = canvas.width / 2;
-          const cellHeight = canvas.height / 2;
-          const cellX = col * cellWidth;
-          const cellY = row * cellHeight;
-
-          // アスペクト比を保って縮小（拡大はしない）
-          const scale = Math.min(
-            1,
-            cellWidth / img.width,
-            cellHeight / img.height
-          );
-
-          const drawWidth = img.width * scale;
-          const drawHeight = img.height * scale;
-
-          const drawX = cellX + (cellWidth - drawWidth) / 2;
-          const drawY = cellY + (cellHeight - drawHeight) / 2;
-
-          ctx.drawImage(img, drawX, drawY, drawWidth, drawHeight);
-        });
-
-        ctx.globalAlpha = 1;
-        ctx.font = '48px sans-serif';
-        ctx.fillStyle = 'white';
-        ctx.textAlign = 'center';
-        ctx.fillText(`${title || 'マイライフスライド'} - スライド${slideIndex + 1}`, canvas.width / 2, 80);
-
-        await new Promise(r => setTimeout(r, 50));
-      }
-
-      await new Promise(r => setTimeout(r, 2000));
     }
 
     mediaRecorder.stop();
@@ -122,35 +97,42 @@ function CreateSlideVideo() {
 
   const resetSlides = () => {
     setImages([]);
+    setCaptions([]);
     setRecordedChunks([]);
     setTitle('');
   };
 
-  const loadFromHistory = (index) => {
-    const historySet = history[index];
-    setImages(historySet);
-    setRecordedChunks([]);
-  };
-
   return (
     <div style={{ padding: '20px' }}>
-      <h2>🎞️ スライドショー動画（元画像サイズ調整）</h2>
+      <h2>🎞️ スライドショー（スライド式 + キャプション）</h2>
 
       <input
         type="text"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         placeholder="タイトルを入力"
-        style={{ width: '300px', fontSize: '16px', marginBottom: '10px' }}
+        style={{ width: '300px', fontSize: '16px' }}
       />
-      <br />
+      <br /><br />
       <input type="file" accept="image/*" multiple onChange={handleFiles} />
       <br /><br />
 
+      {images.map((img, index) => (
+        <div key={img} style={{ marginBottom: '10px' }}>
+          <strong>画像 {index + 1} キャプション：</strong><br />
+          <input
+            type="text"
+            value={captions[index]}
+            onChange={(e) => updateCaption(index, e.target.value)}
+            style={{ width: '400px' }}
+          />
+        </div>
+      ))}
+
       <canvas
         ref={canvasRef}
-        width={1920}
-        height={1080}
+        width={1280}
+        height={720}
         style={{ border: '1px solid #ccc', maxWidth: '100%' }}
       />
       <br /><br />
@@ -159,22 +141,11 @@ function CreateSlideVideo() {
         🎥 録画スタート
       </button>
       <button onClick={downloadVideo} disabled={!recordedChunks.length}>
-        💾 動画保存
+        💾 ダウンロード
       </button>
       <button onClick={resetSlides} style={{ marginLeft: '10px' }}>
         ♻️ リセット
       </button>
-
-      <h3>🕑 過去の履歴から復元</h3>
-      <ul>
-        {history.map((h, index) => (
-          <li key={index}>
-            <button onClick={() => loadFromHistory(index)}>
-              {`履歴 ${index + 1} を読み込む`}
-            </button>
-          </li>
-        ))}
-      </ul>
     </div>
   );
 }
