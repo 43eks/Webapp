@@ -6,7 +6,7 @@ function CreateSlideVideo() {
   const [recordedChunks, setRecordedChunks] = useState([]);
   const [isRecording, setIsRecording] = useState(false);
   const [history, setHistory] = useState([]);
-  const [title, setTitle] = useState('');
+  const [title, setTitle] = useState([]);
 
   useEffect(() => {
     const savedHistory = JSON.parse(localStorage.getItem('slideHistory')) || [];
@@ -48,30 +48,38 @@ function CreateSlideVideo() {
     mediaRecorder.start();
     setIsRecording(true);
 
-    // 元サイズで画像を読み込む
-    const loadedImages = await Promise.all(images.map(src =>
-      new Promise(resolve => {
+    // 画像読み込み
+    const loadedImages = await Promise.all(images.map(src => {
+      return new Promise(resolve => {
         const img = new Image();
         img.src = src;
-        img.onload = () => resolve({ src, img, width: img.width, height: img.height });
-      })
-    ));
+        img.onload = () => resolve({ src, img });
+      });
+    }));
 
     const slides = chunkArray(loadedImages, 4);
 
     for (let slideIndex = 0; slideIndex < slides.length; slideIndex++) {
-      const slide = slides[slideIndex];
+      const currentSlide = slides[slideIndex];
 
-      // 自動配置（2列 × 2行中央揃え）
-      const positions = calculateAutoLayout(slide, canvas.width, canvas.height);
-
+      // フェードイン
       for (let alpha = 0; alpha <= 1.0; alpha += 0.05) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.globalAlpha = alpha;
 
-        slide.forEach((item, i) => {
-          const { x, y } = positions[i];
-          ctx.drawImage(item.img, x, y, item.width, item.height);
+        currentSlide.forEach((item, i) => {
+          const { img } = item;
+
+          // 中央配置の計算（2列×2行）
+          const col = i % 2;
+          const row = Math.floor(i / 2);
+          const centerX = (canvas.width / 2) * (col * 2 + 1) / 2;
+          const centerY = (canvas.height / 2) * (row * 2 + 1) / 2;
+
+          const x = centerX - img.width / 2;
+          const y = centerY - img.height / 2;
+
+          ctx.drawImage(img, x, y);
         });
 
         ctx.globalAlpha = 1;
@@ -87,34 +95,6 @@ function CreateSlideVideo() {
     }
 
     mediaRecorder.stop();
-  };
-
-  // 自動レイアウト（最大4枚・中央配置）
-  const calculateAutoLayout = (images, canvasWidth, canvasHeight) => {
-    const positions = [];
-
-    const cols = 2;
-    const rows = 2;
-    const margin = 20;
-
-    const maxW = Math.max(...images.map(i => i.width));
-    const maxH = Math.max(...images.map(i => i.height));
-
-    const totalW = cols * maxW + (cols - 1) * margin;
-    const totalH = rows * maxH + (rows - 1) * margin;
-
-    const startX = (canvasWidth - totalW) / 2;
-    const startY = (canvasHeight - totalH) / 2;
-
-    for (let i = 0; i < images.length; i++) {
-      const col = i % cols;
-      const row = Math.floor(i / cols);
-      const x = startX + col * (maxW + margin);
-      const y = startY + row * (maxH + margin);
-      positions.push({ x, y });
-    }
-
-    return positions;
   };
 
   const downloadVideo = () => {
@@ -142,7 +122,7 @@ function CreateSlideVideo() {
 
   return (
     <div style={{ padding: '20px' }}>
-      <h2>🎞️ 元サイズ維持スライドショー動画</h2>
+      <h2>🎞️ 元サイズ配置スライドショー作成</h2>
 
       <input
         type="text"
