@@ -66,11 +66,12 @@ function CreateSlideVideo() {
     mediaRecorder.start();
     setIsRecording(true);
 
+    // 画像読み込み
     const loadedImages = await Promise.all(layout.map(({ src }) => {
       return new Promise(resolve => {
         const img = new Image();
         img.src = src;
-        img.onload = () => resolve({ src, img });
+        img.onload = () => resolve(img);
       });
     }));
 
@@ -85,9 +86,10 @@ function CreateSlideVideo() {
         ctx.globalAlpha = alpha;
 
         for (const item of currentSlide) {
-          const loaded = loadedImages.find(l => l.src === item.src);
-          if (loaded) {
-            ctx.drawImage(loaded.img, item.x, item.y, item.width, item.height);
+          const index = layout.findIndex(l => l.src === item.src);
+          const img = loadedImages[index];
+          if (img) {
+            ctx.drawImage(img, item.x, item.y, item.width, item.height);
           }
         }
 
@@ -100,7 +102,7 @@ function CreateSlideVideo() {
         await new Promise(r => setTimeout(r, 50));
       }
 
-      await new Promise(r => setTimeout(r, 2000));
+      await new Promise(r => setTimeout(r, 2000)); // 2秒表示
     }
 
     mediaRecorder.stop();
