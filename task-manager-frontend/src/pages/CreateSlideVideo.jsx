@@ -20,9 +20,10 @@ function CreateSlideVideo() {
     setImages(urls);
 
     const defaultLayout = urls.map((src, i) => ({
+      id: src,
       src,
       x: (i % 2) * 960,
-      y: Math.floor(i / 2) * 540,
+      y: Math.floor(i / 2) % 2 * 540,
       width: 960,
       height: 540
     }));
@@ -66,14 +67,18 @@ function CreateSlideVideo() {
     mediaRecorder.start();
     setIsRecording(true);
 
-    // 画像読み込み
-    const loadedImages = await Promise.all(layout.map(({ src }) => {
-      return new Promise(resolve => {
+    // 画像の読み込み
+    const imageMap = {};
+    await Promise.all(layout.map(({ src }) =>
+      new Promise(resolve => {
         const img = new Image();
         img.src = src;
-        img.onload = () => resolve(img);
-      });
-    }));
+        img.onload = () => {
+          imageMap[src] = img;
+          resolve();
+        };
+      })
+    ));
 
     const slides = chunkArray(layout, 4);
 
@@ -86,8 +91,7 @@ function CreateSlideVideo() {
         ctx.globalAlpha = alpha;
 
         for (const item of currentSlide) {
-          const index = layout.findIndex(l => l.src === item.src);
-          const img = loadedImages[index];
+          const img = imageMap[item.src];
           if (img) {
             ctx.drawImage(img, item.x, item.y, item.width, item.height);
           }
@@ -102,7 +106,7 @@ function CreateSlideVideo() {
         await new Promise(r => setTimeout(r, 50));
       }
 
-      await new Promise(r => setTimeout(r, 2000)); // 2秒表示
+      await new Promise(r => setTimeout(r, 2000)); // 各スライド2秒表示
     }
 
     mediaRecorder.stop();
@@ -133,7 +137,7 @@ function CreateSlideVideo() {
     const defaultLayout = historySet.map((src, i) => ({
       src,
       x: (i % 2) * 960,
-      y: Math.floor(i / 2) * 540,
+      y: Math.floor(i / 2) % 2 * 540,
       width: 960,
       height: 540
     }));
