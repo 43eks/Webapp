@@ -18,7 +18,10 @@ import MonthlyView from './pages/MonthlyView';            // 月間ビュー
 
 import GoalPage from './pages/GoalPage';                  // 🎯 ゴール一覧
 import GoalForm from './pages/GoalForm';                  // ➕ ゴール作成
-import CreateSlideVideo from './pages/CreateSlideVideo';  // 🎞️ スライド動画作成 ← ✅ 追加！
+
+import CreateSlideVideo from './pages/CreateSlideVideo';  // 🎞️ スライド動画作成
+
+import CharacterUpload from './pages/CharacterUpload';    // 🧍 キャラクターアップロード ← ✅ 追加
 
 // ✅ 共通APIエンドポイント
 export const API_BASE_URL = 'http://localhost:8080';
@@ -33,7 +36,8 @@ function App() {
         <Link to="/knowledges" style={navLinkStyle}>📚 ナレッジ</Link>{' '}
         <Link to="/habits" style={navLinkStyle}>📅 習慣</Link>{' '}
         <Link to="/goals" style={navLinkStyle}>🎯 ゴール</Link>{' '}
-        <Link to="/slides/create" style={navLinkStyle}>🎞️ スライド作成</Link> {/* ← ✅ ナビゲーションに追加 */}
+        <Link to="/slides/create" style={navLinkStyle}>🎞️ スライド作成</Link>{' '}
+        <Link to="/character" style={navLinkStyle}>🧍 キャラクター</Link> {/* ← ✅ ナビゲーションに追加 */}
       </div>
 
       {/* ページルーティング */}
@@ -62,7 +66,10 @@ function App() {
           <Route path="/goals/new" element={<GoalForm />} />
 
           {/* 🎞️ スライド動画作成機能 */}
-          <Route path="/slides/create" element={<CreateSlideVideo />} /> {/* ← ✅ 追加 */}
+          <Route path="/slides/create" element={<CreateSlideVideo />} />
+
+          {/* 🧍 キャラクター画像アップロード */}
+          <Route path="/character" element={<CharacterUpload />} /> {/* ← ✅ 追加 */}
         </Routes>
       </div>
     </Router>
