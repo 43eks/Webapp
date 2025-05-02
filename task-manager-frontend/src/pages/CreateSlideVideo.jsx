@@ -57,14 +57,18 @@ function CreateSlideVideo() {
           const duration = 2000;
           const steps = 30;
 
-          const imgX = (canvas.width - img.width) / 2;
-          const imgY = (canvas.height - img.height) / 2;
+          // リサイズ比率計算
+          const scale = Math.min(canvas.width / img.width, canvas.height / img.height, 1);
+          const displayWidth = img.width * scale;
+          const displayHeight = img.height * scale;
+          const imgX = (canvas.width - displayWidth) / 2;
+          const imgY = (canvas.height - displayHeight) / 2;
 
           for (let step = 0; step <= steps; step++) {
             const offset = canvas.width - (canvas.width * step) / steps;
 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.drawImage(img, imgX + offset, imgY, img.width, img.height);
+            ctx.drawImage(img, imgX + offset, imgY, displayWidth, displayHeight);
 
             // タイトル
             ctx.font = '48px sans-serif';
@@ -79,9 +83,9 @@ function CreateSlideVideo() {
             await new Promise(r => setTimeout(r, duration / steps));
           }
 
-          // 2秒表示
+          // 1秒静止表示
           ctx.clearRect(0, 0, canvas.width, canvas.height);
-          ctx.drawImage(img, imgX, imgY, img.width, img.height);
+          ctx.drawImage(img, imgX, imgY, displayWidth, displayHeight);
 
           ctx.font = '48px sans-serif';
           ctx.fillStyle = 'white';
@@ -119,7 +123,7 @@ function CreateSlideVideo() {
 
   return (
     <div style={{ padding: '20px' }}>
-      <h2>🎞️ スライドショー（元サイズ＋スライド式）</h2>
+      <h2>🎞️ スライドショー（比率維持＋中央配置）</h2>
 
       <input
         type="text"
