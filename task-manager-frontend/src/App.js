@@ -19,7 +19,7 @@ import MonthlyView from './pages/MonthlyView';            // 月間ビュー
 import GoalPage from './pages/GoalPage';                  // 🎯 ゴール一覧
 import GoalForm from './pages/GoalForm';                  // ➕ ゴール作成
 
-import CreateSlideVideo from './pages/CreateSlideVideo';  // 🎞️ スライド動画作成
+import SlideVideoPage from './pages/SlideVideoPage';      // 🎞️ スライド動画作成ページ（画像＋BGM付き）
 
 import CharacterUpload from './pages/CharacterUpload';    // 🧍 キャラクターアップロード ← ✅ 追加
 
@@ -66,7 +66,7 @@ function App() {
           <Route path="/goals/new" element={<GoalForm />} />
 
           {/* 🎞️ スライド動画作成機能 */}
-          <Route path="/slides/create" element={<CreateSlideVideo />} />
+		  <Route path="/slides/create" element={<SlideVideoPage />} />
 
           {/* 🧍 キャラクター画像アップロード */}
           <Route path="/character" element={<CharacterUpload />} /> {/* ← ✅ 追加 */}
