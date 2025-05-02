@@ -1,25 +1,44 @@
-// server/index.js
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
 const fs = require('fs');
+const path = require('path');
+const multer = require('multer'); // ✅ 追加
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
+// ✅ 静的ファイル公開（アップロード画像用）
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// ✅ multer設定
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadPath = path.join(__dirname, 'uploads');
+    if (!fs.existsSync(uploadPath)) {
+      fs.mkdirSync(uploadPath);
+    }
+    cb(null, uploadPath);
+  },
+  filename: (req, file, cb) => {
+    const uniqueName = Date.now() + '_' + file.originalname;
+    cb(null, uniqueName);
+  }
+});
+const upload = multer({ storage });
+
 // データファイルのパス
 const DATA_FILE = './data.json';
 
-// 初期データ読み込み
-let db = { knowledge: [], tasks: [], habits: [], goals: [], history: [] }; // ✅ history追加
+let db = { knowledge: [], tasks: [], habits: [], goals: [], history: [] };
 try {
   if (fs.existsSync(DATA_FILE)) {
     const data = fs.readFileSync(DATA_FILE, 'utf-8');
     db = JSON.parse(data);
     db.goals = db.goals || [];
-    db.history = db.history || []; // ✅ 保険でhistoryも
+    db.history = db.history || [];
     console.log('✅ データファイル読み込み成功');
   } else {
     console.log('⚠️ データファイルが存在しないため、新規作成されます');
@@ -28,32 +47,26 @@ try {
   console.error('❌ データファイル読み込みエラー:', error);
 }
 
-// --- APIキー確認 ---
-if (!process.env.OPENAI_API_KEY) {
-  console.error('❌ エラー: OPENAI_API_KEY が設定されていません (.env を確認してください)');
-  process.exit(1);
-}
-console.log('✅ 環境変数 OPENAI_API_KEY 読み込み成功');
+// --- ✅ 画像アップロードAPI ---
+app.post('/upload', upload.single('image'), (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ error: 'ファイルがアップロードされていません' });
+  }
+  const imageUrl = `http://localhost:8080/uploads/${req.file.filename}`;
+  console.log('✅ 画像アップロード完了:', imageUrl);
+  res.json({ url: imageUrl });
+});
 
-// --- ルーティング ---
-
-// タスク一覧取得
+// --- タスク一覧取得
 app.get('/tasks', (req, res) => {
   res.json(db.tasks);
 });
 
-// タスク追加
+// --- タスク追加
 app.post('/tasks', (req, res) => {
   const newTask = req.body;
   db.tasks.push(newTask);
-
-  // ✅ 履歴に追加
-  db.history.push({
-    type: 'task',
-    action: 'create',
-    data: newTask,
-    timestamp: new Date().toISOString()
-  });
+  db.history.push({ type: 'task', action: 'create', data: newTask, timestamp: new Date().toISOString() });
 
   try {
     fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2));
@@ -65,12 +78,12 @@ app.post('/tasks', (req, res) => {
   }
 });
 
-// ナレッジ一覧取得
+// --- ナレッジ一覧取得
 app.get('/knowledge', (req, res) => {
   res.json(db.knowledge);
 });
 
-// ナレッジ追加
+// --- ナレッジ追加
 app.post('/knowledge', (req, res) => {
   const newKnowledge = req.body;
   db.knowledge.push(newKnowledge);
@@ -85,12 +98,12 @@ app.post('/knowledge', (req, res) => {
   }
 });
 
-// 習慣一覧取得
+// --- 習慣一覧取得
 app.get('/habits', (req, res) => {
   res.json(db.habits);
 });
 
-// 習慣追加
+// --- 習慣追加
 app.post('/habits', (req, res) => {
   const newHabit = req.body;
   db.habits.push(newHabit);
@@ -105,7 +118,7 @@ app.post('/habits', (req, res) => {
   }
 });
 
-// 習慣更新（PATCH）
+// --- 習慣更新（PATCH）
 app.patch('/habits/:id', (req, res) => {
   const habitId = req.params.id;
   const { done } = req.body;
@@ -127,25 +140,16 @@ app.patch('/habits/:id', (req, res) => {
   }
 });
 
-// --- ゴール管理API ---
-
-// ゴール一覧取得
+// --- ゴール一覧取得
 app.get('/goals', (req, res) => {
   res.json(db.goals);
 });
 
-// ゴール追加
+// --- ゴール追加
 app.post('/goals', (req, res) => {
   const newGoal = req.body;
   db.goals.push(newGoal);
-
-  // ✅ 履歴に追加
-  db.history.push({
-    type: 'goal',
-    action: 'create',
-    data: newGoal,
-    timestamp: new Date().toISOString()
-  });
+  db.history.push({ type: 'goal', action: 'create', data: newGoal, timestamp: new Date().toISOString() });
 
   try {
     fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2));
@@ -157,7 +161,7 @@ app.post('/goals', (req, res) => {
   }
 });
 
-// ゴール更新
+// --- ゴール更新
 app.patch('/goals/:id', (req, res) => {
   const goalId = req.params.id;
   const { title, description, deadline, taskIds, completed } = req.body;
@@ -183,7 +187,7 @@ app.patch('/goals/:id', (req, res) => {
   }
 });
 
-// ゴール削除
+// --- ゴール削除
 app.delete('/goals/:id', (req, res) => {
   const goalId = req.params.id;
   const index = db.goals.findIndex(g => g.id === goalId);
@@ -203,7 +207,7 @@ app.delete('/goals/:id', (req, res) => {
   }
 });
 
-// --- AI提案API ---
+// --- AI提案API
 app.post('/suggest', async (req, res) => {
   const { userSummary } = req.body;
   console.log('💬 受信した userSummary:', userSummary);
@@ -233,7 +237,6 @@ app.post('/suggest', async (req, res) => {
       .map(line => line.replace(/^\d+\.\s*/, ''));
 
     console.log('✅ AI提案取得成功:', suggestions);
-
     res.json({ suggestions });
   } catch (error) {
     console.error('🔥 AIリクエスト失敗:', error.response?.data || error.message);
@@ -241,7 +244,7 @@ app.post('/suggest', async (req, res) => {
   }
 });
 
-// --- サーバー起動 ---
+// --- サーバー起動
 app.listen(8080, () => {
   console.log('✅ サーバー起動！http://localhost:8080 で待機中');
 });
