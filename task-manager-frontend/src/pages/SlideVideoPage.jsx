@@ -22,7 +22,7 @@ function SlideVideoPage() {
     // 必要なら BGM ファイルも formData.append('music', file);
 
     try {
-      const res = await fetch('/api/slideVideo/create', {
+      const res = await fetch('http://localhost:8080/slidevideo/create', {
         method: 'POST',
         body: formData,
       });
