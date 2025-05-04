@@ -7,9 +7,14 @@ function TaskList() {
 
   const fetchTasks = () => {
     fetch('http://localhost:8080/tasks')
-      .then(response => response.json())
-      .then(data => setTasks(data))
-      .catch(error => console.error('Error:', error));
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
+      .then(data => {
+        setTasks(data);
+      })
+      .catch(error => console.error('❌ タスク取得エラー:', error));
   };
 
   useEffect(() => {
@@ -20,23 +25,29 @@ function TaskList() {
     fetch(`http://localhost:8080/tasks/${id}`, {
       method: 'DELETE',
     })
-      .then(() => fetchTasks())
-      .catch(error => console.error('Error:', error));
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        fetchTasks();
+      })
+      .catch(error => console.error('❌ タスク削除エラー:', error));
   };
 
   const toggleTaskCompletion = (id) => {
-    const updatedTask = tasks.find(task => task.id === id);
-    if (!updatedTask) return;
+    const targetTask = tasks.find(task => task.id === id);
+    if (!targetTask) return;
 
-    const newTask = { ...updatedTask, completed: !updatedTask.completed };
+    const updatedTask = { ...targetTask, completed: !targetTask.completed };
 
     fetch(`http://localhost:8080/tasks/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newTask),
+      body: JSON.stringify(updatedTask),
     })
-      .then(() => fetchTasks())
-      .catch(error => console.error('Error:', error));
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        fetchTasks();
+      })
+      .catch(error => console.error('❌ 完了切替エラー:', error));
   };
 
   const categories = ['すべて', ...Array.from(new Set(tasks.map(task => task.category || '未分類')))];
@@ -49,7 +60,6 @@ function TaskList() {
     <div style={{ padding: '20px' }}>
       <h2>📋 タスク一覧</h2>
 
-      {/* カテゴリフィルター */}
       <div style={{ marginBottom: '20px' }}>
         <label style={{ marginRight: '10px' }}>カテゴリで絞り込み:</label>
         <select
@@ -91,7 +101,6 @@ function TaskList() {
   );
 }
 
-// 💡 ここの定義が途中で終わっていたので修正！
 const cardStyle = {
   padding: '15px',
   border: '1px solid #ddd',
