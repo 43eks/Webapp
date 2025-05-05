@@ -40,7 +40,7 @@ function CharacterUpload() {
 
       if (res.ok) {
         const data = await res.json();
-        setUploadedImages(prev => [...prev, data.url]);
+        setUploadedImages(prev => [...prev, `${API_BASE_URL}${data.url}`]);
         setFile(null);
         setPreviewUrl('');
         alert('✅ アップロード完了！');
@@ -50,6 +50,29 @@ function CharacterUpload() {
     } catch (err) {
       console.error('❌ アップロード通信エラー:', err);
       alert('❌ 通信エラー');
+    }
+  };
+
+  // --- 削除処理
+  const handleDelete = async (url) => {
+    const filename = url.split('/').pop();
+    const confirmDelete = window.confirm('本当に削除しますか？');
+    if (!confirmDelete) return;
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/character/${filename}`, {
+        method: 'DELETE',
+      });
+
+      if (res.ok) {
+        setUploadedImages(prev => prev.filter(u => u !== url));
+        alert('🗑️ 削除完了');
+      } else {
+        alert('❌ 削除失敗');
+      }
+    } catch (err) {
+      console.error('❌ 削除通信エラー:', err);
+      alert('❌ 削除中にエラーが発生しました');
     }
   };
 
@@ -71,9 +94,15 @@ function CharacterUpload() {
       {uploadedImages.length > 0 && (
         <div style={{ marginTop: '30px' }}>
           <h3>✅ アップロード済みキャラクター画像</h3>
-          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
             {uploadedImages.map((url, idx) => (
-              <img key={url + idx} src={url} alt={`uploaded-${idx}`} style={{ maxWidth: '150px' }} />
+              <div key={url} style={{ textAlign: 'center' }}>
+                <img src={url} alt={`uploaded-${idx}`} style={{ maxWidth: '150px' }} />
+                <br />
+                <button onClick={() => handleDelete(url)} style={{ marginTop: '8px' }}>
+                  削除
+                </button>
+              </div>
             ))}
           </div>
         </div>
