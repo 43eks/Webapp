@@ -60,6 +60,7 @@ function TaskList() {
     <div style={{ padding: '20px' }}>
       <h2>📋 タスク一覧</h2>
 
+      {/* カテゴリフィルター */}
       <div style={{ marginBottom: '20px' }}>
         <label style={{ marginRight: '10px' }}>カテゴリで絞り込み:</label>
         <select
@@ -77,8 +78,8 @@ function TaskList() {
         {filteredTasks.length === 0 ? (
           <p>該当するタスクはありません。</p>
         ) : (
-          filteredTasks.map(task => (
-            <div key={task.id} style={cardStyle}>
+          filteredTasks.map((task, index) => (
+            <div key={task.id || index} style={cardStyle}>
               <h3 style={{ textDecoration: task.completed ? 'line-through' : 'none' }}>
                 {task.taskName}
               </h3>
