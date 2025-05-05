@@ -52,6 +52,16 @@ app.post('/upload', upload.single('image'), (req, res) => {
   res.json({ url: imageUrl });
 });
 
+// --- 🧍 キャラクター画像一覧取得
+app.get('/character', (req, res) => {
+  const dir = path.join(__dirname, 'uploads');
+  fs.readdir(dir, (err, files) => {
+    if (err) return res.status(500).json({ error: '画像一覧取得エラー' });
+    const imageUrls = files.map(file => `http://localhost:8080/uploads/${file}`);
+    res.json(imageUrls);
+  });
+});
+
 // --- 🎞️ スライド動画＋音楽合成
 app.post('/slidevideo/create', upload.array('images'), async (req, res) => {
   const files = req.files;
