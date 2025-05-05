@@ -62,6 +62,26 @@ app.get('/character', (req, res) => {
   });
 });
 
+// --- 🧹 キャラクター画像削除
+app.delete('/character/:filename', (req, res) => {
+  const fileName = req.params.filename;
+  const filePath = path.join(__dirname, 'uploads', fileName);
+
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).json({ error: 'ファイルが存在しません' });
+  }
+
+  fs.unlink(filePath, (err) => {
+    if (err) {
+      console.error('❌ 画像削除エラー:', err);
+      return res.status(500).json({ error: '画像削除に失敗しました' });
+    }
+
+    console.log(`🗑️ 画像削除成功: ${fileName}`);
+    res.json({ message: '削除成功' });
+  });
+});
+
 // --- 🎞️ スライド動画＋音楽合成
 app.post('/slidevideo/create', upload.array('images'), async (req, res) => {
   const files = req.files;
