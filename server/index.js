@@ -48,21 +48,21 @@ if (fs.existsSync(DATA_FILE)) {
 // --- 📸 画像アップロード
 app.post('/upload', upload.single('image'), (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'ファイルなし' });
-  const imageUrl = `http://localhost:8080/uploads/${req.file.filename}`;
+  const imageUrl = `/uploads/${req.file.filename}`;
   res.json({ url: imageUrl });
 });
 
-// --- 🢍 キャラクター画像一覧取得
+// --- 🧍 キャラクター画像一覧取得
 app.get('/character', (req, res) => {
   const dir = path.join(__dirname, 'uploads');
   fs.readdir(dir, (err, files) => {
     if (err) return res.status(500).json({ error: '画像一覧取得エラー' });
-    const imageUrls = files.map(file => `http://localhost:8080/uploads/${file}`);
+    const imageUrls = files.map(file => `/uploads/${file}`);
     res.json(imageUrls);
   });
 });
 
-// --- 🎮 スライド動画＋音楽合成
+// --- 🎞️ スライド動画＋音楽合成
 app.post('/slidevideo/create', upload.array('images'), async (req, res) => {
   const files = req.files;
   if (!files?.length) return res.status(400).json({ error: '画像がありません' });
@@ -95,7 +95,7 @@ app.post('/slidevideo/create', upload.array('images'), async (req, res) => {
           return res.status(500).json({ error: '音楽の合成に失敗しました' });
         }
 
-        const videoUrl = `http://localhost:8080/videos/${path.basename(outputWithAudio)}`;
+        const videoUrl = `/videos/${path.basename(outputWithAudio)}`;
         res.json({ message: '動画生成成功', videoUrl });
       });
     });
