@@ -12,13 +12,13 @@ function CharacterUpload() {
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {
-          setUploadedImages(data);
+          setUploadedImages(data); // 絶対パスでなく相対パス（/uploads/...）をそのまま保持
         }
       })
       .catch(err => console.error('❌ 画像取得エラー:', err));
   }, []);
 
-  // --- ファイル選択時の処理
+  // --- ファイル選択
   const handleFileChange = (e) => {
     const f = e.target.files[0];
     setFile(f);
@@ -40,7 +40,7 @@ function CharacterUpload() {
 
       if (res.ok) {
         const data = await res.json();
-        setUploadedImages(prev => [...prev, `${API_BASE_URL}${data.url}`]);
+        setUploadedImages(prev => [...prev, data.url]); // 相対パスのまま保持
         setFile(null);
         setPreviewUrl('');
         alert('✅ アップロード完了！');
@@ -96,8 +96,12 @@ function CharacterUpload() {
           <h3>✅ アップロード済みキャラクター画像</h3>
           <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
             {uploadedImages.map((url, idx) => (
-              <div key={url} style={{ textAlign: 'center' }}>
-                <img src={url} alt={`uploaded-${idx}`} style={{ maxWidth: '150px' }} />
+              <div key={url + idx} style={{ textAlign: 'center' }}>
+                <img
+                  src={`${API_BASE_URL}${url}`}
+                  alt={`uploaded-${idx}`}
+                  style={{ maxWidth: '150px' }}
+                />
                 <br />
                 <button onClick={() => handleDelete(url)} style={{ marginTop: '8px' }}>
                   削除
