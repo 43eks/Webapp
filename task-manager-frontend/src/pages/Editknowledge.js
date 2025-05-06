@@ -8,12 +8,17 @@ function EditKnowledge() {
   const [content, setContent] = useState('');
   const [category, setCategory] = useState('');
 
-  // --- 初期データ取得
   useEffect(() => {
+    if (!id) {
+      alert('IDが指定されていません');
+      navigate('/knowledges');
+      return;
+    }
+
     fetch(`http://localhost:8080/knowledge/${id}`)
-      .then(response => {
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        return response.json();
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        return res.json();
       })
       .then(data => {
         setTitle(data.title);
@@ -24,13 +29,12 @@ function EditKnowledge() {
         console.error('取得エラー:', error);
         alert('記事の取得に失敗しました');
       });
-  }, [id]);
+  }, [id, navigate]);
 
-  // --- 更新処理
   const handleUpdate = (e) => {
     e.preventDefault();
 
-    const updatedKnowledge = {
+    const updatedknowledge = {
       title,
       content,
       category,
@@ -40,10 +44,10 @@ function EditKnowledge() {
     fetch(`http://localhost:8080/knowledge/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(updatedKnowledge)
+      body: JSON.stringify(updatedknowledge)
     })
-      .then(response => {
-        if (response.ok) {
+      .then(res => {
+        if (res.ok) {
           navigate('/knowledges');
         } else {
           alert('更新に失敗しました');
@@ -58,65 +62,20 @@ function EditKnowledge() {
   return (
     <div style={{ padding: '20px' }}>
       <h2>✏️ 記事を編集</h2>
-      <form onSubmit={handleUpdate} style={formStyle}>
+      <form onSubmit={handleUpdate} style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxWidth: '600px' }}>
         <label>タイトル:</label>
-        <input
-          type="text"
-          value={title}
-          onChange={e => setTitle(e.target.value)}
-          required
-          style={inputStyle}
-        />
+        <input type="text" value={title} onChange={e => setTitle(e.target.value)} required />
 
         <label>カテゴリ（任意）:</label>
-        <input
-          type="text"
-          value={category}
-          onChange={e => setCategory(e.target.value)}
-          style={inputStyle}
-        />
+        <input type="text" value={category} onChange={e => setCategory(e.target.value)} />
 
         <label>本文:</label>
-        <textarea
-          value={content}
-          onChange={e => setContent(e.target.value)}
-          required
-          style={textareaStyle}
-        />
+        <textarea value={content} onChange={e => setContent(e.target.value)} required rows={8} />
 
-        <button type="submit" style={submitButtonStyle}>更新する</button>
+        <button type="submit">更新する</button>
       </form>
     </div>
   );
 }
-
-const formStyle = {
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '10px',
-  maxWidth: '600px'
-};
-
-const inputStyle = {
-  padding: '8px',
-  fontSize: '16px'
-};
-
-const textareaStyle = {
-  padding: '8px',
-  fontSize: '16px',
-  minHeight: '150px'
-};
-
-const submitButtonStyle = {
-  marginTop: '10px',
-  padding: '10px',
-  backgroundColor: '#2196F3',
-  color: '#fff',
-  fontSize: '16px',
-  border: 'none',
-  borderRadius: '6px',
-  cursor: 'pointer'
-};
 
 export default EditKnowledge;
