@@ -30,7 +30,7 @@ import SlideVideoPage from './pages/SlideVideoPage';
 // 🧍 キャラクター画像アップロード
 import CharacterUpload from './pages/CharacterUpload';
 
-// ✅ 共通APIベースURL（バックエンドと同一ポートであること）
+// ✅ 共通APIベースURL（フロントとバックの通信ポートが一致していること）
 export const API_BASE_URL = 'http://localhost:8080';
 
 function App() {
