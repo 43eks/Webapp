@@ -8,9 +8,13 @@ function EditKnowledge() {
   const [content, setContent] = useState('');
   const [category, setCategory] = useState('');
 
+  // --- 初期データ取得
   useEffect(() => {
-    fetch(`http://localhost:8080/knowledges/${id}`)
-      .then(response => response.json())
+    fetch(`http://localhost:8080/knowledge/${id}`)
+      .then(response => {
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return response.json();
+      })
       .then(data => {
         setTitle(data.title);
         setContent(data.content);
@@ -22,10 +26,11 @@ function EditKnowledge() {
       });
   }, [id]);
 
+  // --- 更新処理
   const handleUpdate = (e) => {
     e.preventDefault();
 
-    const updatedknowledge = {
+    const updatedKnowledge = {
       title,
       content,
       category,
@@ -35,11 +40,11 @@ function EditKnowledge() {
     fetch(`http://localhost:8080/knowledge/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(updatedknowledge)
+      body: JSON.stringify(updatedKnowledge)
     })
       .then(response => {
         if (response.ok) {
-          navigate('/');
+          navigate('/knowledges');
         } else {
           alert('更新に失敗しました');
         }
@@ -55,13 +60,29 @@ function EditKnowledge() {
       <h2>✏️ 記事を編集</h2>
       <form onSubmit={handleUpdate} style={formStyle}>
         <label>タイトル:</label>
-        <input type="text" value={title} onChange={e => setTitle(e.target.value)} required style={inputStyle} />
+        <input
+          type="text"
+          value={title}
+          onChange={e => setTitle(e.target.value)}
+          required
+          style={inputStyle}
+        />
 
         <label>カテゴリ（任意）:</label>
-        <input type="text" value={category} onChange={e => setCategory(e.target.value)} style={inputStyle} />
+        <input
+          type="text"
+          value={category}
+          onChange={e => setCategory(e.target.value)}
+          style={inputStyle}
+        />
 
         <label>本文:</label>
-        <textarea value={content} onChange={e => setContent(e.target.value)} required style={textareaStyle} />
+        <textarea
+          value={content}
+          onChange={e => setContent(e.target.value)}
+          required
+          style={textareaStyle}
+        />
 
         <button type="submit" style={submitButtonStyle}>更新する</button>
       </form>
