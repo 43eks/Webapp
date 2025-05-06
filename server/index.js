@@ -125,9 +125,6 @@ app.post('/slidevideo/create', upload.array('images'), async (req, res) => {
   }
 });
 
-// --- その他 API (tasks, knowledge, habits, goals, suggest) はそのまま
-// [... 省略 ...]
-
 // --- サーバー起動
 app.listen(8080, () => {
   console.log('✅ サーバー起動！http://localhost:8080 で待機中');
