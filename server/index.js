@@ -71,9 +71,17 @@ app.post('/knowledge', (req, res) => {
 });
 
 app.get('/knowledge/:id', (req, res) => {
-  const item = db.knowledge.find(k => k.id === req.params.id);
-  if (!item) return res.status(404).json({ error: '記事が見つかりません' });
-  res.json(item);
+  try {
+    const rawData = fs.readFileSync(DATA_FILE, 'utf-8');
+    const freshDb = JSON.parse(rawData);
+    const item = freshDb.knowledge.find(k => k.id === req.params.id);
+
+    if (!item) return res.status(404).json({ error: '記事が見つかりません' });
+    res.json(item);
+  } catch (err) {
+    console.error('❌ 記事取得エラー:', err);
+    res.status(500).json({ error: 'サーバーエラー' });
+  }
 });
 
 app.put('/knowledge/:id', (req, res) => {
