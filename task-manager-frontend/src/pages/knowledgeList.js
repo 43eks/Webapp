@@ -4,15 +4,19 @@ import { Link } from 'react-router-dom';
 function KnowledgeList() {
   const [knowledges, setKnowledges] = useState([]);
 
-  // 記事一覧を取得
+  // ナレッジ記事一覧を取得
   const fetchKnowledges = () => {
     fetch('http://localhost:8080/knowledge')
       .then(response => {
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         return response.json();
       })
-      .then(data => setKnowledges(data))
-      .catch(error => console.error('取得エラー:', error));
+      .then(data => {
+        // 必ず id がある記事だけに絞る
+        const validArticles = data.filter(k => typeof k.id === 'string' && k.id.trim() !== '');
+        setKnowledges(validArticles);
+      })
+      .catch(error => console.error('❌ 取得エラー:', error));
   };
 
   useEffect(() => {
@@ -20,6 +24,7 @@ function KnowledgeList() {
   }, []);
 
   const deleteKnowledge = (id) => {
+    if (!id) return;
     if (window.confirm('この記事を削除しますか？')) {
       fetch(`http://localhost:8080/knowledge/${id}`, {
         method: 'DELETE'
@@ -28,7 +33,7 @@ function KnowledgeList() {
           if (!res.ok) throw new Error(`HTTP ${res.status}`);
           fetchKnowledges();
         })
-        .catch(error => console.error('削除エラー:', error));
+        .catch(error => console.error('❌ 削除エラー:', error));
     }
   };
 
@@ -44,30 +49,28 @@ function KnowledgeList() {
         {knowledges.length === 0 ? (
           <p>記事がまだありません。</p>
         ) : (
-          knowledges
-            .filter(knowledge => knowledge.id) // ✅ idが存在する記事のみ表示
-            .map(knowledge => (
-              <div key={knowledge.id} style={cardStyle}>
-                <h3>{knowledge.title}</h3>
-                <p style={{ color: '#666' }}>
-                  {knowledge.category || '未分類'} /{' '}
-                  {knowledge.createdAt
-                    ? new Date(knowledge.createdAt).toLocaleDateString()
-                    : '日付不明'}
-                </p>
-                <div style={{ marginTop: '10px' }}>
-                  <Link to={`/knowledges/${knowledge.id}/edit`}>
-                    <button style={smallButtonStyle}>✏️ 編集</button>
-                  </Link>{' '}
-                  <button
-                    onClick={() => deleteKnowledge(knowledge.id)}
-                    style={smallButtonStyle}
-                  >
-                    🗑️ 削除
-                  </button>
-                </div>
+          knowledges.map(knowledge => (
+            <div key={knowledge.id} style={cardStyle}>
+              <h3>{knowledge.title}</h3>
+              <p style={{ color: '#666' }}>
+                {knowledge.category || '未分類'} /{' '}
+                {knowledge.createdAt
+                  ? new Date(knowledge.createdAt).toLocaleDateString()
+                  : '日付不明'}
+              </p>
+              <div style={{ marginTop: '10px' }}>
+                <Link to={`/knowledges/${knowledge.id}/edit`}>
+                  <button style={smallButtonStyle}>✏️ 編集</button>
+                </Link>{' '}
+                <button
+                  onClick={() => deleteKnowledge(knowledge.id)}
+                  style={smallButtonStyle}
+                >
+                  🗑️ 削除
+                </button>
               </div>
-            ))
+            </div>
+          ))
         )}
       </div>
     </div>
