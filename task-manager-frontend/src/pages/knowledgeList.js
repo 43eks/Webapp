@@ -7,8 +7,11 @@ function KnowledgeList() {
   // 記事一覧を取得
   const fetchKnowledges = () => {
     fetch('http://localhost:8080/knowledge')
-      .then(response => response.json())
-      .then(data => setKnowledges(data))  // ✅ 関数名一致！
+      .then(response => {
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return response.json();
+      })
+      .then(data => setKnowledges(data))
       .catch(error => console.error('取得エラー:', error));
   };
 
@@ -21,7 +24,10 @@ function KnowledgeList() {
       fetch(`http://localhost:8080/knowledge/${id}`, {
         method: 'DELETE'
       })
-        .then(() => fetchKnowledges())
+        .then(res => {
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          fetchKnowledges();
+        })
         .catch(error => console.error('削除エラー:', error));
     }
   };
@@ -42,12 +48,15 @@ function KnowledgeList() {
             <div key={knowledge.id} style={cardStyle}>
               <h3>{knowledge.title}</h3>
               <p style={{ color: '#666' }}>
-                {knowledge.category || '未分類'} / {new Date(knowledge.createdAt).toLocaleDateString()}
+                {knowledge.category || '未分類'} /{' '}
+                {knowledge.createdAt
+                  ? new Date(knowledge.createdAt).toLocaleDateString()
+                  : '日付不明'}
               </p>
               <div style={{ marginTop: '10px' }}>
                 <Link to={`/knowledges/${knowledge.id}/edit`}>
                   <button style={smallButtonStyle}>✏️ 編集</button>
-                </Link>
+                </Link>{' '}
                 <button onClick={() => deleteKnowledge(knowledge.id)} style={smallButtonStyle}>🗑️ 削除</button>
               </div>
             </div>
@@ -58,10 +67,34 @@ function KnowledgeList() {
   );
 }
 
-// スタイル定義（同じ）
-const buttonStyle = { /* 省略 */ };
-const cardStyle = { /* 省略 */ };
-const smallButtonStyle = { /* 省略 */ };
+// --- スタイル定義 ---
+const buttonStyle = {
+  padding: '10px 16px',
+  backgroundColor: '#4CAF50',
+  color: 'white',
+  fontSize: '16px',
+  border: 'none',
+  borderRadius: '6px',
+  cursor: 'pointer'
+};
 
-// ✅ コンポーネント名と一致した名前でエクスポート！
+const cardStyle = {
+  border: '1px solid #ccc',
+  borderRadius: '8px',
+  padding: '15px',
+  marginBottom: '15px',
+  backgroundColor: '#f9f9f9'
+};
+
+const smallButtonStyle = {
+  padding: '6px 12px',
+  marginRight: '10px',
+  fontSize: '14px',
+  backgroundColor: '#2196F3',
+  color: 'white',
+  border: 'none',
+  borderRadius: '4px',
+  cursor: 'pointer'
+};
+
 export default KnowledgeList;
