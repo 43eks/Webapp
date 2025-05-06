@@ -49,7 +49,11 @@ if (fs.existsSync(DATA_FILE)) {
 app.get('/knowledge', (req, res) => res.json(db.knowledge));
 
 app.post('/knowledge', (req, res) => {
-  const item = { ...req.body, id: Date.now().toString(), createdAt: new Date().toISOString() };
+  const item = {
+    ...req.body,
+    id: Date.now().toString(),
+    createdAt: new Date().toISOString()
+  };
   db.knowledge.push(item);
   fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2));
   res.status(201).json(item);
@@ -64,7 +68,12 @@ app.get('/knowledge/:id', (req, res) => {
 app.put('/knowledge/:id', (req, res) => {
   const index = db.knowledge.findIndex(k => k.id === req.params.id);
   if (index === -1) return res.status(404).json({ error: '記事が見つかりません' });
-  db.knowledge[index] = { ...db.knowledge[index], ...req.body, updatedAt: new Date().toISOString() };
+  db.knowledge[index] = {
+    ...db.knowledge[index],
+    ...req.body,
+    id: req.params.id,
+    updatedAt: new Date().toISOString()
+  };
   fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2));
   res.json(db.knowledge[index]);
 });
