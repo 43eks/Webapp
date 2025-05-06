@@ -35,14 +35,25 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-// --- データファイル
+// --- データファイル読み込み＆ID補完
 const DATA_FILE = './data.json';
 let db = { knowledge: [], tasks: [], habits: [], goals: [], history: [] };
+
 if (fs.existsSync(DATA_FILE)) {
   db = JSON.parse(fs.readFileSync(DATA_FILE, 'utf-8'));
+
+  // ID未設定のナレッジにID付与
+  db.knowledge = (db.knowledge || []).map(k => ({
+    ...k,
+    id: k.id || (Date.now() + Math.floor(Math.random() * 1000)).toString()
+  }));
+
   db.goals = db.goals || [];
   db.history = db.history || [];
-  console.log('✅ データ読み込み成功');
+
+  // 修正結果を保存
+  fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2));
+  console.log('✅ データ読み込み＆ID補完成功');
 }
 
 // --- 📚 ナレッジ記事API
