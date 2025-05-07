@@ -32,7 +32,9 @@ function Home() {
 
   return (
     <div>
-      <h1 style={{ textAlign: 'center', marginTop: '30px' }}>マイライフ管理アプリ</h1>
+      <h1 style={{ textAlign: 'center', marginTop: '30px' }}>
+        🏠 マイライフ管理アプリ
+      </h1>
       <p style={{ textAlign: 'center' }}>使いたい機能を選んでください：</p>
       <div style={gridStyle}>
         {/* 実装済みリンク */}
@@ -42,7 +44,10 @@ function Home() {
         <Link to="/knowledges/create" style={cardStyle}>➕ ナレッジを追加</Link>
         <Link to="/habits" style={cardStyle}>🔥 習慣トラッカー</Link>
         <Link to="/habits/create" style={cardStyle}>➕ 習慣を追加</Link>
-        <Link to="/habits/monthly" style={cardStyle}>📅 月間ビュー</Link> {/* ← ✅ 追加済み */}
+        <Link to="/habits/monthly" style={cardStyle}>📅 月間ビュー</Link>
+        <Link to="/goals" style={cardStyle}>🎯 ゴール一覧</Link>
+        <Link to="/slides/create" style={cardStyle}>🎞️ スライド動画</Link>
+        <Link to="/character" style={cardStyle}>🧍 キャラクター画像</Link>
 
         {/* 未実装（準備中） */}
         <div style={disabledCardStyle}>🏷️ カテゴリ別（準備中）</div>
