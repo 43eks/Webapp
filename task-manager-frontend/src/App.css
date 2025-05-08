@@ -1,97 +1,66 @@
 /* App.css */
 
-/* ✅ 世界遺産モンサンミッシェルの絶景を背景に設定 */
 body {
   margin: 0;
   font-family: 'Helvetica Neue', sans-serif;
-  background-image: url('https://images.unsplash.com/photo-1606925797303-1864f25ff2a6?auto=format&fit=crop&w=1950&q=80');
+  background-image: url('https://upload.wikimedia.org/wikipedia/commons/2/24/Valle_de_Viñales_Pinar_del_Río_Cuba.jpg');
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
-  color: #fff;
 }
 
-/* ✅ アプリ全体のラッパーに半透明の背景を重ねて読みやすく */
+/* オーバーレイで読みやすく */
 .app-overlay {
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(255, 255, 255, 0.85);
   min-height: 100vh;
-  padding: 20px;
+  padding: 40px;
+  box-sizing: border-box;
 }
 
-/* ✅ Appコンポーネントの基本配置 */
-.App {
+/* ホーム用タイトル */
+.home-title {
   text-align: center;
+  font-size: 32px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #111827;
 }
 
-/* ✅ ロゴがある場合のスタイル */
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.home-subtitle {
+  text-align: center;
+  color: #4b5563;
+  margin-bottom: 30px;
 }
 
-/* ✅ ロゴアニメーション（任意） */
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+/* グリッドカード */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
 }
 
-/* ✅ アプリのヘッダー部分の透明感と中央寄せ */
-.App-header {
-  background-color: rgba(40, 44, 52, 0.8);
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
-}
-
-/* ✅ リンクの色指定 */
-.App-link {
-  color: #61dafb;
-  text-decoration: none;
-}
-
-/* ✅ ロゴ回転アニメーション定義 */
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* ✅ ボタンの基本スタイル */
-button {
-  background-color: #4CAF50;
-  color: white;
-  padding: 10px 16px;
-  border: none;
-  border-radius: 6px;
-  font-size: 16px;
-  cursor: pointer;
-  transition: 0.3s;
-}
-
-button:hover {
-  background-color: #45a049;
-}
-
-/* ✅ 汎用カードデザイン（ホームなどで利用） */
+/* 各カードスタイル */
 .card {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: #f9fafb;
   border-radius: 12px;
-  padding: 20px;
+  padding: 30px;
   text-align: center;
-  color: #fff;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-  transition: 0.3s;
+  text-decoration: none;
+  color: #111827;
+  font-weight: bold;
+  font-size: 18px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .card:hover {
-  background-color: rgba(255, 255, 255, 0.2);
-  transform: translateY(-5px);
+  transform: translateY(-4px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+}
+
+.card.disabled {
+  color: #9ca3af;
+  background-color: #e5e7eb;
+  cursor: not-allowed;
+  pointer-events: none;
 }
