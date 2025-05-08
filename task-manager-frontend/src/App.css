@@ -1,41 +1,42 @@
 /* App.css */
 
-/* 世界遺産の絶景背景を全体に表示 */
+/* ✅ 世界遺産モンサンミッシェルの絶景を背景に設定 */
 body {
   margin: 0;
   font-family: 'Helvetica Neue', sans-serif;
-  background-image: url('https://images.unsplash.com/photo-1606925797303-1864f25ff2a6?auto=format&fit=crop&w=1950&q=80'); /* モンサンミッシェル */
+  background-image: url('https://images.unsplash.com/photo-1606925797303-1864f25ff2a6?auto=format&fit=crop&w=1950&q=80');
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
   color: #fff;
 }
 
-/* アプリの全体ラッパーに半透明の背景を追加して読みやすく */
+/* ✅ アプリ全体のラッパーに半透明の背景を重ねて読みやすく */
 .app-overlay {
   background-color: rgba(0, 0, 0, 0.5);
   min-height: 100vh;
   padding: 20px;
 }
 
-/* ロゴなどがある場合の共通スタイル */
+/* ✅ Appコンポーネントの基本配置 */
 .App {
   text-align: center;
 }
 
-/* アニメーション付きロゴ */
+/* ✅ ロゴがある場合のスタイル */
 .App-logo {
   height: 40vmin;
   pointer-events: none;
 }
 
+/* ✅ ロゴアニメーション（任意） */
 @media (prefers-reduced-motion: no-preference) {
   .App-logo {
     animation: App-logo-spin infinite 20s linear;
   }
 }
 
-/* ヘッダーを半透明＋中央配置に */
+/* ✅ アプリのヘッダー部分の透明感と中央寄せ */
 .App-header {
   background-color: rgba(40, 44, 52, 0.8);
   min-height: 100vh;
@@ -47,13 +48,13 @@ body {
   color: white;
 }
 
-/* リンクカラー */
+/* ✅ リンクの色指定 */
 .App-link {
   color: #61dafb;
   text-decoration: none;
 }
 
-/* ロゴ回転アニメーション */
+/* ✅ ロゴ回転アニメーション定義 */
 @keyframes App-logo-spin {
   from {
     transform: rotate(0deg);
@@ -63,7 +64,7 @@ body {
   }
 }
 
-/* ボタンスタイル共通化 */
+/* ✅ ボタンの基本スタイル */
 button {
   background-color: #4CAF50;
   color: white;
@@ -79,7 +80,7 @@ button:hover {
   background-color: #45a049;
 }
 
-/* カード系の共通デザイン（Homeなどでも使える） */
+/* ✅ 汎用カードデザイン（ホームなどで利用） */
 .card {
   background-color: rgba(255, 255, 255, 0.1);
   border-radius: 12px;
