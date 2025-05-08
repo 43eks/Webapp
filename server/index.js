@@ -42,7 +42,6 @@ let db = { knowledge: [], tasks: [], habits: [], goals: [], history: [] };
 if (fs.existsSync(DATA_FILE)) {
   db = JSON.parse(fs.readFileSync(DATA_FILE, 'utf-8'));
 
-  // ID未設定のナレッジにID付与
   db.knowledge = (db.knowledge || []).map(k => ({
     ...k,
     id: k.id || (Date.now() + Math.floor(Math.random() * 1000)).toString()
@@ -51,10 +50,21 @@ if (fs.existsSync(DATA_FILE)) {
   db.goals = db.goals || [];
   db.history = db.history || [];
 
-  // 修正結果を保存
   fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2));
   console.log('✅ データ読み込み＆ID補完成功');
 }
+
+// --- 📦 タスクAPI
+app.get('/tasks', (req, res) => {
+  try {
+    const rawData = fs.readFileSync(DATA_FILE, 'utf-8');
+    const freshDb = JSON.parse(rawData);
+    res.json(freshDb.tasks || []);
+  } catch (error) {
+    console.error('❌ タスク取得エラー:', error);
+    res.status(500).json({ error: 'サーバーエラー' });
+  }
+});
 
 // --- 📚 ナレッジ記事API
 app.get('/knowledge', (req, res) => res.json(db.knowledge));
