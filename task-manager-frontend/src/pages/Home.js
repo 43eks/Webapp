@@ -1,6 +1,7 @@
+// src/pages/Home.js
 import React from 'react';
 import { Link } from 'react-router-dom';
-import './App.css'; // App.css に背景やボタンスタイル定義がある前提
+import '../App.css'; // 1階層上の App.css を読み込む
 
 function Home() {
   return (
