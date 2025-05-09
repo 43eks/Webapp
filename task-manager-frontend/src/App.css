@@ -1,7 +1,7 @@
 /* App.css */
 
 /* 全体背景にビニャーレス渓谷の絶景を表示 */
-html, body {
+html, body, #root {
   margin: 0;
   padding: 0;
   height: 100%;
