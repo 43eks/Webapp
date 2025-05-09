@@ -1,8 +1,10 @@
 /* App.css */
 
 /* 全体背景にビニャーレス渓谷の絶景を表示 */
-body {
+html, body {
   margin: 0;
+  padding: 0;
+  height: 100%;
   font-family: 'Helvetica Neue', sans-serif;
   background-image: url('https://upload.wikimedia.org/wikipedia/commons/2/24/Valle_de_Viñales_Pinar_del_Río_Cuba.jpg');
   background-size: cover;
@@ -11,7 +13,7 @@ body {
   background-repeat: no-repeat;
 }
 
-/* 全ページに半透明オーバーレイで読みやすさを確保 */
+/* オーバーレイで読みやすく */
 .app-overlay {
   background-color: rgba(255, 255, 255, 0.85);
   min-height: 100vh;
@@ -19,7 +21,7 @@ body {
   box-sizing: border-box;
 }
 
-/* ホームページタイトル */
+/* ホームタイトル */
 .home-title {
   text-align: center;
   font-size: 32px;
@@ -28,14 +30,13 @@ body {
   color: #111827;
 }
 
-/* ホームページのサブタイトル */
 .home-subtitle {
   text-align: center;
   color: #4b5563;
   margin-bottom: 30px;
 }
 
-/* グリッドレイアウト */
+/* カードグリッド */
 .card-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -44,7 +45,7 @@ body {
   margin: 0 auto;
 }
 
-/* 機能カードのスタイル */
+/* カード */
 .card {
   background-color: #f9fafb;
   border-radius: 12px;
@@ -63,7 +64,6 @@ body {
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
 }
 
-/* 未実装 or 準備中カード */
 .card.disabled {
   color: #9ca3af;
   background-color: #e5e7eb;
@@ -71,7 +71,7 @@ body {
   pointer-events: none;
 }
 
-/* ボタンの汎用スタイル */
+/* 汎用ボタン */
 button {
   background-color: #2563eb;
   color: #fff;
@@ -87,7 +87,7 @@ button:hover {
   background-color: #1e40af;
 }
 
-/* リンクスタイル */
+/* リンク */
 a {
   color: inherit;
   text-decoration: none;
