@@ -1,5 +1,5 @@
-import React from 'react';
 import './App.css'; // ✅ 背景・スタイルのCSSを読み込み
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 
 // 🏠 ホーム画面
