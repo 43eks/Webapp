@@ -4,7 +4,7 @@
 body {
   margin: 0;
   font-family: 'Helvetica Neue', sans-serif;
-  background-image: url('https://upload.wikimedia.org/wikipedia/commons/2/24/Valle_de_Viñales_Pinar_del_Río_Cuba.jpg');
+  background-image: url('https://upload.wikimedia.org/wikipedia/commons/2/24/Valle_de_Vi%C3%B1ales_Pinar_del_R%C3%ADo_Cuba.jpg');
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
@@ -54,41 +54,4 @@ body {
   color: #111827;
   font-weight: bold;
   font-size: 18px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
-}
-
-/* 未実装 or 準備中カード */
-.card.disabled {
-  color: #9ca3af;
-  background-color: #e5e7eb;
-  cursor: not-allowed;
-  pointer-events: none;
-}
-
-/* ボタンの汎用スタイル */
-button {
-  background-color: #2563eb;
-  color: #fff;
-  padding: 10px 16px;
-  border: none;
-  border-radius: 6px;
-  font-size: 16px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-button:hover {
-  background-color: #1e40af;
-}
-
-/* リンクスタイル */
-a {
-  color: inherit;
-  text-decoration: none;
-}
+  box-shadow: 0 4px 12px rgba(0,
