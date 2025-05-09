@@ -1,5 +1,6 @@
 /* App.css */
 
+/* 全体背景にビニャーレス渓谷の絶景を表示 */
 body {
   margin: 0;
   font-family: 'Helvetica Neue', sans-serif;
@@ -7,9 +8,10 @@ body {
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
+  background-repeat: no-repeat;
 }
 
-/* オーバーレイで読みやすく */
+/* 全ページに半透明オーバーレイで読みやすさを確保 */
 .app-overlay {
   background-color: rgba(255, 255, 255, 0.85);
   min-height: 100vh;
@@ -17,7 +19,7 @@ body {
   box-sizing: border-box;
 }
 
-/* ホーム用タイトル */
+/* ホームページタイトル */
 .home-title {
   text-align: center;
   font-size: 32px;
@@ -26,20 +28,23 @@ body {
   color: #111827;
 }
 
+/* ホームページのサブタイトル */
 .home-subtitle {
   text-align: center;
   color: #4b5563;
   margin-bottom: 30px;
 }
 
-/* グリッドカード */
+/* グリッドレイアウト */
 .card-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 20px;
+  max-width: 1000px;
+  margin: 0 auto;
 }
 
-/* 各カードスタイル */
+/* 機能カードのスタイル */
 .card {
   background-color: #f9fafb;
   border-radius: 12px;
@@ -58,9 +63,32 @@ body {
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
 }
 
+/* 未実装 or 準備中カード */
 .card.disabled {
   color: #9ca3af;
   background-color: #e5e7eb;
   cursor: not-allowed;
   pointer-events: none;
+}
+
+/* ボタンの汎用スタイル */
+button {
+  background-color: #2563eb;
+  color: #fff;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #1e40af;
+}
+
+/* リンクスタイル */
+a {
+  color: inherit;
+  text-decoration: none;
 }
