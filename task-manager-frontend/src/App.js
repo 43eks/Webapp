@@ -1,3 +1,4 @@
+import './App.css'; // ✅ App.cssを読み込み（必ず最上部に）
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 
@@ -30,7 +31,7 @@ import SlideVideoPage from './pages/SlideVideoPage';
 // 🧍 キャラクター画像アップロード
 import CharacterUpload from './pages/CharacterUpload';
 
-// ✅ 共通APIベースURL（フロントとバックの通信ポートが一致していること）
+// ✅ 共通APIベースURL
 export const API_BASE_URL = 'http://localhost:8080';
 
 function App() {
@@ -50,7 +51,6 @@ function App() {
       {/* --- ページルーティング --- */}
       <main style={{ padding: '20px' }}>
         <Routes>
-          {/* ホーム */}
           <Route path="/" element={<Home />} />
 
           {/* ナレッジ */}
