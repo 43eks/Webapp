@@ -1,97 +1,104 @@
-/* App.css */
+import React from 'react';
+import './App.css'; // ✅ 背景・スタイルのCSSを読み込み
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 
-/* HTMLに背景を設定（より確実に反映される） */
-html, body {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  font-family: 'Helvetica Neue', sans-serif;
-  background-image: url('https://upload.wikimedia.org/wikipedia/commons/2/24/Valle_de_Viñales_Pinar_del_Río_Cuba.jpg');
-  background-size: cover;
-  background-position: center;
-  background-attachment: fixed;
-  background-repeat: no-repeat;
+// 🏠 ホーム画面
+import Home from './pages/Home';
+
+// 📚 ナレッジ関連
+import KnowledgeList from './pages/knowledgeList';
+import CreateKnowledge from './pages/Createknowledge';
+import EditKnowledge from './pages/Editknowledge';
+import ViewKnowledge from './pages/Viewknowledge';
+
+// 📝 タスク管理
+import TaskList from './pages/TaskList';
+import CreateTask from './pages/CreateTask';
+import TaskDetail from './pages/TaskDetail';
+
+// 📅 習慣トラッカー
+import CreateHabit from './pages/CreateHabit';
+import HabitTracker from './pages/HabitTracker';
+import MonthlyView from './pages/MonthlyView';
+
+// 🎯 ゴール管理
+import GoalPage from './pages/GoalPage';
+import GoalForm from './pages/GoalForm';
+
+// 🎞️ スライド動画作成
+import SlideVideoPage from './pages/SlideVideoPage';
+
+// 🧍 キャラクター画像アップロード
+import CharacterUpload from './pages/CharacterUpload';
+
+// ✅ 共通APIベースURL（必要に応じて使う）
+export const API_BASE_URL = 'http://localhost:8080';
+
+function App() {
+  return (
+    <Router>
+      {/* --- ナビゲーションバー --- */}
+      <nav style={navBarStyle}>
+        <Link to="/" style={navLinkStyle}>🏠 ホーム</Link>
+        <Link to="/tasks" style={navLinkStyle}>📝 タスク</Link>
+        <Link to="/knowledges" style={navLinkStyle}>📚 ナレッジ</Link>
+        <Link to="/habits" style={navLinkStyle}>📅 習慣</Link>
+        <Link to="/goals" style={navLinkStyle}>🎯 ゴール</Link>
+        <Link to="/slides/create" style={navLinkStyle}>🎞️ スライド</Link>
+        <Link to="/character" style={navLinkStyle}>🧍 キャラクター</Link>
+      </nav>
+
+      {/* --- 画面コンテンツ --- */}
+      <main className="app-overlay">
+        <Routes>
+          {/* ホーム */}
+          <Route path="/" element={<Home />} />
+
+          {/* ナレッジ */}
+          <Route path="/knowledges" element={<KnowledgeList />} />
+          <Route path="/knowledges/create" element={<CreateKnowledge />} />
+          <Route path="/knowledges/:id/edit" element={<EditKnowledge />} />
+          <Route path="/knowledges/:id" element={<ViewKnowledge />} />
+
+          {/* タスク */}
+          <Route path="/tasks" element={<TaskList />} />
+          <Route path="/tasks/create" element={<CreateTask />} />
+          <Route path="/tasks/:id" element={<TaskDetail />} />
+
+          {/* 習慣 */}
+          <Route path="/habits" element={<HabitTracker />} />
+          <Route path="/habits/create" element={<CreateHabit />} />
+          <Route path="/habits/monthly" element={<MonthlyView />} />
+
+          {/* ゴール */}
+          <Route path="/goals" element={<GoalPage />} />
+          <Route path="/goals/new" element={<GoalForm />} />
+
+          {/* スライド */}
+          <Route path="/slides/create" element={<SlideVideoPage />} />
+
+          {/* キャラクター画像 */}
+          <Route path="/character" element={<CharacterUpload />} />
+        </Routes>
+      </main>
+    </Router>
+  );
 }
 
-/* 全体オーバーレイ */
-.app-overlay {
-  background-color: rgba(255, 255, 255, 0.85);
-  min-height: 100%;
-  min-height: 100vh;
-  padding: 40px;
-  box-sizing: border-box;
-}
+// --- スタイル ---
+const navBarStyle = {
+  padding: '10px',
+  backgroundColor: '#f0f0f0',
+  display: 'flex',
+  flexWrap: 'wrap',
+  gap: '10px',
+};
 
-/* ホーム画面のタイトル */
-.home-title {
-  text-align: center;
-  font-size: 32px;
-  font-weight: bold;
-  margin-bottom: 10px;
-  color: #111827;
-}
+const navLinkStyle = {
+  textDecoration: 'none',
+  color: '#333',
+  fontSize: '16px',
+  fontWeight: 'bold',
+};
 
-/* ホーム画面のサブタイトル */
-.home-subtitle {
-  text-align: center;
-  color: #4b5563;
-  margin-bottom: 30px;
-}
-
-/* グリッドレイアウト */
-.card-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 20px;
-  max-width: 1000px;
-  margin: 0 auto;
-}
-
-/* 機能カード */
-.card {
-  background-color: #f9fafb;
-  border-radius: 12px;
-  padding: 30px;
-  text-align: center;
-  text-decoration: none;
-  color: #111827;
-  font-weight: bold;
-  font-size: 18px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
-}
-
-/* 無効カード */
-.card.disabled {
-  color: #9ca3af;
-  background-color: #e5e7eb;
-  cursor: not-allowed;
-  pointer-events: none;
-}
-
-/* 汎用ボタン */
-button {
-  background-color: #2563eb;
-  color: #fff;
-  padding: 10px 16px;
-  border: none;
-  border-radius: 6px;
-  font-size: 16px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-button:hover {
-  background-color: #1e40af;
-}
-
-/* リンクスタイル */
-a {
-  color: inherit;
-  text-decoration: none;
-}
+export default App;
