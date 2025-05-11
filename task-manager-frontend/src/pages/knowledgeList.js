@@ -12,7 +12,6 @@ function KnowledgeList() {
         return response.json();
       })
       .then(data => {
-        // 必ず id がある記事だけに絞る
         const validArticles = data.filter(k => typeof k.id === 'string' && k.id.trim() !== '');
         setKnowledges(validArticles);
       })
@@ -58,6 +57,16 @@ function KnowledgeList() {
                   ? new Date(knowledge.createdAt).toLocaleDateString()
                   : '日付不明'}
               </p>
+
+              {/* 画像表示（ある場合のみ） */}
+              {knowledge.imageUrl && (
+                <img
+                  src={`http://localhost:8080${knowledge.imageUrl}`}
+                  alt="ナレッジ画像"
+                  style={imageStyle}
+                />
+              )}
+
               <div style={{ marginTop: '10px' }}>
                 <Link to={`/knowledges/${knowledge.id}/edit`}>
                   <button style={smallButtonStyle}>✏️ 編集</button>
@@ -105,6 +114,13 @@ const smallButtonStyle = {
   border: 'none',
   borderRadius: '4px',
   cursor: 'pointer'
+};
+
+const imageStyle = {
+  marginTop: '10px',
+  maxWidth: '100%',
+  height: 'auto',
+  borderRadius: '8px'
 };
 
 export default KnowledgeList;
