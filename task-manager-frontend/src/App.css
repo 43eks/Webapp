@@ -1,6 +1,6 @@
 /* App.css */
 
-/* 🌍 画面全体に背景画像を適用 */
+/* 🌍 全体背景にビニャーレス渓谷を適用 */
 html, body, #root {
   margin: 0;
   padding: 0;
@@ -13,12 +13,13 @@ html, body, #root {
   background-repeat: no-repeat;
 }
 
-/* 📄 半透明オーバーレイで読みやすく */
+/* 📄 全体を包む半透明オーバーレイ */
 .app-overlay {
-  background-color: rgba(255, 255, 255, 0.85);
+  background-color: rgba(255, 255, 255, 0.85); /* 背景の上に白の透過レイヤー */
   min-height: 100vh;
   padding: 40px;
   box-sizing: border-box;
+  backdrop-filter: blur(2px); /* optional: 背景を少しぼかす */
 }
 
 /* 🏠 ホームページタイトル */
@@ -36,7 +37,7 @@ html, body, #root {
   margin-bottom: 30px;
 }
 
-/* 📦 機能カードグリッド */
+/* 📦 機能カードのグリッドレイアウト */
 .card-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -45,7 +46,7 @@ html, body, #root {
   margin: 0 auto;
 }
 
-/* 📦 カードスタイル */
+/* 📦 各機能カードの見た目 */
 .card {
   background-color: #f9fafb;
   border-radius: 12px;
@@ -64,6 +65,7 @@ html, body, #root {
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
 }
 
+/* 🔒 未実装・非アクティブ用カード */
 .card.disabled {
   color: #9ca3af;
   background-color: #e5e7eb;
@@ -71,7 +73,7 @@ html, body, #root {
   pointer-events: none;
 }
 
-/* ✅ 汎用ボタン */
+/* ✅ ボタン共通スタイル */
 button {
   background-color: #2563eb;
   color: #fff;
@@ -87,7 +89,7 @@ button:hover {
   background-color: #1e40af;
 }
 
-/* 🔗 リンク装飾なし */
+/* 🔗 リンクスタイル（装飾なし） */
 a {
   color: inherit;
   text-decoration: none;
