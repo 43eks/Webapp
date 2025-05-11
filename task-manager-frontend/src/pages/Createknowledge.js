@@ -5,8 +5,31 @@ function CreateKnowledge() {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [category, setCategory] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
   const navigate = useNavigate();
 
+  // 画像アップロード処理
+  const handleImageChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('image', file);
+
+    try {
+      const res = await fetch('http://localhost:8080/upload', {
+        method: 'POST',
+        body: formData
+      });
+      const data = await res.json();
+      setImageUrl(data.url);
+    } catch (error) {
+      console.error('画像アップロードエラー:', error);
+      alert('画像のアップロードに失敗しました');
+    }
+  };
+
+  // 投稿処理
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -14,6 +37,7 @@ function CreateKnowledge() {
       title,
       content,
       category,
+      imageUrl, // ✅ 画像パスも保存
       createdAt: new Date().toISOString()
     };
 
@@ -47,6 +71,17 @@ function CreateKnowledge() {
 
         <label>本文:</label>
         <textarea value={content} onChange={e => setContent(e.target.value)} required style={textareaStyle} />
+
+        <label>画像を添付:</label>
+        <input type="file" onChange={handleImageChange} accept="image/*" />
+
+        {imageUrl && (
+          <img
+            src={`http://localhost:8080${imageUrl}`}
+            alt="プレビュー"
+            style={{ maxWidth: '300px', marginTop: '10px' }}
+          />
+        )}
 
         <button type="submit" style={submitButtonStyle}>投稿する</button>
       </form>
