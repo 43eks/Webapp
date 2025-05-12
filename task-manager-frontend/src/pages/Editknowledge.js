@@ -6,75 +6,63 @@ function EditKnowledge() {
   const navigate = useNavigate();
 
   const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
   const [category, setCategory] = useState('');
-  const [imageUrl, setImageUrl] = useState('');
+  const [content, setContent] = useState('');
+  const [image, setImage] = useState('');
   const [newImageFile, setNewImageFile] = useState(null);
-  const [removeImage, setRemoveImage] = useState(false);
+  const [previewURL, setPreviewURL] = useState('');
 
   useEffect(() => {
     fetch(`http://localhost:8080/knowledge/${id}`)
-      .then(res => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json();
-      })
+      .then(res => res.json())
       .then(data => {
-        setTitle(data.title || '');
-        setContent(data.content || '');
-        setCategory(data.category || '');
-        setImageUrl(data.imageUrl || '');
+        setTitle(data.title);
+        setCategory(data.category);
+        setContent(data.content);
+        setImage(data.image || '');
+        setPreviewURL(data.image || '');
       })
       .catch(err => {
-        console.error('❌ 取得エラー:', err);
+        console.error('❌ 詳細取得エラー:', err);
         alert('記事の取得に失敗しました');
       });
   }, [id]);
 
   const handleImageChange = (e) => {
-    if (e.target.files && e.target.files[0]) {
-      setNewImageFile(e.target.files[0]);
-      setRemoveImage(false); // 新規画像選択時は削除フラグを解除
-    }
-  };
-
-  const handleRemoveImage = () => {
-    setImageUrl('');
-    setRemoveImage(true);
-    setNewImageFile(null);
+    const file = e.target.files[0];
+    setNewImageFile(file);
+    setPreviewURL(URL.createObjectURL(file));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    let updatedImageUrl = imageUrl;
+    let imageUrl = image;
 
-    if (removeImage) {
-      updatedImageUrl = '';
-    } else if (newImageFile) {
+    // 新しい画像がある場合はアップロード
+    if (newImageFile) {
       const formData = new FormData();
       formData.append('image', newImageFile);
 
-      try {
-        const res = await fetch('http://localhost:8080/upload', {
-          method: 'POST',
-          body: formData
-        });
+      const uploadRes = await fetch('http://localhost:8080/upload', {
+        method: 'POST',
+        body: formData
+      });
 
-        if (!res.ok) throw new Error('画像アップロード失敗');
-        const data = await res.json();
-        updatedImageUrl = data.url;
-      } catch (err) {
-        console.error('❌ 画像アップロード失敗:', err);
-        alert('画像アップロードに失敗しました');
+      if (!uploadRes.ok) {
+        alert('画像のアップロードに失敗しました');
         return;
       }
+
+      const uploadData = await uploadRes.json();
+      imageUrl = uploadData.url;
     }
 
     const updatedKnowledge = {
       title,
-      content,
       category,
-      imageUrl: updatedImageUrl,
+      content,
+      image: imageUrl,
       updatedAt: new Date().toISOString()
     };
 
@@ -84,18 +72,18 @@ function EditKnowledge() {
       body: JSON.stringify(updatedKnowledge)
     })
       .then(res => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        navigate('/knowledges');
+        if (!res.ok) throw new Error();
+        navigate(`/knowledges`);
       })
       .catch(err => {
-        console.error('❌ 更新失敗:', err);
+        console.error('❌ 更新エラー:', err);
         alert('記事の更新に失敗しました');
       });
   };
 
   return (
     <div style={{ padding: '20px' }}>
-      <h2>✏️ 記事編集</h2>
+      <h2>✏️ 記事を編集</h2>
       <form onSubmit={handleSubmit} style={formStyle}>
         <label>タイトル:</label>
         <input type="text" value={title} onChange={e => setTitle(e.target.value)} required style={inputStyle} />
@@ -107,20 +95,7 @@ function EditKnowledge() {
         <textarea value={content} onChange={e => setContent(e.target.value)} required style={textareaStyle} />
 
         <label>画像:</label>
-        {imageUrl && !removeImage && (
-          <div style={{ marginBottom: '10px' }}>
-            <img
-              src={`http://localhost:8080${imageUrl}`}
-              alt="現在の画像"
-              style={{ maxWidth: '100%', maxHeight: '200px', borderRadius: '6px' }}
-            />
-            <br />
-            <button type="button" onClick={handleRemoveImage} style={removeButtonStyle}>
-              🗑️ 画像を削除
-            </button>
-          </div>
-        )}
-
+        {previewURL && <img src={previewURL} alt="プレビュー" style={imagePreviewStyle} />}
         <input type="file" accept="image/*" onChange={handleImageChange} />
 
         <button type="submit" style={submitButtonStyle}>更新する</button>
@@ -148,24 +123,21 @@ const textareaStyle = {
   minHeight: '150px'
 };
 
+const imagePreviewStyle = {
+  width: '100%',
+  maxWidth: '400px',
+  margin: '10px 0',
+  borderRadius: '8px'
+};
+
 const submitButtonStyle = {
   marginTop: '10px',
   padding: '10px',
-  backgroundColor: '#2196F3',
+  backgroundColor: '#4CAF50',
   color: '#fff',
   fontSize: '16px',
   border: 'none',
   borderRadius: '6px',
-  cursor: 'pointer'
-};
-
-const removeButtonStyle = {
-  marginTop: '8px',
-  padding: '6px 12px',
-  backgroundColor: '#f44336',
-  color: 'white',
-  border: 'none',
-  borderRadius: '4px',
   cursor: 'pointer'
 };
 
