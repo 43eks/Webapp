@@ -10,6 +10,7 @@ function EditKnowledge() {
   const [category, setCategory] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [newImageFile, setNewImageFile] = useState(null);
+  const [removeImage, setRemoveImage] = useState(false);
 
   useEffect(() => {
     fetch(`http://localhost:8080/knowledge/${id}`)
@@ -32,7 +33,14 @@ function EditKnowledge() {
   const handleImageChange = (e) => {
     if (e.target.files && e.target.files[0]) {
       setNewImageFile(e.target.files[0]);
+      setRemoveImage(false); // 新規画像選択時は削除フラグを解除
     }
+  };
+
+  const handleRemoveImage = () => {
+    setImageUrl('');
+    setRemoveImage(true);
+    setNewImageFile(null);
   };
 
   const handleSubmit = async (e) => {
@@ -40,8 +48,9 @@ function EditKnowledge() {
 
     let updatedImageUrl = imageUrl;
 
-    // 新しい画像があればアップロード
-    if (newImageFile) {
+    if (removeImage) {
+      updatedImageUrl = '';
+    } else if (newImageFile) {
       const formData = new FormData();
       formData.append('image', newImageFile);
 
@@ -61,7 +70,6 @@ function EditKnowledge() {
       }
     }
 
-    // 記事更新リクエスト
     const updatedKnowledge = {
       title,
       content,
@@ -99,15 +107,20 @@ function EditKnowledge() {
         <textarea value={content} onChange={e => setContent(e.target.value)} required style={textareaStyle} />
 
         <label>画像:</label>
-        {imageUrl && (
-          <div>
+        {imageUrl && !removeImage && (
+          <div style={{ marginBottom: '10px' }}>
             <img
               src={`http://localhost:8080${imageUrl}`}
               alt="現在の画像"
-              style={{ maxWidth: '100%', marginBottom: '10px' }}
+              style={{ maxWidth: '100%', maxHeight: '200px', borderRadius: '6px' }}
             />
+            <br />
+            <button type="button" onClick={handleRemoveImage} style={removeButtonStyle}>
+              🗑️ 画像を削除
+            </button>
           </div>
         )}
+
         <input type="file" accept="image/*" onChange={handleImageChange} />
 
         <button type="submit" style={submitButtonStyle}>更新する</button>
@@ -141,4 +154,19 @@ const submitButtonStyle = {
   backgroundColor: '#2196F3',
   color: '#fff',
   fontSize: '16px',
- 
+  border: 'none',
+  borderRadius: '6px',
+  cursor: 'pointer'
+};
+
+const removeButtonStyle = {
+  marginTop: '8px',
+  padding: '6px 12px',
+  backgroundColor: '#f44336',
+  color: 'white',
+  border: 'none',
+  borderRadius: '4px',
+  cursor: 'pointer'
+};
+
+export default EditKnowledge;
