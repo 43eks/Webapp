@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 
 function EditKnowledge() {
   const { id } = useParams();
@@ -8,74 +8,107 @@ function EditKnowledge() {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [category, setCategory] = useState('');
-  const [loading, setLoading] = useState(true);
+  const [imageUrl, setImageUrl] = useState('');
+  const [newImageFile, setNewImageFile] = useState(null);
 
   useEffect(() => {
-    if (!id) {
-      alert('IDが指定されていません');
-      navigate('/knowledges');
-      return;
-    }
-
     fetch(`http://localhost:8080/knowledge/${id}`)
       .then(res => {
-        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();
       })
       .then(data => {
-        setTitle(data.title);
-        setContent(data.content);
+        setTitle(data.title || '');
+        setContent(data.content || '');
         setCategory(data.category || '');
-        setLoading(false);
+        setImageUrl(data.imageUrl || '');
       })
-      .catch(error => {
-        console.error('取得エラー:', error);
+      .catch(err => {
+        console.error('❌ 取得エラー:', err);
         alert('記事の取得に失敗しました');
-        navigate('/knowledges');
       });
-  }, [id, navigate]);
+  }, [id]);
 
-  const handleUpdate = (e) => {
+  const handleImageChange = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      setNewImageFile(e.target.files[0]);
+    }
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
+    let updatedImageUrl = imageUrl;
+
+    // 新しい画像があればアップロード
+    if (newImageFile) {
+      const formData = new FormData();
+      formData.append('image', newImageFile);
+
+      try {
+        const res = await fetch('http://localhost:8080/upload', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!res.ok) throw new Error('画像アップロード失敗');
+        const data = await res.json();
+        updatedImageUrl = data.url;
+      } catch (err) {
+        console.error('❌ 画像アップロード失敗:', err);
+        alert('画像アップロードに失敗しました');
+        return;
+      }
+    }
+
+    // 記事更新リクエスト
     const updatedKnowledge = {
-      id,
       title,
       content,
       category,
-      updatedAt: new Date().toISOString(),
+      imageUrl: updatedImageUrl,
+      updatedAt: new Date().toISOString()
     };
 
     fetch(`http://localhost:8080/knowledge/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(updatedKnowledge),
+      body: JSON.stringify(updatedKnowledge)
     })
       .then(res => {
-        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-        alert('✅ 更新完了');
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
         navigate('/knowledges');
       })
-      .catch(error => {
-        console.error('更新エラー:', error);
-        alert('更新に失敗しました');
+      .catch(err => {
+        console.error('❌ 更新失敗:', err);
+        alert('記事の更新に失敗しました');
       });
   };
 
-  if (loading) return <p>読み込み中...</p>;
-
   return (
     <div style={{ padding: '20px' }}>
-      <h2>✏️ 記事を編集</h2>
-      <form onSubmit={handleUpdate} style={formStyle}>
+      <h2>✏️ 記事編集</h2>
+      <form onSubmit={handleSubmit} style={formStyle}>
         <label>タイトル:</label>
         <input type="text" value={title} onChange={e => setTitle(e.target.value)} required style={inputStyle} />
 
-        <label>カテゴリ（任意）:</label>
+        <label>カテゴリ:</label>
         <input type="text" value={category} onChange={e => setCategory(e.target.value)} style={inputStyle} />
 
         <label>本文:</label>
-        <textarea value={content} onChange={e => setContent(e.target.value)} required rows={8} style={textareaStyle} />
+        <textarea value={content} onChange={e => setContent(e.target.value)} required style={textareaStyle} />
+
+        <label>画像:</label>
+        {imageUrl && (
+          <div>
+            <img
+              src={`http://localhost:8080${imageUrl}`}
+              alt="現在の画像"
+              style={{ maxWidth: '100%', marginBottom: '10px' }}
+            />
+          </div>
+        )}
+        <input type="file" accept="image/*" onChange={handleImageChange} />
 
         <button type="submit" style={submitButtonStyle}>更新する</button>
       </form>
@@ -83,6 +116,7 @@ function EditKnowledge() {
   );
 }
 
+// --- スタイル ---
 const formStyle = {
   display: 'flex',
   flexDirection: 'column',
@@ -107,9 +141,4 @@ const submitButtonStyle = {
   backgroundColor: '#2196F3',
   color: '#fff',
   fontSize: '16px',
-  border: 'none',
-  borderRadius: '6px',
-  cursor: 'pointer'
-};
-
-export default EditKnowledge;
+ 
