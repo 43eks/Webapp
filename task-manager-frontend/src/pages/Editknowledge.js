@@ -34,12 +34,29 @@ function EditKnowledge() {
     setPreviewURL(URL.createObjectURL(file));
   };
 
+  const handleImageDelete = async () => {
+    if (!image) return;
+    const filename = image.split('/').pop();
+    const res = await fetch(`http://localhost:8080/character/${filename}`, {
+      method: 'DELETE'
+    });
+
+    if (res.ok) {
+      setImage('');
+      setPreviewURL('');
+      setNewImageFile(null);
+      alert('画像を削除しました');
+    } else {
+      alert('画像の削除に失敗しました');
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     let imageUrl = image;
 
-    // 新しい画像がある場合はアップロード
+    // 新画像アップロード
     if (newImageFile) {
       const formData = new FormData();
       formData.append('image', newImageFile);
@@ -62,7 +79,7 @@ function EditKnowledge() {
       title,
       category,
       content,
-      image: imageUrl,
+      image: imageUrl || '',
       updatedAt: new Date().toISOString()
     };
 
@@ -95,7 +112,12 @@ function EditKnowledge() {
         <textarea value={content} onChange={e => setContent(e.target.value)} required style={textareaStyle} />
 
         <label>画像:</label>
-        {previewURL && <img src={previewURL} alt="プレビュー" style={imagePreviewStyle} />}
+        {previewURL && (
+          <div>
+            <img src={previewURL} alt="プレビュー" style={imagePreviewStyle} />
+            <button type="button" onClick={handleImageDelete} style={deleteButtonStyle}>🗑️ 画像を削除</button>
+          </div>
+        )}
         <input type="file" accept="image/*" onChange={handleImageChange} />
 
         <button type="submit" style={submitButtonStyle}>更新する</button>
@@ -126,8 +148,18 @@ const textareaStyle = {
 const imagePreviewStyle = {
   width: '100%',
   maxWidth: '400px',
-  margin: '10px 0',
+  marginTop: '10px',
   borderRadius: '8px'
+};
+
+const deleteButtonStyle = {
+  marginTop: '10px',
+  padding: '6px 10px',
+  backgroundColor: '#dc2626',
+  color: '#fff',
+  border: 'none',
+  borderRadius: '6px',
+  cursor: 'pointer'
 };
 
 const submitButtonStyle = {
