@@ -1,4 +1,3 @@
-// server/index.js
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
@@ -106,11 +105,20 @@ app.delete('/knowledge/:id', (req, res) => {
   res.status(204).send();
 });
 
-// --- 画像アップロードAPI
+// --- 画像アップロードAPI（単一）
 app.post('/upload', upload.single('image'), (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
   const imageUrl = `/uploads/${req.file.filename}`;
   res.status(200).json({ url: imageUrl });
+});
+
+// --- 画像アップロードAPI（複数）
+app.post('/upload/multiple', upload.array('images'), (req, res) => {
+  if (!req.files || req.files.length === 0) {
+    return res.status(400).json({ error: 'No files uploaded' });
+  }
+  const urls = req.files.map(f => `/uploads/${f.filename}`);
+  res.status(200).json({ urls });
 });
 
 // --- キャラクター画像API
