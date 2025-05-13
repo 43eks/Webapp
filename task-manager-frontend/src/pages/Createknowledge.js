@@ -5,24 +5,24 @@ function CreateKnowledge() {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [category, setCategory] = useState('');
-  const [imageUrl, setImageUrl] = useState('');
+  const [imageUrls, setImageUrls] = useState([]);
   const navigate = useNavigate();
 
-  // 画像アップロード処理
+  // 複数画像アップロード処理
   const handleImageChange = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+    const files = Array.from(e.target.files);
+    if (files.length === 0) return;
 
     const formData = new FormData();
-    formData.append('image', file);
+    files.forEach(file => formData.append('images', file));
 
     try {
-      const res = await fetch('http://localhost:8080/upload', {
+      const res = await fetch('http://localhost:8080/upload/multiple', {
         method: 'POST',
         body: formData
       });
       const data = await res.json();
-      setImageUrl(data.url);
+      setImageUrls(data.urls || []);
     } catch (error) {
       console.error('画像アップロードエラー:', error);
       alert('画像のアップロードに失敗しました');
@@ -37,7 +37,7 @@ function CreateKnowledge() {
       title,
       content,
       category,
-      imageUrl, // ✅ 画像パスも保存
+      images: imageUrls, // ✅ 複数画像を配列で送信
       createdAt: new Date().toISOString()
     };
 
@@ -72,15 +72,21 @@ function CreateKnowledge() {
         <label>本文:</label>
         <textarea value={content} onChange={e => setContent(e.target.value)} required style={textareaStyle} />
 
-        <label>画像を添付:</label>
-        <input type="file" onChange={handleImageChange} accept="image/*" />
+        <label>画像を添付（複数可）:</label>
+        <input type="file" onChange={handleImageChange} accept="image/*" multiple />
 
-        {imageUrl && (
-          <img
-            src={`http://localhost:8080${imageUrl}`}
-            alt="プレビュー"
-            style={{ maxWidth: '300px', marginTop: '10px' }}
-          />
+        {/* アップロード済み画像のプレビュー */}
+        {imageUrls.length > 0 && (
+          <div style={{ marginTop: '10px', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+            {imageUrls.map((url, index) => (
+              <img
+                key={index}
+                src={`http://localhost:8080${url}`}
+                alt={`preview-${index}`}
+                style={{ maxWidth: '150px', borderRadius: '6px' }}
+              />
+            ))}
+          </div>
         )}
 
         <button type="submit" style={submitButtonStyle}>投稿する</button>
@@ -89,6 +95,7 @@ function CreateKnowledge() {
   );
 }
 
+// スタイル
 const formStyle = {
   display: 'flex',
   flexDirection: 'column',
