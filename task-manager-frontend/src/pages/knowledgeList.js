@@ -44,8 +44,12 @@ function KnowledgeList() {
         ) : (
           knowledges.map(k => (
             <div key={k.id} style={cardStyle}>
-              {k.image && (
-                <img src={k.image} alt="thumbnail" style={imageStyle} />
+              {Array.isArray(k.images) && k.images.length > 0 && (
+                <img
+                  src={`http://localhost:8080${k.images[0]}`}
+                  alt="thumbnail"
+                  style={imageStyle}
+                />
               )}
               <h3 style={{ margin: '10px 0' }}>{k.title}</h3>
               <p style={{ color: '#666' }}>
