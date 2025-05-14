@@ -1,14 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Sortable from 'sortablejs';
 
 function CreateKnowledge() {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [category, setCategory] = useState('');
   const [imageUrls, setImageUrls] = useState([]);
+  const previewRef = useRef(null);
   const navigate = useNavigate();
 
-  // 複数画像アップロード処理
+  // 画像アップロード処理
   const handleImageChange = async (e) => {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
@@ -22,12 +24,29 @@ function CreateKnowledge() {
         body: formData
       });
       const data = await res.json();
-      setImageUrls(data.urls || []);
+      setImageUrls(prev => [...prev, ...(data.urls || [])]);
     } catch (error) {
       console.error('画像アップロードエラー:', error);
       alert('画像のアップロードに失敗しました');
     }
   };
+
+  // 並べ替え機能
+  useEffect(() => {
+    if (!previewRef.current || imageUrls.length === 0) return;
+
+    const sortable = Sortable.create(previewRef.current, {
+      animation: 150,
+      onEnd: (evt) => {
+        const updated = [...imageUrls];
+        const [moved] = updated.splice(evt.oldIndex, 1);
+        updated.splice(evt.newIndex, 0, moved);
+        setImageUrls(updated);
+      }
+    });
+
+    return () => sortable.destroy();
+  }, [imageUrls]);
 
   // 投稿処理
   const handleSubmit = (e) => {
@@ -37,7 +56,7 @@ function CreateKnowledge() {
       title,
       content,
       category,
-      images: imageUrls, // ✅ 複数画像を配列で送信
+      images: imageUrls,
       createdAt: new Date().toISOString()
     };
 
@@ -59,6 +78,13 @@ function CreateKnowledge() {
       });
   };
 
+  // 画像の削除
+  const handleRemoveImage = (index) => {
+    const updated = [...imageUrls];
+    updated.splice(index, 1);
+    setImageUrls(updated);
+  };
+
   return (
     <div style={{ padding: '20px' }}>
       <h2>➕ 新規記事作成</h2>
@@ -75,16 +101,14 @@ function CreateKnowledge() {
         <label>画像を添付（複数可）:</label>
         <input type="file" onChange={handleImageChange} accept="image/*" multiple />
 
-        {/* アップロード済み画像のプレビュー */}
+        {/* プレビューと並べ替え */}
         {imageUrls.length > 0 && (
-          <div style={{ marginTop: '10px', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+          <div ref={previewRef} style={previewListStyle}>
             {imageUrls.map((url, index) => (
-              <img
-                key={index}
-                src={`http://localhost:8080${url}`}
-                alt={`preview-${index}`}
-                style={{ maxWidth: '150px', borderRadius: '6px' }}
-              />
+              <div key={index} style={previewItemStyle}>
+                <img src={`http://localhost:8080${url}`} alt={`preview-${index}`} style={imageStyle} />
+                <button type="button" onClick={() => handleRemoveImage(index)} style={removeButtonStyle}>×</button>
+              </div>
             ))}
           </div>
         )}
@@ -95,7 +119,7 @@ function CreateKnowledge() {
   );
 }
 
-// スタイル
+// --- スタイル定義 ---
 const formStyle = {
   display: 'flex',
   flexDirection: 'column',
@@ -122,6 +146,35 @@ const submitButtonStyle = {
   fontSize: '16px',
   border: 'none',
   borderRadius: '6px',
+  cursor: 'pointer'
+};
+
+const previewListStyle = {
+  display: 'flex',
+  flexWrap: 'wrap',
+  gap: '10px',
+  marginTop: '10px'
+};
+
+const previewItemStyle = {
+  position: 'relative'
+};
+
+const imageStyle = {
+  maxWidth: '150px',
+  borderRadius: '6px'
+};
+
+const removeButtonStyle = {
+  position: 'absolute',
+  top: '-8px',
+  right: '-8px',
+  background: 'red',
+  color: 'white',
+  border: 'none',
+  borderRadius: '50%',
+  width: '24px',
+  height: '24px',
   cursor: 'pointer'
 };
 
