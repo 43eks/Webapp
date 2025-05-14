@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import Sortable from 'sortablejs';
 
 function EditKnowledge() {
   const { id } = useParams();
@@ -8,9 +9,9 @@ function EditKnowledge() {
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('');
   const [content, setContent] = useState('');
-  const [image, setImage] = useState('');
-  const [newImageFile, setNewImageFile] = useState(null);
-  const [previewURL, setPreviewURL] = useState('');
+  const [images, setImages] = useState([]);
+  const imageListRef = useRef(null);
+  const [newImages, setNewImages] = useState([]);
 
   useEffect(() => {
     fetch(`http://localhost:8080/knowledge/${id}`)
@@ -19,8 +20,7 @@ function EditKnowledge() {
         setTitle(data.title);
         setCategory(data.category);
         setContent(data.content);
-        setImage(data.image || '');
-        setPreviewURL(data.image || '');
+        setImages(data.images || []);
       })
       .catch(err => {
         console.error('❌ 詳細取得エラー:', err);
@@ -28,58 +28,61 @@ function EditKnowledge() {
       });
   }, [id]);
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    setNewImageFile(file);
-    setPreviewURL(URL.createObjectURL(file));
-  };
-
-  const handleImageDelete = async () => {
-    if (!image) return;
-    const filename = image.split('/').pop();
-    const res = await fetch(`http://localhost:8080/character/${filename}`, {
-      method: 'DELETE'
-    });
-
-    if (res.ok) {
-      setImage('');
-      setPreviewURL('');
-      setNewImageFile(null);
-      alert('画像を削除しました');
-    } else {
-      alert('画像の削除に失敗しました');
+  useEffect(() => {
+    if (imageListRef.current) {
+      Sortable.create(imageListRef.current, {
+        animation: 150,
+        onEnd: ({ oldIndex, newIndex }) => {
+          const reordered = [...images];
+          const [moved] = reordered.splice(oldIndex, 1);
+          reordered.splice(newIndex, 0, moved);
+          setImages(reordered);
+        }
+      });
     }
-  };
+  }, [images]);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleNewImageChange = async (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length === 0) return;
 
-    let imageUrl = image;
+    const formData = new FormData();
+    files.forEach(file => formData.append('images', file));
 
-    // 新画像アップロード
-    if (newImageFile) {
-      const formData = new FormData();
-      formData.append('image', newImageFile);
-
-      const uploadRes = await fetch('http://localhost:8080/upload', {
+    try {
+      const res = await fetch('http://localhost:8080/upload/multiple', {
         method: 'POST',
         body: formData
       });
-
-      if (!uploadRes.ok) {
-        alert('画像のアップロードに失敗しました');
-        return;
-      }
-
-      const uploadData = await uploadRes.json();
-      imageUrl = uploadData.url;
+      const data = await res.json();
+      setImages([...images, ...(data.urls || [])]);
+    } catch (error) {
+      console.error('画像アップロードエラー:', error);
+      alert('画像のアップロードに失敗しました');
     }
+  };
+
+  const handleImageDelete = (url) => {
+    if (!window.confirm('この画像を削除しますか？')) return;
+    const fileName = url.split('/').pop();
+    fetch(`http://localhost:8080/character/${fileName}`, { method: 'DELETE' })
+      .then(res => {
+        if (res.ok) {
+          setImages(images.filter(img => img !== url));
+        } else {
+          alert('削除に失敗しました');
+        }
+      });
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
 
     const updatedKnowledge = {
       title,
       category,
       content,
-      image: imageUrl || '',
+      images,
       updatedAt: new Date().toISOString()
     };
 
@@ -90,7 +93,7 @@ function EditKnowledge() {
     })
       .then(res => {
         if (!res.ok) throw new Error();
-        navigate(`/knowledges`);
+        navigate('/knowledges');
       })
       .catch(err => {
         console.error('❌ 更新エラー:', err);
@@ -112,13 +115,16 @@ function EditKnowledge() {
         <textarea value={content} onChange={e => setContent(e.target.value)} required style={textareaStyle} />
 
         <label>画像:</label>
-        {previewURL && (
-          <div>
-            <img src={previewURL} alt="プレビュー" style={imagePreviewStyle} />
-            <button type="button" onClick={handleImageDelete} style={deleteButtonStyle}>🗑️ 画像を削除</button>
-          </div>
-        )}
-        <input type="file" accept="image/*" onChange={handleImageChange} />
+        <div ref={imageListRef} style={imageListStyle}>
+          {images.map((url, index) => (
+            <div key={index} style={imageItemStyle}>
+              <img src={`http://localhost:8080${url}`} alt={`img-${index}`} style={imageStyle} />
+              <button type="button" onClick={() => handleImageDelete(url)} style={deleteButtonStyle}>🗑️</button>
+            </div>
+          ))}
+        </div>
+
+        <input type="file" accept="image/*" multiple onChange={handleNewImageChange} />
 
         <button type="submit" style={submitButtonStyle}>更新する</button>
       </form>
@@ -145,20 +151,30 @@ const textareaStyle = {
   minHeight: '150px'
 };
 
-const imagePreviewStyle = {
-  width: '100%',
-  maxWidth: '400px',
-  marginTop: '10px',
-  borderRadius: '8px'
+const imageListStyle = {
+  display: 'flex',
+  gap: '10px',
+  flexWrap: 'wrap',
+  marginBottom: '10px'
+};
+
+const imageItemStyle = {
+  position: 'relative'
+};
+
+const imageStyle = {
+  maxWidth: '150px',
+  borderRadius: '6px'
 };
 
 const deleteButtonStyle = {
-  marginTop: '10px',
-  padding: '6px 10px',
+  position: 'absolute',
+  top: 0,
+  right: 0,
   backgroundColor: '#dc2626',
   color: '#fff',
   border: 'none',
-  borderRadius: '6px',
+  borderRadius: '4px',
   cursor: 'pointer'
 };
 
