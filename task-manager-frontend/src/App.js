@@ -36,54 +36,52 @@ export const API_BASE_URL = 'http://localhost:8080';
 
 function App() {
   return (
-    <div className="app-overlay"> {/* ✅ 背景オーバーレイ用のラッパー */}
-      <Router>
-        {/* --- ナビゲーションバー --- */}
-        <nav style={navBarStyle}>
-          <Link to="/" style={navLinkStyle}>🏠 ホーム</Link>
-          <Link to="/tasks" style={navLinkStyle}>📝 タスク</Link>
-          <Link to="/knowledges" style={navLinkStyle}>📚 ナレッジ</Link>
-          <Link to="/habits" style={navLinkStyle}>📅 習慣</Link>
-          <Link to="/goals" style={navLinkStyle}>🎯 ゴール</Link>
-          <Link to="/slides/create" style={navLinkStyle}>🎞️ スライド</Link>
-          <Link to="/character" style={navLinkStyle}>🧍 キャラクター</Link>
-        </nav>
+    <Router>
+      {/* --- ナビゲーションバー --- */}
+      <nav style={navBarStyle}>
+        <Link to="/" style={navLinkStyle}>🏠 ホーム</Link>
+        <Link to="/tasks" style={navLinkStyle}>📝 タスク</Link>
+        <Link to="/knowledges" style={navLinkStyle}>📚 ナレッジ</Link>
+        <Link to="/habits" style={navLinkStyle}>📅 習慣</Link>
+        <Link to="/goals" style={navLinkStyle}>🎯 ゴール</Link>
+        <Link to="/slides/create" style={navLinkStyle}>🎞️ スライド</Link>
+        <Link to="/character" style={navLinkStyle}>🧍 キャラクター</Link>
+      </nav>
 
-        {/* --- ページルーティング --- */}
-        <main>
-          <Routes>
-            {/* ホーム */}
-            <Route path="/" element={<Home />} />
+      {/* --- 背景オーバーレイ付きメイン画面 --- */}
+      <main className="app-overlay">
+        <Routes>
+          {/* ホーム */}
+          <Route path="/" element={<Home />} />
 
-            {/* ナレッジ */}
-            <Route path="/knowledges" element={<KnowledgeList />} />
-            <Route path="/knowledges/create" element={<CreateKnowledge />} />
-            <Route path="/knowledges/:id/edit" element={<EditKnowledge />} />
-            <Route path="/knowledges/:id" element={<ViewKnowledge />} />
+          {/* ナレッジ */}
+          <Route path="/knowledges" element={<KnowledgeList />} />
+          <Route path="/knowledges/create" element={<CreateKnowledge />} />
+          <Route path="/knowledges/:id/edit" element={<EditKnowledge />} />
+          <Route path="/knowledges/:id" element={<ViewKnowledge />} />
 
-            {/* タスク */}
-            <Route path="/tasks" element={<TaskList />} />
-            <Route path="/tasks/create" element={<CreateTask />} />
-            <Route path="/tasks/:id" element={<TaskDetail />} />
+          {/* タスク */}
+          <Route path="/tasks" element={<TaskList />} />
+          <Route path="/tasks/create" element={<CreateTask />} />
+          <Route path="/tasks/:id" element={<TaskDetail />} />
 
-            {/* 習慣 */}
-            <Route path="/habits" element={<HabitTracker />} />
-            <Route path="/habits/create" element={<CreateHabit />} />
-            <Route path="/habits/monthly" element={<MonthlyView />} />
+          {/* 習慣 */}
+          <Route path="/habits" element={<HabitTracker />} />
+          <Route path="/habits/create" element={<CreateHabit />} />
+          <Route path="/habits/monthly" element={<MonthlyView />} />
 
-            {/* ゴール */}
-            <Route path="/goals" element={<GoalPage />} />
-            <Route path="/goals/new" element={<GoalForm />} />
+          {/* ゴール */}
+          <Route path="/goals" element={<GoalPage />} />
+          <Route path="/goals/new" element={<GoalForm />} />
 
-            {/* スライド */}
-            <Route path="/slides/create" element={<SlideVideoPage />} />
+          {/* スライド */}
+          <Route path="/slides/create" element={<SlideVideoPage />} />
 
-            {/* キャラクター */}
-            <Route path="/character" element={<CharacterUpload />} />
-          </Routes>
-        </main>
-      </Router>
-    </div>
+          {/* キャラクター */}
+          <Route path="/character" element={<CharacterUpload />} />
+        </Routes>
+      </main>
+    </Router>
   );
 }
 
