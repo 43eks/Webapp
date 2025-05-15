@@ -34,6 +34,9 @@ import CharacterUpload from './pages/CharacterUpload';
 // 🧬 DWHデータソースステップ1
 import DataSourceStep from './pages/DataSourceStep'; // ✅ 追加
 
+// 🧩 DWHデータ項目定義ステップ2
+import FieldDefinitionStep from './pages/FieldDefinitionStep'; // ✅ 追加
+
 // ✅ 共通APIベースURL
 export const API_BASE_URL = 'http://localhost:8080';
 
@@ -50,6 +53,7 @@ function App() {
         <Link to="/slides/create" style={navLinkStyle}>🎞️ スライド</Link>
         <Link to="/character" style={navLinkStyle}>🧍 キャラクター</Link>
         <Link to="/datasource" style={navLinkStyle}>🧬 データソース</Link> {/* ✅ 追加 */}
+        <Link to="/fields" style={navLinkStyle}>🧩 項目定義</Link> {/* ✅ ステップ2への追加リンク */}
       </nav>
 
       {/* --- 背景オーバーレイ付きメイン画面 --- */}
@@ -84,8 +88,9 @@ function App() {
           {/* キャラクター */}
           <Route path="/character" element={<CharacterUpload />} />
 
-          {/* ✅ DWHデータソース */}
-          <Route path="/datasource" element={<DataSourceStep />} /> {/* ✅ 追加 */}
+          {/* ✅ DWH機能 */}
+          <Route path="/datasource" element={<DataSourceStep />} />
+          <Route path="/fields" element={<FieldDefinitionStep />} /> {/* ✅ ステップ2追加 */}
         </Routes>
       </main>
     </Router>
