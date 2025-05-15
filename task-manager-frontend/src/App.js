@@ -31,6 +31,9 @@ import SlideVideoPage from './pages/SlideVideoPage';
 // 🧍 キャラクター画像アップロード
 import CharacterUpload from './pages/CharacterUpload';
 
+// 🧬 DWHデータソースステップ1
+import DataSourceStep from './pages/DataSourceStep'; // ✅ 追加
+
 // ✅ 共通APIベースURL
 export const API_BASE_URL = 'http://localhost:8080';
 
@@ -46,6 +49,7 @@ function App() {
         <Link to="/goals" style={navLinkStyle}>🎯 ゴール</Link>
         <Link to="/slides/create" style={navLinkStyle}>🎞️ スライド</Link>
         <Link to="/character" style={navLinkStyle}>🧍 キャラクター</Link>
+        <Link to="/datasource" style={navLinkStyle}>🧬 データソース</Link> {/* ✅ 追加 */}
       </nav>
 
       {/* --- 背景オーバーレイ付きメイン画面 --- */}
@@ -79,6 +83,9 @@ function App() {
 
           {/* キャラクター */}
           <Route path="/character" element={<CharacterUpload />} />
+
+          {/* ✅ DWHデータソース */}
+          <Route path="/datasource" element={<DataSourceStep />} /> {/* ✅ 追加 */}
         </Routes>
       </main>
     </Router>
