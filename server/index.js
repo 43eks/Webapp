@@ -1,11 +1,10 @@
+// server/index.js
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
 const multer = require('multer');
-const { exec } = require('child_process');
 
 const app = express();
 app.use(cors());
@@ -13,16 +12,10 @@ app.use(express.json());
 
 // --- 静的ファイル公開
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-app.use('/videos', express.static(path.join(__dirname, 'videos'), {
-  setHeaders: (res, filePath) => {
-    if (path.extname(filePath) === '.mp4') {
-      res.setHeader('Content-Type', 'video/mp4');
-    }
-  }
-}));
+app.use('/videos', express.static(path.join(__dirname, 'videos')));
 app.use('/music', express.static(path.join(__dirname, 'music')));
 
-// --- multer設定
+// --- multer設定（画像アップロード用）
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const dir = path.join(__dirname, 'uploads');
@@ -35,7 +28,7 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-// --- データファイル読み込み×ID補筆
+// --- データファイル読み込み＆初期化
 const DATA_FILE = './data.json';
 let db = { knowledge: [], tasks: [], habits: [], goals: [], history: [] };
 
@@ -53,14 +46,7 @@ if (fs.existsSync(DATA_FILE)) {
 
 // --- タスクAPI
 app.get('/tasks', (req, res) => {
-  try {
-    const rawData = fs.readFileSync(DATA_FILE, 'utf-8');
-    const freshDb = JSON.parse(rawData);
-    res.json(freshDb.tasks || []);
-  } catch (err) {
-    console.error('❌ タスク取得エラー:', err);
-    res.status(500).json({ error: 'Server error' });
-  }
+  res.json(db.tasks || []);
 });
 
 app.get('/tasks/:id', (req, res) => {
@@ -69,8 +55,10 @@ app.get('/tasks/:id', (req, res) => {
   res.json(task);
 });
 
-// --- ナレッジ記事API
-app.get('/knowledge', (req, res) => res.json(db.knowledge));
+// --- ナレッジAPI
+app.get('/knowledge', (req, res) => {
+  res.json(db.knowledge || []);
+});
 
 app.post('/knowledge', (req, res) => {
   const item = {
@@ -92,7 +80,11 @@ app.get('/knowledge/:id', (req, res) => {
 app.put('/knowledge/:id', (req, res) => {
   const index = db.knowledge.findIndex(k => k.id === req.params.id);
   if (index === -1) return res.status(404).json({ error: 'Not found' });
-  db.knowledge[index] = { ...db.knowledge[index], ...req.body, updatedAt: new Date().toISOString() };
+  db.knowledge[index] = {
+    ...db.knowledge[index],
+    ...req.body,
+    updatedAt: new Date().toISOString()
+  };
   fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2));
   res.json(db.knowledge[index]);
 });
@@ -108,8 +100,7 @@ app.delete('/knowledge/:id', (req, res) => {
 // --- 画像アップロードAPI（単一）
 app.post('/upload', upload.single('image'), (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
-  const imageUrl = `/uploads/${req.file.filename}`;
-  res.status(200).json({ url: imageUrl });
+  res.status(200).json({ url: `/uploads/${req.file.filename}` });
 });
 
 // --- 画像アップロードAPI（複数）
@@ -121,7 +112,18 @@ app.post('/upload/multiple', upload.array('images'), (req, res) => {
   res.status(200).json({ urls });
 });
 
-// --- キャラクター画像API
+// --- アップロード画像削除API
+app.delete('/character/:filename', (req, res) => {
+  const filePath = path.join(__dirname, 'uploads', req.params.filename);
+  if (!fs.existsSync(filePath)) return res.status(404).json({ error: 'File not found' });
+
+  fs.unlink(filePath, err => {
+    if (err) return res.status(500).json({ error: 'Delete failed' });
+    res.json({ message: 'Deleted' });
+  });
+});
+
+// --- キャラクター画像一覧取得
 app.get('/character', (req, res) => {
   const dir = path.join(__dirname, 'uploads');
   fs.readdir(dir, (err, files) => {
@@ -131,16 +133,8 @@ app.get('/character', (req, res) => {
   });
 });
 
-app.delete('/character/:filename', (req, res) => {
-  const filePath = path.join(__dirname, 'uploads', req.params.filename);
-  if (!fs.existsSync(filePath)) return res.status(404).json({ error: 'File not found' });
-  fs.unlink(filePath, err => {
-    if (err) return res.status(500).json({ error: 'Delete failed' });
-    res.json({ message: 'Deleted' });
-  });
-});
-
 // --- サーバー起動
-app.listen(8080, () => {
-  console.log('✅ サーバー起動: http://localhost:8080');
+const PORT = process.env.PORT || 8080;
+app.listen(PORT, () => {
+  console.log(`✅ サーバー起動: http://localhost:${PORT}`);
 });
