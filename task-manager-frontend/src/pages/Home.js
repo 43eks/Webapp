@@ -2,6 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import '../App.css'; // 1階層上の App.css を読み込む
+import AdviceLogSection from './components/AdviceLogSection'; // ✅ アドバイスセクションを追加
 
 function Home() {
   return (
@@ -26,6 +27,9 @@ function Home() {
         <div className="card disabled">🏷️ カテゴリ別（準備中）</div>
         <div className="card disabled">📔 日記（予定）</div>
       </div>
+
+      {/* ✅ アドバイスログセクションの追加 */}
+      <AdviceLogSection />
     </div>
   );
 }
