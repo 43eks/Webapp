@@ -1,86 +1,124 @@
-// src/pages/AdviceLogPage.jsx
-import React, { useState, useEffect } from 'react';
+// src/App.js
+import './App.css'; // ✅ 背景・スタイルのCSSを読み込み
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 
-function AdviceLogPage() {
-  const [logs, setLogs] = useState([]);
-  const [newAdvice, setNewAdvice] = useState('');
-  const [source, setSource] = useState('');
+// 🏠 ホーム画面
+import Home from './pages/Home';
 
-  // ログの取得
-  const fetchLogs = async () => {
-    try {
-      const res = await fetch('http://localhost:8080/advice/logs');
-      const data = await res.json();
-      setLogs(data.reverse());
-    } catch (err) {
-      console.error('❌ ログ取得エラー:', err);
-    }
-  };
+// 📚 ナレッジ関連
+import KnowledgeList from './pages/knowledgeList';
+import CreateKnowledge from './pages/Createknowledge';
+import EditKnowledge from './pages/Editknowledge';
+import ViewKnowledge from './pages/Viewknowledge';
 
-  useEffect(() => {
-    fetchLogs();
-  }, []);
+// 📝 タスク管理
+import TaskList from './pages/TaskList';
+import CreateTask from './pages/CreateTask';
+import TaskDetail from './pages/TaskDetail';
 
-  // ログの追加
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!newAdvice.trim()) return;
+// 📅 習慣トラッカー
+import CreateHabit from './pages/CreateHabit';
+import HabitTracker from './pages/HabitTracker';
+import MonthlyView from './pages/MonthlyView';
 
-    const log = {
-      message: newAdvice,
-      source: source || '手動入力',
-    };
+// 🎯 ゴール管理
+import GoalPage from './pages/GoalPage';
+import GoalForm from './pages/GoalForm';
 
-    try {
-      const res = await fetch('http://localhost:8080/advice/logs', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(log),
-      });
+// 🎞️ スライド動画作成
+import SlideVideoPage from './pages/SlideVideoPage';
 
-      if (res.ok) {
-        setNewAdvice('');
-        setSource('');
-        fetchLogs();
-      } else {
-        alert('ログの送信に失敗しました');
-      }
-    } catch (err) {
-      console.error('❌ ログ送信エラー:', err);
-      alert('ログ送信時にエラーが発生しました');
-    }
-  };
+// 🧍 キャラクター画像アップロード
+import CharacterUpload from './pages/CharacterUpload';
 
+// 🧬 DWHデータソースステップ1
+import DataSourceStep from './pages/DataSourceStep';
+
+// 🧩 DWHデータ項目定義ステップ2
+import FieldDefinitionStep from './pages/FieldDefinitionStep';
+
+// 🧠 アドバイスログページ
+import AdviceLogPage from './pages/AdviceLogPage';
+
+// ✅ 共通APIベースURL
+export const API_BASE_URL = 'http://localhost:8080';
+
+function App() {
   return (
-    <div style={{ padding: '20px' }}>
-      <h2>🧠 アドバイスログ</h2>
-      <form onSubmit={handleSubmit} style={{ marginBottom: '20px' }}>
-        <textarea
-          value={newAdvice}
-          onChange={(e) => setNewAdvice(e.target.value)}
-          placeholder="アドバイス内容を入力"
-          style={{ width: '100%', height: '100px', fontSize: '16px' }}
-        />
-        <input
-          type="text"
-          value={source}
-          onChange={(e) => setSource(e.target.value)}
-          placeholder="出所（任意）"
-          style={{ width: '50%', marginTop: '8px', padding: '6px', fontSize: '14px' }}
-        />
-        <br />
-        <button type="submit" style={{ marginTop: '10px', padding: '10px 16px' }}>追加</button>
-      </form>
+    <Router>
+      {/* --- ナビゲーションバー --- */}
+      <nav style={navBarStyle}>
+        <Link to="/" style={navLinkStyle}>🏠 ホーム</Link>
+        <Link to="/tasks" style={navLinkStyle}>📝 タスク</Link>
+        <Link to="/knowledges" style={navLinkStyle}>📚 ナレッジ</Link>
+        <Link to="/habits" style={navLinkStyle}>📅 習慣</Link>
+        <Link to="/goals" style={navLinkStyle}>🎯 ゴール</Link>
+        <Link to="/slides/create" style={navLinkStyle}>🎞️ スライド</Link>
+        <Link to="/character" style={navLinkStyle}>🧍 キャラクター</Link>
+        <Link to="/datasource" style={navLinkStyle}>🧬 データソース</Link>
+        <Link to="/fields" style={navLinkStyle}>🧩 項目定義</Link>
+        <Link to="/advice" style={navLinkStyle}>🧠 アドバイス</Link>
+      </nav>
 
-      <ul>
-        {logs.map((log, index) => (
-          <li key={index} style={{ marginBottom: '10px' }}>
-            <strong>{log.timestamp}</strong>：{log.message} {log.source && `(出所: ${log.source})`}
-          </li>
-        ))}
-      </ul>
-    </div>
+      {/* --- 背景オーバーレイ付きメイン画面 --- */}
+      <main className="app-overlay">
+        <Routes>
+          {/* ホーム */}
+          <Route path="/" element={<Home />} />
+
+          {/* ナレッジ */}
+          <Route path="/knowledges" element={<KnowledgeList />} />
+          <Route path="/knowledges/create" element={<CreateKnowledge />} />
+          <Route path="/knowledges/:id/edit" element={<EditKnowledge />} />
+          <Route path="/knowledges/:id" element={<ViewKnowledge />} />
+
+          {/* タスク */}
+          <Route path="/tasks" element={<TaskList />} />
+          <Route path="/tasks/create" element={<CreateTask />} />
+          <Route path="/tasks/:id" element={<TaskDetail />} />
+
+          {/* 習慣 */}
+          <Route path="/habits" element={<HabitTracker />} />
+          <Route path="/habits/create" element={<CreateHabit />} />
+          <Route path="/habits/monthly" element={<MonthlyView />} />
+
+          {/* ゴール */}
+          <Route path="/goals" element={<GoalPage />} />
+          <Route path="/goals/new" element={<GoalForm />} />
+
+          {/* スライド */}
+          <Route path="/slides/create" element={<SlideVideoPage />} />
+
+          {/* キャラクター */}
+          <Route path="/character" element={<CharacterUpload />} />
+
+          {/* DWH機能 */}
+          <Route path="/datasource" element={<DataSourceStep />} />
+          <Route path="/fields" element={<FieldDefinitionStep />} />
+
+          {/* アドバイスログ */}
+          <Route path="/advice" element={<AdviceLogPage />} />
+        </Routes>
+      </main>
+    </Router>
   );
 }
 
-export default AdviceLogPage;
+// --- ナビゲーションバー用スタイル ---
+const navBarStyle = {
+  padding: '10px',
+  backgroundColor: '#f0f0f0',
+  display: 'flex',
+  flexWrap: 'wrap',
+  gap: '10px',
+};
+
+const navLinkStyle = {
+  textDecoration: 'none',
+  color: '#333',
+  fontSize: '16px',
+  fontWeight: 'bold',
+};
+
+export default App;
