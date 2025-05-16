@@ -1,4 +1,3 @@
-// server/index.js
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
@@ -112,7 +111,7 @@ app.post('/upload/multiple', upload.array('images'), (req, res) => {
   res.status(200).json({ urls });
 });
 
-// --- アップロード画像削除API
+// --- キャラクター画像削除API
 app.delete('/character/:filename', (req, res) => {
   const filePath = path.join(__dirname, 'uploads', req.params.filename);
   if (!fs.existsSync(filePath)) return res.status(404).json({ error: 'File not found' });
@@ -131,6 +130,30 @@ app.get('/character', (req, res) => {
     const imageUrls = files.map(file => `/uploads/${file}`);
     res.json(imageUrls);
   });
+});
+
+// --- 🧠 アドバイスログAPI
+const ADVICE_LOG_FILE = path.join(__dirname, 'advice_logs.json');
+
+// ログ取得
+app.get('/advice/logs', (req, res) => {
+  if (!fs.existsSync(ADVICE_LOG_FILE)) return res.json([]);
+  const logs = JSON.parse(fs.readFileSync(ADVICE_LOG_FILE, 'utf-8'));
+  res.json(logs);
+});
+
+// ログ追加
+app.post('/advice/logs', (req, res) => {
+  const log = { ...req.body, timestamp: new Date().toISOString() };
+
+  let logs = [];
+  if (fs.existsSync(ADVICE_LOG_FILE)) {
+    logs = JSON.parse(fs.readFileSync(ADVICE_LOG_FILE, 'utf-8'));
+  }
+
+  logs.push(log);
+  fs.writeFileSync(ADVICE_LOG_FILE, JSON.stringify(logs, null, 2));
+  res.status(201).json({ message: 'アドバイスログを保存しました', log });
 });
 
 // --- サーバー起動
