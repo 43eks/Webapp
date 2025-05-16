@@ -32,10 +32,10 @@ import SlideVideoPage from './pages/SlideVideoPage';
 import CharacterUpload from './pages/CharacterUpload';
 
 // 🧬 DWHデータソースステップ1
-import DataSourceStep from './pages/DataSourceStep'; // ✅ 追加
+import DataSourceStep from './pages/DataSourceStep';
 
 // 🧩 DWHデータ項目定義ステップ2
-import FieldDefinitionStep from './pages/FieldDefinitionStep'; // ✅ 追加
+import FieldDefinitionStep from './pages/FieldDefinitionStep';
 
 // ✅ 共通APIベースURL
 export const API_BASE_URL = 'http://localhost:8080';
@@ -52,8 +52,8 @@ function App() {
         <Link to="/goals" style={navLinkStyle}>🎯 ゴール</Link>
         <Link to="/slides/create" style={navLinkStyle}>🎞️ スライド</Link>
         <Link to="/character" style={navLinkStyle}>🧍 キャラクター</Link>
-        <Link to="/datasource" style={navLinkStyle}>🧬 データソース</Link> {/* ✅ 追加 */}
-        <Link to="/fields" style={navLinkStyle}>🧩 項目定義</Link> {/* ✅ ステップ2への追加リンク */}
+        <Link to="/datasource" style={navLinkStyle}>🧬 データソース</Link>
+        <Link to="/fields" style={navLinkStyle}>🧩 項目定義</Link> {/* ✅ ステップ2リンク追加 */}
       </nav>
 
       {/* --- 背景オーバーレイ付きメイン画面 --- */}
@@ -88,9 +88,9 @@ function App() {
           {/* キャラクター */}
           <Route path="/character" element={<CharacterUpload />} />
 
-          {/* ✅ DWH機能 */}
+          {/* ✅ DWH関連 */}
           <Route path="/datasource" element={<DataSourceStep />} />
-          <Route path="/fields" element={<FieldDefinitionStep />} /> {/* ✅ ステップ2追加 */}
+          <Route path="/fields" element={<FieldDefinitionStep />} />
         </Routes>
       </main>
     </Router>
