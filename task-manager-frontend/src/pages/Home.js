@@ -1,8 +1,8 @@
 // src/pages/Home.js
 import React from 'react';
 import { Link } from 'react-router-dom';
-import '../App.css'; // 1階層上の App.css を読み込む
-import AdviceLogSection from './components/AdviceLogSection'; // ✅ アドバイスセクションを追加
+import '../App.css'; // CSS読み込み
+import AdviceLogSection from '../components/AdviceLogSection'; // ✅ 修正：正しいパスでインポート
 
 function Home() {
   return (
@@ -10,8 +10,8 @@ function Home() {
       <h1 className="home-title">🧠 マイライフ管理アプリ</h1>
       <p className="home-subtitle">自分を整えるツールを選んでください：</p>
 
+      {/* --- カード形式メニュー --- */}
       <div className="card-grid">
-        {/* 実装済みリンク */}
         <Link to="/tasks" className="card">📝 タスク管理</Link>
         <Link to="/tasks/create" className="card">➕ タスクを追加</Link>
         <Link to="/knowledges" className="card">📚 ナレッジ管理</Link>
@@ -23,13 +23,16 @@ function Home() {
         <Link to="/slides/create" className="card">🎞️ 動画スライド作成</Link>
         <Link to="/character" className="card">🧍 キャラクター管理</Link>
 
-        {/* 未実装 or 準備中リンク */}
+        {/* 準備中カード */}
         <div className="card disabled">🏷️ カテゴリ別（準備中）</div>
         <div className="card disabled">📔 日記（予定）</div>
       </div>
 
-      {/* ✅ アドバイスログセクションの追加 */}
-      <AdviceLogSection />
+      {/* --- アドバイスログセクション --- */}
+      <div style={{ marginTop: '40px' }}>
+        <h2 style={{ fontSize: '20px', marginBottom: '10px' }}>💡 最近のアドバイスログ</h2>
+        <AdviceLogSection />
+      </div>
     </div>
   );
 }
