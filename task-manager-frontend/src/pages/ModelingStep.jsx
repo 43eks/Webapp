@@ -2,55 +2,88 @@ import React, { useState } from 'react';
 
 function ModelingStep() {
   const [tables, setTables] = useState([
-    { id: 'table_1', name: 'users', fields: ['id', 'name', 'email'] },
-    { id: 'table_2', name: 'tasks', fields: ['id', 'user_id', 'title'] }
+    { name: 'users', fields: ['id', 'name', 'email'] },
+    { name: 'tasks', fields: ['id', 'title', 'user_id'] },
   ]);
-
-  const [newTableName, setNewTableName] = useState('');
+  const [newTable, setNewTable] = useState('');
 
   const handleAddTable = () => {
-    if (!newTableName.trim()) return;
-    const newTable = {
-      id: `table_${Date.now()}`,
-      name: newTableName,
-      fields: []
-    };
-    setTables([...tables, newTable]);
-    setNewTableName('');
+    if (!newTable.trim()) return;
+    setTables([...tables, { name: newTable.trim(), fields: [] }]);
+    setNewTable('');
+  };
+
+  const handleAddField = (tableIndex, fieldName) => {
+    if (!fieldName.trim()) return;
+    const updatedTables = [...tables];
+    updatedTables[tableIndex].fields.push(fieldName.trim());
+    setTables(updatedTables);
+  };
+
+  const handleRemoveField = (tableIndex, fieldIndex) => {
+    const updatedTables = [...tables];
+    updatedTables[tableIndex].fields.splice(fieldIndex, 1);
+    setTables(updatedTables);
   };
 
   return (
-    <div className="p-4">
-      <h2 className="text-xl font-bold mb-4">🧱 データモデリング - ステップ3</h2>
+    <div style={{ padding: '20px' }}>
+      <h2>📊 ステップ3：データモデリング</h2>
 
-      <div className="mb-6">
+      {/* テーブル追加欄 */}
+      <div style={{ marginBottom: '20px' }}>
         <input
-          type="text"
-          value={newTableName}
-          onChange={(e) => setNewTableName(e.target.value)}
-          placeholder="新しいテーブル名"
-          className="border rounded px-3 py-2 mr-2"
+          value={newTable}
+          onChange={(e) => setNewTable(e.target.value)}
+          placeholder="テーブル名を入力"
+          style={{ padding: '6px', marginRight: '10px' }}
         />
-        <button
-          onClick={handleAddTable}
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-        >
-          ➕ テーブル追加
-        </button>
+        <button onClick={handleAddTable}>➕ テーブル追加</button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {tables.map((table) => (
-          <div key={table.id} className="border rounded-lg p-4 bg-white shadow">
-            <h3 className="font-bold mb-2">📄 {table.name}</h3>
-            <ul className="list-disc ml-5 text-sm">
-              {table.fields.map((field, idx) => (
-                <li key={idx}>{field}</li>
-              ))}
-            </ul>
-          </div>
-        ))}
-      </div>
+      {/* テーブル一覧表示 */}
+      {tables.map((table, i) => (
+        <div key={i} style={{ marginBottom: '30px', padding: '10px', border: '1px solid #ccc', borderRadius: '8px' }}>
+          <h3>📁 {table.name}</h3>
+
+          <ul style={{ paddingLeft: '20px' }}>
+            {table.fields.map((field, j) => (
+              <li key={j}>
+                {field}
+                <button
+                  onClick={() => handleRemoveField(i, j)}
+                  style={{ marginLeft: '10px', color: 'red' }}>
+                  ❌
+                </button>
+              </li>
+            ))}
+          </ul>
+
+          <AddFieldInput onAdd={(fieldName) => handleAddField(i, fieldName)} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function AddFieldInput({ onAdd }) {
+  const [fieldName, setFieldName] = useState('');
+
+  const handleSubmit = () => {
+    if (!fieldName.trim()) return;
+    onAdd(fieldName);
+    setFieldName('');
+  };
+
+  return (
+    <div style={{ marginTop: '10px' }}>
+      <input
+        value={fieldName}
+        onChange={(e) => setFieldName(e.target.value)}
+        placeholder="フィールド名"
+        style={{ padding: '6px', marginRight: '10px' }}
+      />
+      <button onClick={handleSubmit}>＋ フィールド追加</button>
     </div>
   );
 }
