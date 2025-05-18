@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import '../App.css'; // CSS読み込み
-import AdviceLogSection from '../components/AdviceLogPage'; // ✅ 修正：正しいパスでインポート
+import AdviceLogPage from '../components/AdviceLogPage'; // ✅ 修正：正しいパスでインポート
 
 function Home() {
   return (
