@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import '../App.css'; // CSS読み込み
-import AdviceLogSection from '../components/AdviceLogSection'; // ✅ 修正：正しいパスでインポート
+import AdviceLogSection from '../components/AdviceLogPage'; // ✅ 修正：正しいパスでインポート
 
 function Home() {
   return (
@@ -31,7 +31,7 @@ function Home() {
       {/* --- アドバイスログセクション --- */}
       <div style={{ marginTop: '40px' }}>
         <h2 style={{ fontSize: '20px', marginBottom: '10px' }}>💡 最近のアドバイスログ</h2>
-        <AdviceLogSection />
+        <AdviceLogPage />
       </div>
     </div>
   );
