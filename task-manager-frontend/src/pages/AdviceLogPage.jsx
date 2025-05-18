@@ -1,15 +1,17 @@
+// src/pages/AdviceLogPage.jsx
 import React, { useState, useEffect } from 'react';
 
-function AdviceLogSection() {
+function AdviceLogPage() {
   const [logs, setLogs] = useState([]);
   const [newAdvice, setNewAdvice] = useState('');
+  const [source, setSource] = useState('');
 
-  // ログ取得
+  // ログの取得
   const fetchLogs = async () => {
     try {
       const res = await fetch('http://localhost:8080/advice/logs');
       const data = await res.json();
-      setLogs(data.reverse().slice(0, 5)); // 最新5件だけ表示
+      setLogs(data.reverse());
     } catch (err) {
       console.error('❌ ログ取得エラー:', err);
     }
@@ -19,14 +21,14 @@ function AdviceLogSection() {
     fetchLogs();
   }, []);
 
-  // 追加
+  // ログの投稿
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!newAdvice.trim()) return;
 
     const log = {
       message: newAdvice,
-      source: 'ホーム画面',
+      source: source || '手動入力',
     };
 
     try {
@@ -38,69 +40,76 @@ function AdviceLogSection() {
 
       if (res.ok) {
         setNewAdvice('');
+        setSource('');
         fetchLogs();
       } else {
-        alert('送信に失敗しました');
+        alert('アドバイスの送信に失敗しました');
       }
     } catch (err) {
       console.error('❌ 送信エラー:', err);
-      alert('送信時にエラーが発生しました');
+      alert('エラーが発生しました');
     }
   };
 
   return (
-    <div style={sectionStyle}>
-      <h3 style={{ marginBottom: '10px' }}>🧠 最近のアドバイス</h3>
+    <div style={{ padding: '30px', maxWidth: '800px', margin: '0 auto' }}>
+      <h2>🧠 アドバイスログページ</h2>
 
-      <form onSubmit={handleSubmit} style={{ marginBottom: '12px' }}>
-        <input
-          type="text"
+      <form onSubmit={handleSubmit} style={{ marginBottom: '30px' }}>
+        <textarea
           value={newAdvice}
           onChange={(e) => setNewAdvice(e.target.value)}
-          placeholder="新しいアドバイスを追加"
-          style={inputStyle}
+          placeholder="アドバイス内容を入力..."
+          style={{
+            width: '100%',
+            height: '100px',
+            fontSize: '16px',
+            padding: '10px',
+            marginBottom: '10px',
+            borderRadius: '6px',
+            border: '1px solid #ccc'
+          }}
         />
-        <button type="submit" style={buttonStyle}>➕</button>
+        <input
+          type="text"
+          value={source}
+          onChange={(e) => setSource(e.target.value)}
+          placeholder="出所（任意）"
+          style={{
+            width: '60%',
+            padding: '8px',
+            fontSize: '14px',
+            marginRight: '10px',
+            borderRadius: '6px',
+            border: '1px solid #ccc'
+          }}
+        />
+        <button
+          type="submit"
+          style={{
+            padding: '10px 16px',
+            backgroundColor: '#4CAF50',
+            color: 'white',
+            border: 'none',
+            borderRadius: '6px',
+            cursor: 'pointer'
+          }}
+        >
+          登録
+        </button>
       </form>
 
-      <ul style={{ paddingLeft: '20px' }}>
+      <h3>📋 全てのアドバイス</h3>
+      <ul>
         {logs.map((log, index) => (
-          <li key={index} style={{ marginBottom: '6px' }}>
-            {log.message}
+          <li key={index} style={{ marginBottom: '12px' }}>
+            <strong>{new Date(log.timestamp).toLocaleString()}</strong> - {log.message}
+            {log.source && <span>（出所: {log.source}）</span>}
           </li>
         ))}
       </ul>
-
-      <a href="/advice" style={{ fontSize: '14px' }}>➡️ アドバイス一覧へ</a>
     </div>
   );
 }
 
-// --- スタイル定義 ---
-const sectionStyle = {
-  marginTop: '30px',
-  padding: '15px',
-  backgroundColor: '#fefefe',
-  borderRadius: '10px',
-  border: '1px solid #ddd',
-  boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
-};
-
-const inputStyle = {
-  padding: '6px',
-  fontSize: '14px',
-  width: '70%',
-  marginRight: '8px',
-};
-
-const buttonStyle = {
-  padding: '6px 10px',
-  fontSize: '14px',
-  backgroundColor: '#4CAF50',
-  color: '#fff',
-  border: 'none',
-  borderRadius: '4px',
-  cursor: 'pointer',
-};
-
-export default AdviceLogSection;
+export default AdviceLogPage;
