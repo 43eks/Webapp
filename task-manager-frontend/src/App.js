@@ -44,6 +44,10 @@ import ModelingStep from './pages/ModelingStep';
 // 🧠 アドバイスログページ
 import AdviceLogPage from './pages/AdviceLogPage';
 
+// 📊 分析ダッシュボード
+import DashboardPage from './pages/DashboardPage';
+
+
 // ✅ 共通APIベースURL
 export const API_BASE_URL = 'http://localhost:8080';
 
@@ -63,6 +67,7 @@ function App() {
         <Link to="/fields" style={navLinkStyle}>🧩 項目定義</Link>
         <Link to="/modeling" style={navLinkStyle}>🧱 モデリング</Link>
         <Link to="/advice" style={navLinkStyle}>🧠 アドバイス</Link>
+        <Link to="/dashboard" style={navLinkStyle}>📊 ダッシュボード</Link>
       </nav>
 
       {/* --- 背景オーバーレイ付きメイン画面 --- */}
@@ -104,6 +109,9 @@ function App() {
 
           {/* アドバイスログ */}
           <Route path="/advice" element={<AdviceLogPage />} />
+
+          {/* 分析ダッシュボード */}
+          <Route path="/dashboard" element={<DashboardPage />} />
         </Routes>
       </main>
     </Router>
