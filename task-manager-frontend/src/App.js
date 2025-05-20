@@ -1,3 +1,4 @@
+// src/App.js
 import './App.css'; // ✅ 背景・スタイルのCSSを読み込み
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
@@ -37,7 +38,7 @@ import DataSourceStep from './pages/DataSourceStep';
 // 🧩 DWHデータ項目定義ステップ2
 import FieldDefinitionStep from './pages/FieldDefinitionStep';
 
-// 🧱 DWHデータモデリングステップ3 ← ✅ 追加
+// 🧱 DWHデータモデリングステップ3
 import ModelingStep from './pages/ModelingStep';
 
 // 🧠 アドバイスログページ
@@ -60,7 +61,7 @@ function App() {
         <Link to="/character" style={navLinkStyle}>🧍 キャラクター</Link>
         <Link to="/datasource" style={navLinkStyle}>🧬 データソース</Link>
         <Link to="/fields" style={navLinkStyle}>🧩 項目定義</Link>
-        <Link to="/modeling" style={navLinkStyle}>🧱 モデリング</Link> {/* ✅ 追加 */}
+        <Link to="/modeling" style={navLinkStyle}>🧱 モデリング</Link>
         <Link to="/advice" style={navLinkStyle}>🧠 アドバイス</Link>
       </nav>
 
@@ -99,7 +100,7 @@ function App() {
           {/* DWH機能 */}
           <Route path="/datasource" element={<DataSourceStep />} />
           <Route path="/fields" element={<FieldDefinitionStep />} />
-          <Route path="/modeling" element={<ModelingStep />} /> {/* ✅ 追加 */}
+          <Route path="/modeling" element={<ModelingStep />} />
 
           {/* アドバイスログ */}
           <Route path="/advice" element={<AdviceLogPage />} />
