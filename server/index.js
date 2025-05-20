@@ -38,10 +38,10 @@ if (fs.existsSync(DATA_FILE)) {
     ...k,
     id: k.id || (Date.now() + Math.floor(Math.random() * 1000)).toString()
   }));
-  db.tasks    = db.tasks    || [];
-  db.habits   = db.habits   || [];
-  db.goals    = db.goals    || [];
-  db.history  = db.history  || [];
+  db.tasks   = db.tasks   || [];
+  db.habits  = db.habits  || [];
+  db.goals   = db.goals   || [];
+  db.history = db.history || [];
   fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2));
   console.log('✅ データ読み込み＆ID補筆成功');
 }
@@ -218,6 +218,20 @@ app.post('/advice/logs', (req, res) => {
   logs.push(logEntry);
   fs.writeFileSync(ADVICE_LOG_FILE, JSON.stringify(logs, null, 2));
   res.status(201).json(logEntry);
+});
+
+// --- DWH モデリングAPI ---
+// 保存
+const MODEL_FILE = path.join(__dirname, 'modeling.json');
+app.post('/dwh/model', (req, res) => {
+  fs.writeFileSync(MODEL_FILE, JSON.stringify(req.body, null, 2));
+  res.status(201).json({ message: 'モデリング情報を保存しました' });
+});
+// 取得
+app.get('/dwh/model', (req, res) => {
+  if (!fs.existsSync(MODEL_FILE)) return res.json({ tables: [], relations: [] });
+  const model = JSON.parse(fs.readFileSync(MODEL_FILE, 'utf-8'));
+  res.json(model);
 });
 
 // --- サーバー起動 ---
