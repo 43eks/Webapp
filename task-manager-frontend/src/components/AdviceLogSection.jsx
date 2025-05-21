@@ -1,14 +1,13 @@
-// src/components/AdviceLogSection.jsx
 import React, { useEffect, useState } from 'react';
 import { API_BASE_URL } from '../App';
-import './AdviceLogSection.css'; // 後述のスタイル用
+import './AdviceLogSection.css';
 
 function AdviceLogSection() {
   const [logs, setLogs] = useState([]);
   const [newAdvice, setNewAdvice] = useState('');
   const [source, setSource] = useState('');
 
-  // 取得: 最新3件
+  // 最新3件のログを取得
   const fetchLogs = async () => {
     try {
       const res = await fetch(`${API_BASE_URL}/advice/logs`);
@@ -24,7 +23,7 @@ function AdviceLogSection() {
     fetchLogs();
   }, []);
 
-  // 追加
+  // 新規ログをPOST
   const handleSubmit = async (e) => {
     e.preventDefault();
     const msg = newAdvice.trim();
