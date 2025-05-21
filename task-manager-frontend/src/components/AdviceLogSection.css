@@ -1,0 +1,65 @@
+.advice-section {
+  margin-top: 40px;
+  padding: 20px;
+  background: #fff;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.advice-form {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.advice-input {
+  padding: 8px;
+  font-size: 14px;
+  flex: 1;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.advice-input.small {
+  flex: 0 0 150px;
+}
+
+.advice-button {
+  padding: 8px 12px;
+  font-size: 14px;
+  background-color: #4CAF50;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.advice-button:hover {
+  background-color: #45a049;
+}
+
+.no-logs {
+  color: #666;
+  font-style: italic;
+}
+
+.advice-list {
+  list-style: none;
+  padding-left: 0;
+}
+
+.advice-item {
+  margin-bottom: 10px;
+}
+
+.advice-time {
+  color: #888;
+  font-size: 12px;
+}
+
+.advice-source {
+  color: #555;
+  margin-left: 4px;
+}
