@@ -1,9 +1,8 @@
 // src/pages/Home.js
 import React from 'react';
 import { Link } from 'react-router-dom';
-import '../App.css'; // CSS読み込み
-// 修正後のインポート
-import AdviceLogSection from '../components/AdviceLogSection'; // ✅ 新規作成したファイル
+import '../App.css'; // ✅ 共通スタイル読み込み
+import AdviceLogSection from '../components/AdviceLogSection'; // ✅ アドバイスログ表示用
 
 function Home() {
   return (
@@ -11,7 +10,7 @@ function Home() {
       <h1 className="home-title">🧠 マイライフ管理アプリ</h1>
       <p className="home-subtitle">自分を整えるツールを選んでください：</p>
 
-      {/* --- カード形式メニュー --- */}
+      {/* --- メニューカード --- */}
       <div className="card-grid">
         <Link to="/tasks" className="card">📝 タスク管理</Link>
         <Link to="/tasks/create" className="card">➕ タスクを追加</Link>
@@ -24,7 +23,7 @@ function Home() {
         <Link to="/slides/create" className="card">🎞️ 動画スライド作成</Link>
         <Link to="/character" className="card">🧍 キャラクター管理</Link>
 
-        {/* 準備中カード */}
+        {/* --- 準備中リンク --- */}
         <div className="card disabled">🏷️ カテゴリ別（準備中）</div>
         <div className="card disabled">📔 日記（予定）</div>
       </div>
