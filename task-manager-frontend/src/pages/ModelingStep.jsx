@@ -199,7 +199,9 @@ function ModelingStep() {
         </div>
       ))}
 
-      <button onClick={saveModeling} style={{ marginTop: '20px', padding: '10px 16px' }}>💾 保存</button>
+      <button onClick={saveModeling} style={{ marginTop: '20px', padding: '10px 16px' }}>
+        💾 保存
+      </button>
     </div>
   );
 }
