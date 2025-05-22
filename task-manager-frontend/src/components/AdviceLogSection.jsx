@@ -16,6 +16,7 @@ function AdviceLogSection() {
       setLogs(data.slice(-3).reverse());
     } catch (err) {
       console.error('❌ アドバイスログ取得エラー:', err);
+      setLogs([]);
     }
   };
 
@@ -28,7 +29,11 @@ function AdviceLogSection() {
     e.preventDefault();
     const msg = newAdvice.trim();
     if (!msg) return;
-    const payload = { message: msg, source: source.trim() || 'ホーム画面' };
+
+    const payload = {
+      message: msg,
+      source: source.trim() || 'ホーム画面',
+    };
 
     try {
       const res = await fetch(`${API_BASE_URL}/advice/logs`, {
@@ -63,7 +68,7 @@ function AdviceLogSection() {
           value={source}
           onChange={e => setSource(e.target.value)}
           placeholder="出所（任意）"
-          className="advice-input small"
+          className="advice-input source-input"
         />
         <button type="submit" className="advice-button">追加</button>
       </form>
