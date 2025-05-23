@@ -3,17 +3,17 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import './CharacterAvatar.css';
 
-function CharacterAvatar({ imageUrl = '/character/idle.png', message = '', mood = 'normal' }) {
-  const moodClass = `character-image ${mood}`;
-
+function CharacterAvatar() {
   return (
     <motion.div
       className="character-avatar"
-      animate={{ y: [0, -6, 0] }}
-      transition={{ duration: 2, repeat: Infinity }}
+      animate={{ y: [0, -8, 0] }}
+      transition={{ duration: 3, repeat: Infinity }}
     >
-      {message && <div className="speech-bubble">{message}</div>}
-      <img src={imageUrl} alt="キャラクター" className={moodClass} />
+      <div className="avatar-wrapper">
+        <img src="/character/idle.png" alt="キャラクター" className="avatar-img" />
+        <div className="speech-bubble">こんにちは！</div>
+      </div>
     </motion.div>
   );
 }
