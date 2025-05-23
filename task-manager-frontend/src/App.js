@@ -1,5 +1,4 @@
-// src/App.js
-import './App.css'; // ✅ 背景・スタイルのCSSを読み込み
+import './App.css';
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 
@@ -25,10 +24,10 @@ import ModelingStep from './pages/ModelingStep';
 import AdviceLogPage from './pages/AdviceLogPage';
 import DashboardPage from './pages/DashboardPage';
 
-// 🧍 キャラクター常駐表示用
+// 🧍 キャラクター表示
 import CharacterAvatar from './components/CharacterAvatar';
 
-// ✅ APIベースURL
+// ✅ 共通APIベースURL
 export const API_BASE_URL = 'http://localhost:8080';
 
 function App() {
@@ -51,7 +50,7 @@ function App() {
           <Link to="/dashboard" style={navLinkStyle}>📊 ダッシュボード</Link>
         </nav>
 
-        {/* --- 背景オーバーレイ付きメイン画面 --- */}
+        {/* --- メイン画面 --- */}
         <main className="app-overlay">
           <Routes>
             <Route path="/" element={<Home />} />
@@ -78,8 +77,12 @@ function App() {
         </main>
       </Router>
 
-      {/* --- 画面常駐キャラクター表示 --- */}
-      <CharacterAvatar />
+      {/* --- 常駐キャラクター表示 --- */}
+      <CharacterAvatar
+        imageUrl="/character/happy.png"
+        message="今日もがんばろう！"
+        mood="happy"
+      />
     </>
   );
 }
