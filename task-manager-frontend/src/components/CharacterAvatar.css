@@ -1,9 +1,37 @@
-/* CharacterAvatar.css */
+/* src/components/CharacterAvatar.css */
 .character-avatar {
   position: fixed;
   bottom: 20px;
   right: 20px;
-  width: 120px;
-  height: auto;
+  width: 130px;
+  text-align: center;
   z-index: 999;
+}
+
+.character-image {
+  width: 100px;
+  height: auto;
+  transition: filter 0.3s;
+}
+
+.character-image.happy {
+  filter: brightness(1.2) saturate(1.2);
+}
+.character-image.sad {
+  filter: grayscale(0.6);
+}
+.character-image.normal {
+  filter: none;
+}
+
+.speech-bubble {
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  padding: 6px 10px;
+  font-size: 13px;
+  margin-bottom: 6px;
+  display: inline-block;
+  max-width: 120px;
+  box-shadow: 2px 2px 4px rgba(0,0,0,0.2);
 }
