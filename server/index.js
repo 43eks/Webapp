@@ -15,7 +15,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/videos', express.static(path.join(__dirname, 'videos')));
 app.use('/music', express.static(path.join(__dirname, 'music')));
 
-// --- multer設定（画像アップロード用） ---
+// --- multer設定 ---
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const dir = path.join(__dirname, 'uploads');
@@ -28,7 +28,7 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-// --- データファイル読み込み＆初期化 ---
+// --- データファイル初期化 ---
 const DATA_FILE = path.join(__dirname, 'data.json');
 let db = { knowledge: [], tasks: [], habits: [], goals: [], history: [] };
 if (fs.existsSync(DATA_FILE)) {
@@ -38,29 +38,20 @@ if (fs.existsSync(DATA_FILE)) {
     console.error('❌ data.json parse error:', e);
   }
 }
-// ensure arrays exist
-db.knowledge = db.knowledge || [];
-db.tasks     = db.tasks     || [];
-db.habits    = db.habits    || [];
-db.goals     = db.goals     || [];
-db.history   = db.history   || [];
-// save back to ensure structure
+['knowledge', 'tasks', 'habits', 'goals', 'history'].forEach(key => {
+  db[key] = db[key] || [];
+});
 fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2));
-console.log('✅ data.json loaded/initialized');
+console.log('✅ data.json loaded');
 
-// --- Advice Logs ファイルパス ---
+// --- アドバイスログAPI ---
 const ADVICE_LOG_FILE = path.join(__dirname, 'advice_logs.json');
 
-// --- Advice Logs API ---
-// 取得
 app.get('/advice/logs', (req, res) => {
   try {
-    if (!fs.existsSync(ADVICE_LOG_FILE)) {
-      // ファイルがなければ空配列
-      return res.json([]);
-    }
-    const raw = fs.readFileSync(ADVICE_LOG_FILE, 'utf-8');
-    const logs = JSON.parse(raw);
+    const logs = fs.existsSync(ADVICE_LOG_FILE)
+      ? JSON.parse(fs.readFileSync(ADVICE_LOG_FILE, 'utf-8'))
+      : [];
     res.json(logs);
   } catch (err) {
     console.error('❌ /advice/logs GET error:', err);
@@ -68,18 +59,12 @@ app.get('/advice/logs', (req, res) => {
   }
 });
 
-// 追加
 app.post('/advice/logs', (req, res) => {
   try {
     const entry = { ...req.body, timestamp: new Date().toISOString() };
     let logs = [];
     if (fs.existsSync(ADVICE_LOG_FILE)) {
-      try {
-        logs = JSON.parse(fs.readFileSync(ADVICE_LOG_FILE, 'utf-8'));
-        if (!Array.isArray(logs)) logs = [];
-      } catch {
-        logs = [];
-      }
+      logs = JSON.parse(fs.readFileSync(ADVICE_LOG_FILE, 'utf-8'));
     }
     logs.push(entry);
     fs.writeFileSync(ADVICE_LOG_FILE, JSON.stringify(logs, null, 2));
@@ -90,35 +75,32 @@ app.post('/advice/logs', (req, res) => {
   }
 });
 
-// （その他の既存 API 以下は省略せずすべてこの下に）
-
-
-/* --- 統計データ取得API --- */
+// --- 統計API ---
 app.get('/stats', (req, res) => {
   try {
     const data = JSON.parse(fs.readFileSync(DATA_FILE, 'utf-8'));
-    const totalTasks     = data.tasks.length;
+    const totalTasks = data.tasks.length;
     const completedTasks = data.tasks.filter(t => t.completed).length;
     const habits = (data.habits || []).map(h => {
       const records = Object.entries(h.records || {})
-        .filter(([date]) => new Date(date) >= new Date(Date.now() - 30*24*60*60*1000));
-      const done = records.filter(([,v]) => v).length;
+        .filter(([date]) => new Date(date) >= new Date(Date.now() - 30 * 86400000));
+      const done = records.filter(([, v]) => v).length;
       const rate = records.length ? (done / records.length) * 100 : 0;
       return { name: h.name, rate };
     });
-    const totalGoals     = data.goals.length;
+    const totalGoals = data.goals.length;
     const completedGoals = data.goals.filter(g => g.completed).length;
-    // adviceTrend は logs ファイルから集計
+
     let logs = [];
     if (fs.existsSync(ADVICE_LOG_FILE)) {
-      try { logs = JSON.parse(fs.readFileSync(ADVICE_LOG_FILE, 'utf-8')); }
-      catch { logs = []; }
+      logs = JSON.parse(fs.readFileSync(ADVICE_LOG_FILE, 'utf-8'));
     }
     const adviceTrend = logs.reduce((acc, log) => {
-      const day = log.timestamp.slice(0,10);
-      acc[day] = (acc[day]||0) + 1;
+      const day = log.timestamp.slice(0, 10);
+      acc[day] = (acc[day] || 0) + 1;
       return acc;
     }, {});
+
     res.json({
       tasks: { total: totalTasks, completed: completedTasks },
       habits,
@@ -145,16 +127,16 @@ app.post('/tasks', (req, res) => {
   res.status(201).json(item);
 });
 app.put('/tasks/:id', (req, res) => {
-  const idx = db.tasks.findIndex(x => x.id===req.params.id);
-  if (idx===-1) return res.status(404).json({ error:'Not found' });
+  const idx = db.tasks.findIndex(x => x.id === req.params.id);
+  if (idx === -1) return res.status(404).json({ error: 'Not found' });
   db.tasks[idx] = { ...db.tasks[idx], ...req.body };
   fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2));
   res.json(db.tasks[idx]);
 });
 app.delete('/tasks/:id', (req, res) => {
-  const idx = db.tasks.findIndex(x=>x.id===req.params.id);
-  if (idx===-1) return res.status(404).json({ error:'Not found' });
-  db.tasks.splice(idx,1);
+  const idx = db.tasks.findIndex(x => x.id === req.params.id);
+  if (idx === -1) return res.status(404).json({ error: 'Not found' });
+  db.tasks.splice(idx, 1);
   fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2));
   res.status(204).send();
 });
@@ -162,55 +144,57 @@ app.delete('/tasks/:id', (req, res) => {
 // --- ナレッジAPI ---
 app.get('/knowledge', (req, res) => res.json(db.knowledge));
 app.post('/knowledge', (req, res) => {
-  const it = { ...req.body, id: Date.now().toString(), createdAt: new Date().toISOString() };
-  db.knowledge.push(it);
+  const item = { ...req.body, id: Date.now().toString(), createdAt: new Date().toISOString() };
+  db.knowledge.push(item);
   fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2));
-  res.status(201).json(it);
+  res.status(201).json(item);
 });
 app.get('/knowledge/:id', (req, res) => {
-  const it = db.knowledge.find(x=>x.id===req.params.id);
-  if (!it) return res.status(404).json({ error:'Not found' });
-  res.json(it);
+  const item = db.knowledge.find(k => k.id === req.params.id);
+  if (!item) return res.status(404).json({ error: 'Not found' });
+  res.json(item);
 });
-app.put('/knowledge/:id', (req,res) => {
-  const idx = db.knowledge.findIndex(x=>x.id===req.params.id);
-  if (idx===-1) return res.status(404).json({ error:'Not found' });
-  db.knowledge[idx] = { ...db.knowledge[idx], ...req.body, updatedAt:new Date().toISOString() };
+app.put('/knowledge/:id', (req, res) => {
+  const idx = db.knowledge.findIndex(k => k.id === req.params.id);
+  if (idx === -1) return res.status(404).json({ error: 'Not found' });
+  db.knowledge[idx] = { ...db.knowledge[idx], ...req.body, updatedAt: new Date().toISOString() };
   fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2));
   res.json(db.knowledge[idx]);
 });
 app.delete('/knowledge/:id', (req, res) => {
-  const idx = db.knowledge.findIndex(x=>x.id===req.params.id);
-  if (idx===-1) return res.status(404).json({ error:'Not found' });
-  db.knowledge.splice(idx,1);
+  const idx = db.knowledge.findIndex(k => k.id === req.params.id);
+  if (idx === -1) return res.status(404).json({ error: 'Not found' });
+  db.knowledge.splice(idx, 1);
   fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2));
   res.status(204).send();
 });
 
-// --- 画像アップロードAPI（単一） ---
-app.post('/upload', upload.single('image'), (req,res) => {
-  if(!req.file) return res.status(400).json({ error:'No file' });
-  res.json({ url:`/uploads/${req.file.filename}` });
+// --- アップロード（単一） ---
+app.post('/upload', upload.single('image'), (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'No file' });
+  res.json({ url: `http://localhost:8080/uploads/${req.file.filename}` });
 });
-// --- 画像アップロードAPI（複数） ---
-app.post('/upload/multiple', upload.array('images'), (req,res)=>{
-  if(!req.files||req.files.length===0) return res.status(400).json({ error:'No files' });
-  const urls = req.files.map(f=>`/uploads/${f.filename}`);
+
+// --- アップロード（複数） ---
+app.post('/upload/multiple', upload.array('images'), (req, res) => {
+  if (!req.files || req.files.length === 0) return res.status(400).json({ error: 'No files' });
+  const urls = req.files.map(f => `http://localhost:8080/uploads/${f.filename}`);
   res.json({ urls });
 });
-// --- キャラクター画像一覧／削除 ---
-app.get('/character', (req,res)=>{
-  const dir=path.join(__dirname,'uploads');
-  fs.readdir(dir,(err,files)=>{
-    if(err) return res.status(500).json({ error:'Read failed' });
-    res.json(files.map(f=>`/uploads/${f}`));
+
+// --- キャラクター画像一覧＆削除 ---
+app.get('/character', (req, res) => {
+  const dir = path.join(__dirname, 'uploads');
+  fs.readdir(dir, (err, files) => {
+    if (err) return res.status(500).json({ error: 'Read failed' });
+    res.json(files.map(f => `http://localhost:8080/uploads/${f}`));
   });
 });
-app.delete('/character/:filename',(req,res)=>{
-  const p=path.join(__dirname,'uploads',req.params.filename);
-  if(!fs.existsSync(p)) return res.status(404).json({ error:'Not found' });
-  fs.unlinkSync(p);
-  res.json({ message:'Deleted' });
+app.delete('/character/:filename', (req, res) => {
+  const file = path.join(__dirname, 'uploads', req.params.filename);
+  if (!fs.existsSync(file)) return res.status(404).json({ error: 'Not found' });
+  fs.unlinkSync(file);
+  res.json({ message: 'Deleted' });
 });
 
 // --- DWH モデリングAPI ---
