@@ -5,7 +5,7 @@ import './CharacterAvatar.css';
 function CharacterAvatar() {
   return (
     <div className="character-avatar">
-      <img src="/character/mocha.png" alt="キャラクター" />
+      <img src="/character/idle.png" alt="キャラクター" />
     </div>
   );
 }
