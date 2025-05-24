@@ -1,35 +1,14 @@
+/* src/components/CharacterAvatar.css */
 .character-avatar {
   position: fixed;
-  bottom: 20px;
-  right: 20px;
-  z-index: 1000;
-  width: 8vw;
-  max-width: 80px;
+  bottom: 12px;
+  right: 12px;
+  width: 80px;
+  z-index: 9999;
 }
 
-.avatar-wrapper {
+.character-image {
   width: 100%;
   height: auto;
-  position: relative;
-}
-
-.avatar-img {
-  width: 100%;
-  height: auto;
-  display: block;
-}
-
-/* 吹き出し */
-.speech-bubble {
-  position: absolute;
-  bottom: 100%;
-  right: 0;
-  margin-bottom: 8px;
-  padding: 6px 10px;
-  background: #fff;
-  border: 1px solid #aaa;
-  border-radius: 8px;
-  font-size: 12px;
-  box-shadow: 2px 2px 4px rgba(0,0,0,0.1);
-  white-space: nowrap;
+  object-fit: contain;
 }
