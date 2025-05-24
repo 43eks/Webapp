@@ -49,9 +49,10 @@ const ADVICE_LOG_FILE = path.join(__dirname, 'advice_logs.json');
 
 app.get('/advice/logs', (req, res) => {
   try {
-    const logs = fs.existsSync(ADVICE_LOG_FILE)
-      ? JSON.parse(fs.readFileSync(ADVICE_LOG_FILE, 'utf-8'))
-      : [];
+    const raw = fs.existsSync(ADVICE_LOG_FILE)
+      ? fs.readFileSync(ADVICE_LOG_FILE, 'utf-8').trim()
+      : '[]';
+    const logs = raw ? JSON.parse(raw) : [];
     res.json(logs);
   } catch (err) {
     console.error('❌ /advice/logs GET error:', err);
@@ -64,7 +65,12 @@ app.post('/advice/logs', (req, res) => {
     const entry = { ...req.body, timestamp: new Date().toISOString() };
     let logs = [];
     if (fs.existsSync(ADVICE_LOG_FILE)) {
-      logs = JSON.parse(fs.readFileSync(ADVICE_LOG_FILE, 'utf-8'));
+      try {
+        const raw = fs.readFileSync(ADVICE_LOG_FILE, 'utf-8').trim();
+        logs = raw ? JSON.parse(raw) : [];
+      } catch (e) {
+        logs = [];
+      }
     }
     logs.push(entry);
     fs.writeFileSync(ADVICE_LOG_FILE, JSON.stringify(logs, null, 2));
@@ -93,7 +99,8 @@ app.get('/stats', (req, res) => {
 
     let logs = [];
     if (fs.existsSync(ADVICE_LOG_FILE)) {
-      logs = JSON.parse(fs.readFileSync(ADVICE_LOG_FILE, 'utf-8'));
+      const raw = fs.readFileSync(ADVICE_LOG_FILE, 'utf-8').trim();
+      logs = raw ? JSON.parse(raw) : [];
     }
     const adviceTrend = logs.reduce((acc, log) => {
       const day = log.timestamp.slice(0, 10);
@@ -169,20 +176,18 @@ app.delete('/knowledge/:id', (req, res) => {
   res.status(204).send();
 });
 
-// --- アップロード（単一） ---
+// --- アップロードAPI ---
 app.post('/upload', upload.single('image'), (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No file' });
   res.json({ url: `http://localhost:8080/uploads/${req.file.filename}` });
 });
-
-// --- アップロード（複数） ---
 app.post('/upload/multiple', upload.array('images'), (req, res) => {
   if (!req.files || req.files.length === 0) return res.status(400).json({ error: 'No files' });
   const urls = req.files.map(f => `http://localhost:8080/uploads/${f.filename}`);
   res.json({ urls });
 });
 
-// --- キャラクター画像一覧＆削除 ---
+// --- キャラクター画像API ---
 app.get('/character', (req, res) => {
   const dir = path.join(__dirname, 'uploads');
   fs.readdir(dir, (err, files) => {
