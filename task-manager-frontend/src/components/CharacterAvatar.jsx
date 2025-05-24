@@ -1,20 +1,20 @@
 // src/components/CharacterAvatar.jsx
 import React from 'react';
-import './CharacterAvatar.css';
 import { motion } from 'framer-motion';
+import './CharacterAvatar.css';
 
-function CharacterAvatar({ image = '/uploads/idle.png', message = 'こんにちは！' }) {
+function CharacterAvatar() {
+  const imageUrl = 'http://localhost:8080/uploads/idle.png'; // ✅ ここが最重要ポイント！
+
   return (
-    <div className="character-container">
-      <motion.img
-        src={image}
-        alt="キャラクター"
-        className="character-image"
-        animate={{ y: [0, -4, 0] }}
-        transition={{ duration: 2, repeat: Infinity }}
-      />
-      <div className="character-bubble">{message}</div>
-    </div>
+    <motion.div
+      className="character-avatar"
+      animate={{ y: [0, -5, 0] }}
+      transition={{ repeat: Infinity, duration: 2 }}
+    >
+      <img src={imageUrl} alt="キャラクター" className="character-image" />
+      <div className="character-speech-bubble">こんにちは！</div>
+    </motion.div>
   );
 }
 
