@@ -1,37 +1,35 @@
-/* src/components/CharacterAvatar.css */
 .character-avatar {
   position: fixed;
   bottom: 20px;
   right: 20px;
-  width: 130px;
-  text-align: center;
-  z-index: 999;
+  z-index: 1000;
+  width: 8vw;
+  max-width: 80px;
 }
 
-.character-image {
-  width: 100px;
+.avatar-wrapper {
+  width: 100%;
   height: auto;
-  transition: filter 0.3s;
+  position: relative;
 }
 
-.character-image.happy {
-  filter: brightness(1.2) saturate(1.2);
-}
-.character-image.sad {
-  filter: grayscale(0.6);
-}
-.character-image.normal {
-  filter: none;
+.avatar-img {
+  width: 100%;
+  height: auto;
+  display: block;
 }
 
+/* 吹き出し */
 .speech-bubble {
-  background-color: #fff;
-  border: 1px solid #ccc;
-  border-radius: 12px;
+  position: absolute;
+  bottom: 100%;
+  right: 0;
+  margin-bottom: 8px;
   padding: 6px 10px;
-  font-size: 13px;
-  margin-bottom: 6px;
-  display: inline-block;
-  max-width: 120px;
-  box-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+  background: #fff;
+  border: 1px solid #aaa;
+  border-radius: 8px;
+  font-size: 12px;
+  box-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+  white-space: nowrap;
 }
