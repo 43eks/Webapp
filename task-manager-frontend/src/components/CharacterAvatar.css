@@ -1,14 +1,16 @@
 /* src/components/CharacterAvatar.css */
 .character-avatar {
   position: fixed;
-  bottom: 12px;
-  right: 12px;
+  bottom: 16px;
+  right: 16px;
   width: 80px;
-  z-index: 9999;
+  height: 80px;
+  z-index: 1000;
+  pointer-events: none;
 }
 
-.character-image {
+.character-avatar img.character-image {
   width: 100%;
-  height: auto;
+  height: 100%;
   object-fit: contain;
 }
