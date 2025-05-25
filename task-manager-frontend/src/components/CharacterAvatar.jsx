@@ -12,7 +12,8 @@ function CharacterAvatar() {
       .then(res => res.json())
       .then(images => {
         if (images.length > 0) {
-          setImageUrl(`${API_BASE_URL}${images[0]}`); // ✅ 最初の画像を表示
+          // サーバーからの画像URLが "/uploads/filename.png" 形式で来る前提
+          setImageUrl(images[0].startsWith('http') ? images[0] : `${API_BASE_URL}${images[0]}`);
         }
       })
       .catch(err => console.error('❌ キャラクター画像の取得失敗:', err));
