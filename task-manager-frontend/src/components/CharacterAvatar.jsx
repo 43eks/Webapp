@@ -32,10 +32,12 @@ function CharacterAvatar({ message = 'こんにちは！', mood = 'happy' }) {
       animate={{ y: [0, -8, 0] }}
       transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
     >
+      {/* 吹き出し */}
       <div className="speech-bubble">
         {message}
         <div className="speech-arrow" />
       </div>
+      {/* キャラクター画像 */}
       <img
         src={imageUrl}
         alt="キャラクター"
