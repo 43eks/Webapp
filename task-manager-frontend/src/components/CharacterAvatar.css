@@ -1,14 +1,16 @@
 /* src/components/CharacterAvatar.css */
+
 .character-avatar {
   position: fixed;
-  bottom: 12px;
-  right: 12px;
-  width: 80px;
-  z-index: 9999;
+  bottom: 10px;
+  right: 10px;
+  width: 10vw;       /* ビューポート幅の10% */
+  max-width: 120px;   /* 大きすぎない上限 */
+  z-index: 1000;
 }
 
-.character-image {
+.character-avatar .character-image {
   width: 100%;
   height: auto;
-  object-fit: contain;
+  display: block;
 }
