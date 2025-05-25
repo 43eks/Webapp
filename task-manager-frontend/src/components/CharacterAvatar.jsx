@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { API_BASE_URL } from '../App';
 import './CharacterAvatar.css';
 
-function CharacterAvatar() {
+function CharacterAvatar({ message = 'こんにちは！', mood = 'happy' }) {
   const [imageUrl, setImageUrl] = useState(null);
 
   useEffect(() => {
@@ -15,7 +15,6 @@ function CharacterAvatar() {
       })
       .then(images => {
         if (images.length > 0) {
-          // サーバーからの画像URLが "/uploads/filename.png" 形式で来る前提
           const url = images[0].startsWith('http')
             ? images[0]
             : `${API_BASE_URL}${images[0]}`;
@@ -33,7 +32,15 @@ function CharacterAvatar() {
       animate={{ y: [0, -8, 0] }}
       transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
     >
-      <img src={imageUrl} alt="キャラクター" className="character-image" />
+      <div className="speech-bubble">
+        {message}
+        <div className="speech-arrow" />
+      </div>
+      <img
+        src={imageUrl}
+        alt="キャラクター"
+        className={`character-image mood-${mood}`}
+      />
     </motion.div>
   );
 }
