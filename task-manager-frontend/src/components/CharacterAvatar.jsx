@@ -4,6 +4,20 @@ import { motion } from 'framer-motion';
 import { API_BASE_URL } from '../App';
 import './CharacterAvatar.css';
 
+const moodVariants = {
+  happy: { y: [0, -8, 0], rotate: [0, 2, 0] },
+  sad:   { y: [0, -4, 0], rotate: [0, 0, 0] },
+  angry: { y: [0, -6, 0], rotate: [0, -4, 0] },
+  calm:  { y: [0, -2, 0], rotate: [0, 0, 0] },
+};
+
+const moodTransition = {
+  happy: { repeat: Infinity, duration: 2, ease: 'easeInOut' },
+  sad:   { repeat: Infinity, duration: 3, ease: 'linear' },
+  angry: { repeat: Infinity, duration: 1.5, ease: 'easeInOut' },
+  calm:  { repeat: Infinity, duration: 4, ease: 'easeInOut' },
+};
+
 function CharacterAvatar({ message = 'こんにちは！', mood = 'happy' }) {
   const [imageUrl, setImageUrl] = useState(null);
 
@@ -29,15 +43,13 @@ function CharacterAvatar({ message = 'こんにちは！', mood = 'happy' }) {
   return (
     <motion.div
       className="character-avatar"
-      animate={{ y: [0, -8, 0] }}
-      transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
+      animate={moodVariants[mood] || moodVariants.happy}
+      transition={moodTransition[mood] || moodTransition.happy}
     >
-      {/* 吹き出し */}
       <div className="speech-bubble">
         {message}
         <div className="speech-arrow" />
       </div>
-      {/* キャラクター画像 */}
       <img
         src={imageUrl}
         alt="キャラクター"
