@@ -18,10 +18,15 @@ const moodTransition = {
   calm:  { repeat: Infinity, duration: 4, ease: 'easeInOut' },
 };
 
-function CharacterAvatar({ message = 'こんにちは！', mood = 'happy' }) {
+function CharacterAvatar({
+  // 初期メッセージとムードを props で受け取れるように変更
+  message = 'こんにちは！',
+  mood = 'happy'
+}) {
   const [imageUrl, setImageUrl] = useState(null);
 
   useEffect(() => {
+    // サーバーからアップロードした最初のキャラ画像パスを取得
     fetch(`${API_BASE_URL}/character`)
       .then(res => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -29,10 +34,9 @@ function CharacterAvatar({ message = 'こんにちは！', mood = 'happy' }) {
       })
       .then(images => {
         if (images.length > 0) {
-          const url = images[0].startsWith('http')
-            ? images[0]
-            : `${API_BASE_URL}${images[0]}`;
-          setImageUrl(url);
+          const raw = images[0];
+          const fullUrl = raw.startsWith('http') ? raw : `${API_BASE_URL}${raw}`;
+          setImageUrl(fullUrl);
         }
       })
       .catch(err => console.error('❌ キャラクター画像の取得失敗:', err));
