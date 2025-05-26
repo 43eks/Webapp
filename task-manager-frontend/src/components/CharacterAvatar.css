@@ -5,7 +5,8 @@
   right: 20px;
   width: 120px;
   text-align: center;
-  pointer-events: none;
+  cursor: pointer; /* 押せることを示す */
+  pointer-events: all;
 }
 
 .character-image {
@@ -28,6 +29,7 @@
   font-size: 12px;
   color: #333;
   white-space: nowrap;
+  pointer-events: none;
 }
 
 .speech-arrow {
@@ -42,7 +44,7 @@
   border-top: 6px solid #fff;
 }
 
-/* 各ムード別の小さな切り替え例 */
+/* ムード別フィルター例 */
 .character-image.mood-happy { filter: brightness(1.05); }
 .character-image.mood-sad   { filter: grayscale(0.7); }
 .character-image.mood-angry { filter: contrast(1.2) saturate(1.2); }
