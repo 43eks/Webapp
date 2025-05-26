@@ -4,13 +4,54 @@
   position: fixed;
   bottom: 10px;
   right: 10px;
-  width: 10vw;       /* ビューポート幅の10% */
-  max-width: 120px;   /* 大きすぎない上限 */
+  width: 10vw;
+  max-width: 120px;
   z-index: 1000;
+  text-align: center;
 }
 
-.character-avatar .character-image {
+.speech-bubble {
+  position: absolute;
+  bottom: 110%;
+  right: 0;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 12px;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.speech-arrow {
+  position: absolute;
+  top: 100%;
+  right: 10px;
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px solid white;
+}
+
+.character-image {
   width: 100%;
   height: auto;
   display: block;
+  margin-top: 4px;
+  transition: filter 0.3s;
+}
+
+/* 表情フィルター */
+.character-image.mood-happy {
+  filter: none;
+}
+.character-image.mood-sad {
+  filter: grayscale(70%) brightness(0.9);
+}
+.character-image.mood-angry {
+  filter: hue-rotate(-20deg) saturate(1.5);
+}
+.character-image.mood-calm {
+  filter: brightness(1.1) contrast(0.9);
 }
