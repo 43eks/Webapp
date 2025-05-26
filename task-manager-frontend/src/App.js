@@ -1,4 +1,5 @@
-import './App.css';
+// src/App.js
+import './App.css';               // ✅ 背景・スタイルのCSSを読み込み
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 
@@ -79,7 +80,9 @@ function App() {
 
       {/* --- 常駐キャラクター表示 --- */}
       <CharacterAvatar
-        imageUrl="/character/happy.png"
+        // サーバーから取得した最初の画像URLを props で渡しても良いですし、
+        // Component 内で自動フェッチする場合は props は不要です。
+        imageUrl="/uploads/your-uploaded-character.png"
         message="今日もがんばろう！"
         mood="happy"
       />
