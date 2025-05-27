@@ -3,49 +3,48 @@
   position: fixed;
   bottom: 20px;
   right: 20px;
-  width: 120px;
   text-align: center;
-  cursor: pointer; /* 押せることを示す */
-  pointer-events: all;
+  z-index: 1000;
 }
 
-.character-image {
-  width: 100%;
-  height: auto;
-  border-radius: 8px;
-}
-
-/* 吹き出し */
 .speech-bubble {
-  position: absolute;
-  bottom: 130%;
-  right: 50%;
-  transform: translateX(50%);
-  background: #fff;
+  display: inline-block;
+  max-width: 180px;
   padding: 8px 12px;
+  margin-bottom: 6px;
+  background: #fff;
+  border: 1px solid #ccc;
   border-radius: 12px;
-  border: 1px solid #ddd;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  font-size: 12px;
-  color: #333;
-  white-space: nowrap;
-  pointer-events: none;
+  position: relative;
+  cursor: text; /* テキスト編集を示唆 */
 }
 
 .speech-arrow {
-  position: absolute;
-  bottom: -6px;
-  right: 50%;
-  transform: translateX(50%);
   width: 0;
   height: 0;
-  border-left: 6px solid transparent;
-  border-right: 6px solid transparent;
-  border-top: 6px solid #fff;
+  border: 8px solid transparent;
+  border-top-color: #fff;
+  position: absolute;
+  bottom: -16px;
+  left: 20px;
 }
 
-/* ムード別フィルター例 */
-.character-image.mood-happy { filter: brightness(1.05); }
-.character-image.mood-sad   { filter: grayscale(0.7); }
-.character-image.mood-angry { filter: contrast(1.2) saturate(1.2); }
-.character-image.mood-calm  { filter: opacity(0.9); }
+.speech-input {
+  width: 100%;
+  border: none;
+  outline: none;
+  font-size: 14px;
+}
+
+.character-image {
+  width: 80px;  /* ページの10％以下に収まるよう適宜調整 */
+  height: auto;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* ムード別スタイル例 */
+.mood-happy   { filter: brightness(1.1); }
+.mood-sad     { filter: grayscale(0.5); }
+.mood-angry   { filter: contrast(1.2); }
+.mood-calm    { filter: blur(1px); }

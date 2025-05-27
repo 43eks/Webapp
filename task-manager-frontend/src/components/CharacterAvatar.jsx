@@ -18,49 +18,88 @@ const moodTransition = {
   calm:  { repeat: Infinity, duration: 4, ease: 'easeInOut' },
 };
 
-function CharacterAvatar({
-  // 初期メッセージとムードを props で受け取れるように変更
-  message = 'こんにちは！',
-  mood = 'happy'
-}) {
-  const [imageUrl, setImageUrl] = useState(null);
+const STORAGE_KEY = 'characterComments';
 
+export default function CharacterAvatar({ initialMood = 'happy' }) {
+  const [images, setImages] = useState([]);
+  const [idx, setIdx] = useState(0);
+  const [comments, setComments] = useState([]);
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState('');
+  const [mood, setMood] = useState(initialMood);
+
+  // 画像とコメントの読み込み
   useEffect(() => {
-    // サーバーからアップロードした最初のキャラ画像パスを取得
     fetch(`${API_BASE_URL}/character`)
-      .then(res => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json();
+      .then(r => r.json())
+      .then(imgs => {
+        const urls = imgs.map(u => u.startsWith('http') ? u : `${API_BASE_URL}${u}`);
+        setImages(urls);
+
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+        const filled = urls.map((_, i) => saved[i] || '');
+        setComments(filled);
       })
-      .then(images => {
-        if (images.length > 0) {
-          const raw = images[0];
-          const fullUrl = raw.startsWith('http') ? raw : `${API_BASE_URL}${raw}`;
-          setImageUrl(fullUrl);
-        }
-      })
-      .catch(err => console.error('❌ キャラクター画像の取得失敗:', err));
+      .catch(console.error);
   }, []);
 
-  if (!imageUrl) return null;
+  // テーブル操作
+  const beginEdit = () => {
+    setDraft(comments[idx]);
+    setEditing(true);
+  };
+  const finishEdit = () => {
+    const updated = comments.slice();
+    updated[idx] = draft;
+    setComments(updated);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    setEditing(false);
+  };
+  const nextCharacter = () => {
+    if (!images.length) return;
+    const ni = (idx + 1) % images.length;
+    setIdx(ni);
+    const moods = Object.keys(moodVariants);
+    setMood(moods[ni % moods.length]);
+    setEditing(false);
+  };
+
+  if (!images.length) return null;
 
   return (
     <motion.div
       className="character-avatar"
-      animate={moodVariants[mood] || moodVariants.happy}
-      transition={moodTransition[mood] || moodTransition.happy}
+      onClick={nextCharacter}
+      animate={moodVariants[mood]}
+      transition={moodTransition[mood]}
+      style={{ cursor: 'pointer' }}
     >
-      <div className="speech-bubble">
-        {message}
+      <div
+        className="speech-bubble"
+        onDoubleClick={e => {
+          e.stopPropagation();
+          beginEdit();
+        }}
+      >
+        {editing ? (
+          <input
+            className="speech-input"
+            value={draft}
+            onChange={e => setDraft(e.target.value)}
+            onBlur={finishEdit}
+            onKeyDown={e => e.key === 'Enter' && finishEdit()}
+            autoFocus
+          />
+        ) : (
+          comments[idx] || '（ダブルクリックでコメント追加）'
+        )}
         <div className="speech-arrow" />
       </div>
       <img
-        src={imageUrl}
+        src={images[idx]}
         alt="キャラクター"
         className={`character-image mood-${mood}`}
       />
     </motion.div>
   );
 }
-
-export default CharacterAvatar;
