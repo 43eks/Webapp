@@ -18,44 +18,58 @@ const moodTransition = {
   calm:  { repeat: Infinity, duration: 4, ease: 'easeInOut' },
 };
 
-function CharacterAvatar({
-  // 初期メッセージとムードを props で受け取れるように変更
-  message = 'こんにちは！',
-  mood = 'happy'
-}) {
-  const [imageUrl, setImageUrl] = useState(null);
+function CharacterAvatar({ initialMood = 'happy' }) {
+  const [images, setImages] = useState([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [comments, setComments] = useState([]);
+  const [mood, setMood] = useState(initialMood);
 
   useEffect(() => {
-    // サーバーからアップロードした最初のキャラ画像パスを取得
     fetch(`${API_BASE_URL}/character`)
       .then(res => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();
       })
-      .then(images => {
-        if (images.length > 0) {
-          const raw = images[0];
-          const fullUrl = raw.startsWith('http') ? raw : `${API_BASE_URL}${raw}`;
-          setImageUrl(fullUrl);
-        }
+      .then(imgs => {
+        // サーバーが "/uploads/xxx.png" を返す想定
+        const fullUrls = imgs.map(raw =>
+          raw.startsWith('http') ? raw : `${API_BASE_URL}${raw}`
+        );
+        setImages(fullUrls);
+
+        // 画像数に合わせたコメント配列（デフォルト）
+        setComments(fullUrls.map((_, i) => `メッセージ ${i + 1}`));
       })
       .catch(err => console.error('❌ キャラクター画像の取得失敗:', err));
   }, []);
 
-  if (!imageUrl) return null;
+  const handleClick = () => {
+    if (images.length === 0) return;
+    const next = (currentIndex + 1) % images.length;
+    setCurrentIndex(next);
+
+    // ムードもコメントに合わせて変えたい場合はここで設定
+    // 例: happy, sad, angry, calm を順にループ
+    const moods = Object.keys(moodVariants);
+    setMood(moods[next % moods.length]);
+  };
+
+  if (images.length === 0) return null;
 
   return (
     <motion.div
       className="character-avatar"
       animate={moodVariants[mood] || moodVariants.happy}
       transition={moodTransition[mood] || moodTransition.happy}
+      onClick={handleClick}
+      style={{ cursor: 'pointer' }}
     >
       <div className="speech-bubble">
-        {message}
+        {comments[currentIndex]}
         <div className="speech-arrow" />
       </div>
       <img
-        src={imageUrl}
+        src={images[currentIndex]}
         alt="キャラクター"
         className={`character-image mood-${mood}`}
       />
