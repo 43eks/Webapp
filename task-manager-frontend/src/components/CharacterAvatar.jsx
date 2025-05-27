@@ -18,103 +18,91 @@ const moodTransition = {
   calm:  { repeat: Infinity, duration: 4, ease: 'easeInOut' },
 };
 
-const COMMENTS_STORAGE_KEY = 'characterComments';
+const STORAGE_KEY = 'characterComments';
 
-function CharacterAvatar({ initialMood = 'happy' }) {
+export default function CharacterAvatar({ initialMood = 'happy' }) {
   const [images, setImages] = useState([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [idx, setIdx] = useState(0);
   const [comments, setComments] = useState([]);
   const [editing, setEditing] = useState(false);
-  const [editText, setEditText] = useState('');
+  const [draft, setDraft] = useState('');
   const [mood, setMood] = useState(initialMood);
 
-  // 画像一覧とコメントの初期化
+  // 1) 画像と保存済コメントの読み込み
   useEffect(() => {
-    // 1) 画像取得
     fetch(`${API_BASE_URL}/character`)
-      .then(res => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json();
-      })
+      .then(r => r.json())
       .then(imgs => {
-        const fullUrls = imgs.map(raw =>
-          raw.startsWith('http') ? raw : `${API_BASE_URL}${raw}`
-        );
-        setImages(fullUrls);
+        const urls = imgs.map(u => u.startsWith('http') ? u : `${API_BASE_URL}${u}`);
+        setImages(urls);
 
-        // 2) 保存済コメントを localStorage から読み込み
-        const saved = localStorage.getItem(COMMENTS_STORAGE_KEY);
-        let arr = [];
-        if (saved) {
-          try { arr = JSON.parse(saved); }
-          catch {}
-        }
-        // 3) 画像数に合わせ、足りない分は空文字で埋める
-        const filled = fullUrls.map((_, i) => arr[i] ?? '');
+        let saved = [];
+        try { saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
+        catch {}
+        // 画像数に合わせて
+        const filled = urls.map((_, i) => saved[i] || '');
         setComments(filled);
       })
-      .catch(err => console.error('❌ キャラクター画像の取得失敗:', err));
+      .catch(console.error);
   }, []);
 
-  // コメント編集開始
-  const startEdit = () => {
-    setEditText(comments[currentIndex]);
+  // 2) ダブルクリックで編集開始
+  const beginEdit = () => {
+    setDraft(comments[idx]);
     setEditing(true);
   };
 
-  // コメントを保存
-  const saveComment = () => {
+  // 3) 編集終了時の保存
+  const finishEdit = () => {
     const updated = comments.slice();
-    updated[currentIndex] = editText;
+    updated[idx] = draft;
     setComments(updated);
-    localStorage.setItem(COMMENTS_STORAGE_KEY, JSON.stringify(updated));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
     setEditing(false);
   };
 
-  // 画像切り替え
-  const handleClick = () => {
-    if (images.length === 0) return;
-    const next = (currentIndex + 1) % images.length;
-    setCurrentIndex(next);
-    setEditing(false);
-    // ムードも順次切り替え
+  // 4) クリックで次の画像＆ムード切替
+  const nextCharacter = () => {
+    if (!images.length) return;
+    const ni = (idx + 1) % images.length;
+    setIdx(ni);
     const moods = Object.keys(moodVariants);
-    setMood(moods[next % moods.length]);
+    setMood(moods[ni % moods.length]);
+    setEditing(false);
   };
 
-  if (images.length === 0) return null;
+  if (!images.length) return null;
 
   return (
     <motion.div
       className="character-avatar"
-      animate={moodVariants[mood] || moodVariants.happy}
-      transition={moodTransition[mood] || moodTransition.happy}
-      onClick={handleClick}
+      onClick={nextCharacter}
+      animate={moodVariants[mood]}
+      transition={moodTransition[mood]}
       style={{ cursor: 'pointer' }}
     >
-      <div className="speech-bubble" onDoubleClick={startEdit}>
+      <div
+        className="speech-bubble"
+        onDoubleClick={e => {
+          e.stopPropagation();
+          beginEdit();
+        }}
+      >
         {editing ? (
           <input
-            type="text"
-            value={editText}
-            onChange={e => setEditText(e.target.value)}
-            onBlur={saveComment}
-            onKeyDown={e => e.key === 'Enter' && saveComment()}
+            className="speech-input"
+            value={draft}
+            onChange={e => setDraft(e.target.value)}
+            onBlur={finishEdit}
+            onKeyDown={e => e.key === 'Enter' && finishEdit()}
             autoFocus
-            style={{ width: '100%', fontSize: '14px' }}
           />
         ) : (
-          comments[currentIndex] || '（ダブルクリックでコメントを追加）'
+          comments[idx] || '（ダブルクリックでコメント追加）'
         )}
         <div className="speech-arrow" />
       </div>
-      <img
-        src={images[currentIndex]}
-        alt="キャラクター"
-        className={`character-image mood-${mood}`}
-      />
+      <img src={images[idx]} alt="キャラクター" className={`character-image mood-${mood}`} />
     </motion.div>
   );
 }
-
-export default CharacterAvatar;
