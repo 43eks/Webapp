@@ -18,38 +18,66 @@ const moodTransition = {
   calm:  { repeat: Infinity, duration: 4, ease: 'easeInOut' },
 };
 
+const COMMENTS_STORAGE_KEY = 'characterComments';
+
 function CharacterAvatar({ initialMood = 'happy' }) {
   const [images, setImages] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [comments, setComments] = useState([]);
+  const [editing, setEditing] = useState(false);
+  const [editText, setEditText] = useState('');
   const [mood, setMood] = useState(initialMood);
 
+  // 画像一覧とコメントの初期化
   useEffect(() => {
+    // 1) 画像取得
     fetch(`${API_BASE_URL}/character`)
       .then(res => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();
       })
       .then(imgs => {
-        // サーバーが "/uploads/xxx.png" を返す想定
         const fullUrls = imgs.map(raw =>
           raw.startsWith('http') ? raw : `${API_BASE_URL}${raw}`
         );
         setImages(fullUrls);
 
-        // 画像数に合わせたコメント配列（デフォルト）
-        setComments(fullUrls.map((_, i) => `メッセージ ${i + 1}`));
+        // 2) 保存済コメントを localStorage から読み込み
+        const saved = localStorage.getItem(COMMENTS_STORAGE_KEY);
+        let arr = [];
+        if (saved) {
+          try { arr = JSON.parse(saved); }
+          catch {}
+        }
+        // 3) 画像数に合わせ、足りない分は空文字で埋める
+        const filled = fullUrls.map((_, i) => arr[i] ?? '');
+        setComments(filled);
       })
       .catch(err => console.error('❌ キャラクター画像の取得失敗:', err));
   }, []);
 
+  // コメント編集開始
+  const startEdit = () => {
+    setEditText(comments[currentIndex]);
+    setEditing(true);
+  };
+
+  // コメントを保存
+  const saveComment = () => {
+    const updated = comments.slice();
+    updated[currentIndex] = editText;
+    setComments(updated);
+    localStorage.setItem(COMMENTS_STORAGE_KEY, JSON.stringify(updated));
+    setEditing(false);
+  };
+
+  // 画像切り替え
   const handleClick = () => {
     if (images.length === 0) return;
     const next = (currentIndex + 1) % images.length;
     setCurrentIndex(next);
-
-    // ムードもコメントに合わせて変えたい場合はここで設定
-    // 例: happy, sad, angry, calm を順にループ
+    setEditing(false);
+    // ムードも順次切り替え
     const moods = Object.keys(moodVariants);
     setMood(moods[next % moods.length]);
   };
@@ -64,8 +92,20 @@ function CharacterAvatar({ initialMood = 'happy' }) {
       onClick={handleClick}
       style={{ cursor: 'pointer' }}
     >
-      <div className="speech-bubble">
-        {comments[currentIndex]}
+      <div className="speech-bubble" onDoubleClick={startEdit}>
+        {editing ? (
+          <input
+            type="text"
+            value={editText}
+            onChange={e => setEditText(e.target.value)}
+            onBlur={saveComment}
+            onKeyDown={e => e.key === 'Enter' && saveComment()}
+            autoFocus
+            style={{ width: '100%', fontSize: '14px' }}
+          />
+        ) : (
+          comments[currentIndex] || '（ダブルクリックでコメントを追加）'
+        )}
         <div className="speech-arrow" />
       </div>
       <img
