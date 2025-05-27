@@ -28,7 +28,7 @@ export default function CharacterAvatar({ initialMood = 'happy' }) {
   const [draft, setDraft] = useState('');
   const [mood, setMood] = useState(initialMood);
 
-  // 1) 画像と保存済コメントの読み込み
+  // 画像とコメントの読み込み
   useEffect(() => {
     fetch(`${API_BASE_URL}/character`)
       .then(r => r.json())
@@ -36,23 +36,18 @@ export default function CharacterAvatar({ initialMood = 'happy' }) {
         const urls = imgs.map(u => u.startsWith('http') ? u : `${API_BASE_URL}${u}`);
         setImages(urls);
 
-        let saved = [];
-        try { saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
-        catch {}
-        // 画像数に合わせて
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
         const filled = urls.map((_, i) => saved[i] || '');
         setComments(filled);
       })
       .catch(console.error);
   }, []);
 
-  // 2) ダブルクリックで編集開始
+  // テーブル操作
   const beginEdit = () => {
     setDraft(comments[idx]);
     setEditing(true);
   };
-
-  // 3) 編集終了時の保存
   const finishEdit = () => {
     const updated = comments.slice();
     updated[idx] = draft;
@@ -60,8 +55,6 @@ export default function CharacterAvatar({ initialMood = 'happy' }) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
     setEditing(false);
   };
-
-  // 4) クリックで次の画像＆ムード切替
   const nextCharacter = () => {
     if (!images.length) return;
     const ni = (idx + 1) % images.length;
@@ -102,7 +95,11 @@ export default function CharacterAvatar({ initialMood = 'happy' }) {
         )}
         <div className="speech-arrow" />
       </div>
-      <img src={images[idx]} alt="キャラクター" className={`character-image mood-${mood}`} />
+      <img
+        src={images[idx]}
+        alt="キャラクター"
+        className={`character-image mood-${mood}`}
+      />
     </motion.div>
   );
 }
