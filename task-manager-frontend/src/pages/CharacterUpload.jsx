@@ -44,7 +44,7 @@ function CharacterUpload() {
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       alert('アップロード成功！');
-      fetchImages();
+      await fetchImages();
       // ファイル選択をクリア
       fileInputRef.current.value = '';
       setFiles([]);
@@ -65,7 +65,7 @@ function CharacterUpload() {
         method: 'DELETE'
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      fetchImages();
+      await fetchImages();
     } catch (err) {
       console.error('削除失敗:', err);
       alert('削除に失敗しました');
@@ -77,14 +77,17 @@ function CharacterUpload() {
       <h2>🧍 キャラクター画像アップロード</h2>
 
       <div className="upload-form">
-        <input
-          type="file"
-          multiple
-          accept="image/*"
-          onChange={handleFileChange}
-          ref={fileInputRef}
-          disabled={uploading}
-        />
+        <label className="file-label">
+          ファイルを選択
+          <input
+            type="file"
+            multiple
+            accept="image/*"
+            onChange={handleFileChange}
+            ref={fileInputRef}
+            disabled={uploading}
+          />
+        </label>
         <button
           onClick={handleUpload}
           className="upload-button"

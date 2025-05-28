@@ -13,8 +13,18 @@
   margin-bottom: 20px;
 }
 
-.upload-form input[type="file"] {
-  display: none; /* ボタンで開く */
+/* カスタムファイル選択ボタン */
+.file-label {
+  display: inline-block;
+  padding: 8px 14px;
+  background-color: #eee;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}
+.file-label input[type="file"] {
+  display: none;
 }
 
 .upload-button {
@@ -26,7 +36,6 @@
   cursor: pointer;
   font-size: 14px;
 }
-
 .upload-button:disabled {
   background-color: #aaa;
   cursor: not-allowed;
@@ -69,7 +78,6 @@
   font-size: 12px;
   transition: background-color 0.2s;
 }
-
 .delete-btn:hover {
   background-color: rgba(200, 0, 0, 0.9);
 }
