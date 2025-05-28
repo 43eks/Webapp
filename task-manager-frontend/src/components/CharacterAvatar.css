@@ -1,50 +1,45 @@
-/* src/components/CharacterAvatar.css */
+/* ───────────────────────────────────── */
+/* src/components/CharacterAvatar.css    */
+/* ───────────────────────────────────── */
+
 .character-avatar {
   position: fixed;
-  bottom: 20px;
-  right: 20px;
-  text-align: center;
-  z-index: 1000;
+  bottom: 5%;
+  right: 5%;
+  width: 10vw;                /* 画面幅の10% */
+  max-width: 120px;           /* 上限を120pxに */
+  pointer-events: none;       /* 背後のクリックを妨げない */
+  z-index: 1000;              /* 最前面 */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
+/* 吹き出しはクリックできるようにする場合だけ pointer-events: auto に */
 .speech-bubble {
-  display: inline-block;
-  max-width: 180px;
-  padding: 8px 12px;
-  margin-bottom: 6px;
+  pointer-events: none;
   background: #fff;
   border: 1px solid #ccc;
-  border-radius: 12px;
-  position: relative;
-  cursor: text; /* テキスト編集を示唆 */
-}
-
-.speech-arrow {
-  width: 0;
-  height: 0;
-  border: 8px solid transparent;
-  border-top-color: #fff;
-  position: absolute;
-  bottom: -16px;
-  left: 20px;
-}
-
-.speech-input {
-  width: 100%;
-  border: none;
-  outline: none;
+  border-radius: 8px;
+  padding: 8px;
   font-size: 14px;
+  position: relative;
+  margin-bottom: 6px;
+  white-space: nowrap;
+}
+
+.speech-bubble .speech-arrow {
+  content: "";
+  position: absolute;
+  bottom: -6px;
+  left: 20px;
+  border-width: 6px 6px 0 6px;
+  border-style: solid;
+  border-color: #fff transparent transparent transparent;
 }
 
 .character-image {
-  width: 80px;  /* ページの10％以下に収まるよう適宜調整 */
+  width: 100%;
   height: auto;
-  border-radius: 50%;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  display: block;
 }
-
-/* ムード別スタイル例 */
-.mood-happy   { filter: brightness(1.1); }
-.mood-sad     { filter: grayscale(0.5); }
-.mood-angry   { filter: contrast(1.2); }
-.mood-calm    { filter: blur(1px); }
