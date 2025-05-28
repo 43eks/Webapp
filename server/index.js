@@ -1,4 +1,3 @@
-// server/index.js
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
@@ -47,11 +46,12 @@ console.log('✅ data.json loaded');
 // --- アドバイスログAPI ---
 const ADVICE_LOG_FILE = path.join(__dirname, 'advice_logs.json');
 
+// ログ取得
 app.get('/advice/logs', (req, res) => {
   try {
     const raw = fs.existsSync(ADVICE_LOG_FILE)
       ? fs.readFileSync(ADVICE_LOG_FILE, 'utf-8').trim()
-      : '[]';
+      : '';
     const logs = raw ? JSON.parse(raw) : [];
     res.json(logs);
   } catch (err) {
@@ -60,17 +60,14 @@ app.get('/advice/logs', (req, res) => {
   }
 });
 
+// ログ追加
 app.post('/advice/logs', (req, res) => {
   try {
     const entry = { ...req.body, timestamp: new Date().toISOString() };
     let logs = [];
     if (fs.existsSync(ADVICE_LOG_FILE)) {
-      try {
-        const raw = fs.readFileSync(ADVICE_LOG_FILE, 'utf-8').trim();
-        logs = raw ? JSON.parse(raw) : [];
-      } catch (e) {
-        logs = [];
-      }
+      const raw = fs.readFileSync(ADVICE_LOG_FILE, 'utf-8').trim();
+      logs = raw ? JSON.parse(raw) : [];
     }
     logs.push(entry);
     fs.writeFileSync(ADVICE_LOG_FILE, JSON.stringify(logs, null, 2));
@@ -85,25 +82,32 @@ app.post('/advice/logs', (req, res) => {
 app.get('/stats', (req, res) => {
   try {
     const data = JSON.parse(fs.readFileSync(DATA_FILE, 'utf-8'));
-    const totalTasks = data.tasks.length;
+
+    // タスク
+    const totalTasks     = data.tasks.length;
     const completedTasks = data.tasks.filter(t => t.completed).length;
+
+    // 習慣達成率（過去30日）
     const habits = (data.habits || []).map(h => {
       const records = Object.entries(h.records || {})
         .filter(([date]) => new Date(date) >= new Date(Date.now() - 30 * 86400000));
-      const done = records.filter(([, v]) => v).length;
+      const done = records.filter(([,v]) => v).length;
       const rate = records.length ? (done / records.length) * 100 : 0;
       return { name: h.name, rate };
     });
-    const totalGoals = data.goals.length;
+
+    // ゴール
+    const totalGoals     = data.goals.length;
     const completedGoals = data.goals.filter(g => g.completed).length;
 
+    // アドバイス推移
     let logs = [];
     if (fs.existsSync(ADVICE_LOG_FILE)) {
       const raw = fs.readFileSync(ADVICE_LOG_FILE, 'utf-8').trim();
       logs = raw ? JSON.parse(raw) : [];
     }
     const adviceTrend = logs.reduce((acc, log) => {
-      const day = log.timestamp.slice(0, 10);
+      const day = log.timestamp.slice(0,10);
       acc[day] = (acc[day] || 0) + 1;
       return acc;
     }, {});
@@ -121,7 +125,7 @@ app.get('/stats', (req, res) => {
 });
 
 // --- タスクAPI ---
-app.get('/tasks', (req, res) => res.json(db.tasks));
+app.get('/tasks',    (req, res) => res.json(db.tasks));
 app.get('/tasks/:id', (req, res) => {
   const t = db.tasks.find(x => x.id === req.params.id);
   if (!t) return res.status(404).json({ error: 'Task not found' });
@@ -149,29 +153,52 @@ app.delete('/tasks/:id', (req, res) => {
 });
 
 // --- ナレッジAPI ---
-app.get('/knowledge', (req, res) => res.json(db.knowledge));
-app.post('/knowledge', (req, res) => {
+app.get('/knowledge',    (req, res) => res.json(db.knowledge));
+app.post('/knowledge',   (req, res) => {
   const item = { ...req.body, id: Date.now().toString(), createdAt: new Date().toISOString() };
   db.knowledge.push(item);
   fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2));
   res.status(201).json(item);
 });
 app.get('/knowledge/:id', (req, res) => {
-  const item = db.knowledge.find(k => k.id === req.params.id);
-  if (!item) return res.status(404).json({ error: 'Not found' });
-  res.json(item);
+  const it = db.knowledge.find(x => x.id === req.params.id);
+  if (!it) return res.status(404).json({ error: 'Not found' });
+  res.json(it);
 });
 app.put('/knowledge/:id', (req, res) => {
-  const idx = db.knowledge.findIndex(k => k.id === req.params.id);
+  const idx = db.knowledge.findIndex(x => x.id === req.params.id);
   if (idx === -1) return res.status(404).json({ error: 'Not found' });
   db.knowledge[idx] = { ...db.knowledge[idx], ...req.body, updatedAt: new Date().toISOString() };
   fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2));
   res.json(db.knowledge[idx]);
 });
 app.delete('/knowledge/:id', (req, res) => {
-  const idx = db.knowledge.findIndex(k => k.id === req.params.id);
+  const idx = db.knowledge.findIndex(x => x.id === req.params.id);
   if (idx === -1) return res.status(404).json({ error: 'Not found' });
   db.knowledge.splice(idx, 1);
+  fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2));
+  res.status(204).send();
+});
+
+// --- 習慣API ---
+app.get('/habits',    (req, res) => res.json(db.habits));
+app.post('/habits',   (req, res) => {
+  const habit = { ...req.body, id: Date.now().toString(), records: {} };
+  db.habits.push(habit);
+  fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2));
+  res.status(201).json(habit);
+});
+app.put('/habits/:id', (req, res) => {
+  const idx = db.habits.findIndex(h => h.id === req.params.id);
+  if (idx === -1) return res.status(404).json({ error: 'Not found' });
+  db.habits[idx] = { ...db.habits[idx], ...req.body };
+  fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2));
+  res.json(db.habits[idx]);
+});
+app.delete('/habits/:id', (req, res) => {
+  const idx = db.habits.findIndex(h => h.id === req.params.id);
+  if (idx === -1) return res.status(404).json({ error: 'Not found' });
+  db.habits.splice(idx, 1);
   fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2));
   res.status(204).send();
 });
@@ -192,13 +219,13 @@ app.get('/character', (req, res) => {
   const dir = path.join(__dirname, 'uploads');
   fs.readdir(dir, (err, files) => {
     if (err) return res.status(500).json({ error: 'Read failed' });
-    res.json(files.map(f => `http://localhost:8080/uploads/${f}`));
+    res.json(files.map(f => `/uploads/${f}`));
   });
 });
 app.delete('/character/:filename', (req, res) => {
-  const file = path.join(__dirname, 'uploads', req.params.filename);
-  if (!fs.existsSync(file)) return res.status(404).json({ error: 'Not found' });
-  fs.unlinkSync(file);
+  const p = path.join(__dirname, 'uploads', req.params.filename);
+  if (!fs.existsSync(p)) return res.status(404).json({ error: 'Not found' });
+  fs.unlinkSync(p);
   res.json({ message: 'Deleted' });
 });
 
@@ -210,8 +237,7 @@ app.post('/dwh/model', (req, res) => {
 });
 app.get('/dwh/model', (req, res) => {
   if (!fs.existsSync(MODEL_FILE)) return res.json({ tables: [], relations: [] });
-  const m = JSON.parse(fs.readFileSync(MODEL_FILE, 'utf-8'));
-  res.json(m);
+  res.json(JSON.parse(fs.readFileSync(MODEL_FILE, 'utf-8')));
 });
 
 // --- サーバ起動 ---
