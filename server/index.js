@@ -1,3 +1,4 @@
+// server/index.js
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
@@ -27,7 +28,7 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-// --- データファイル初期化 ---
+// --- data.json の初期化 ---
 const DATA_FILE = path.join(__dirname, 'data.json');
 let db = { knowledge: [], tasks: [], habits: [], goals: [], history: [] };
 if (fs.existsSync(DATA_FILE)) {
@@ -46,7 +47,6 @@ console.log('✅ data.json loaded');
 // --- アドバイスログAPI ---
 const ADVICE_LOG_FILE = path.join(__dirname, 'advice_logs.json');
 
-// ログ取得
 app.get('/advice/logs', (req, res) => {
   try {
     const raw = fs.existsSync(ADVICE_LOG_FILE)
@@ -60,7 +60,6 @@ app.get('/advice/logs', (req, res) => {
   }
 });
 
-// ログ追加
 app.post('/advice/logs', (req, res) => {
   try {
     const entry = { ...req.body, timestamp: new Date().toISOString() };
@@ -82,25 +81,17 @@ app.post('/advice/logs', (req, res) => {
 app.get('/stats', (req, res) => {
   try {
     const data = JSON.parse(fs.readFileSync(DATA_FILE, 'utf-8'));
-
-    // タスク
     const totalTasks     = data.tasks.length;
     const completedTasks = data.tasks.filter(t => t.completed).length;
-
-    // 習慣達成率（過去30日）
     const habits = (data.habits || []).map(h => {
       const records = Object.entries(h.records || {})
-        .filter(([date]) => new Date(date) >= new Date(Date.now() - 30 * 86400000));
+        .filter(([date]) => new Date(date) >= new Date(Date.now() - 30*86400000));
       const done = records.filter(([,v]) => v).length;
       const rate = records.length ? (done / records.length) * 100 : 0;
       return { name: h.name, rate };
     });
-
-    // ゴール
     const totalGoals     = data.goals.length;
     const completedGoals = data.goals.filter(g => g.completed).length;
-
-    // アドバイス推移
     let logs = [];
     if (fs.existsSync(ADVICE_LOG_FILE)) {
       const raw = fs.readFileSync(ADVICE_LOG_FILE, 'utf-8').trim();
@@ -108,10 +99,9 @@ app.get('/stats', (req, res) => {
     }
     const adviceTrend = logs.reduce((acc, log) => {
       const day = log.timestamp.slice(0,10);
-      acc[day] = (acc[day] || 0) + 1;
+      acc[day] = (acc[day]||0) + 1;
       return acc;
     }, {});
-
     res.json({
       tasks: { total: totalTasks, completed: completedTasks },
       habits,
@@ -124,91 +114,54 @@ app.get('/stats', (req, res) => {
   }
 });
 
-// --- タスクAPI ---
-app.get('/tasks',    (req, res) => res.json(db.tasks));
-app.get('/tasks/:id', (req, res) => {
-  const t = db.tasks.find(x => x.id === req.params.id);
-  if (!t) return res.status(404).json({ error: 'Task not found' });
-  res.json(t);
-});
-app.post('/tasks', (req, res) => {
-  const item = { ...req.body, id: Date.now().toString() };
-  db.tasks.push(item);
-  fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2));
-  res.status(201).json(item);
-});
-app.put('/tasks/:id', (req, res) => {
-  const idx = db.tasks.findIndex(x => x.id === req.params.id);
-  if (idx === -1) return res.status(404).json({ error: 'Not found' });
-  db.tasks[idx] = { ...db.tasks[idx], ...req.body };
-  fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2));
-  res.json(db.tasks[idx]);
-});
-app.delete('/tasks/:id', (req, res) => {
-  const idx = db.tasks.findIndex(x => x.id === req.params.id);
-  if (idx === -1) return res.status(404).json({ error: 'Not found' });
-  db.tasks.splice(idx, 1);
-  fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2));
-  res.status(204).send();
-});
+// --- 共通CRUD: tasks, knowledge, habits, goals ---
+const crud = [
+  { name: 'tasks',   defaults: { completed: false } },
+  { name: 'knowledge', defaults: {} },
+  { name: 'habits',   defaults: { records: {} } },
+  { name: 'goals',    defaults: { completed: false } }
+];
 
-// --- ナレッジAPI ---
-app.get('/knowledge',    (req, res) => res.json(db.knowledge));
-app.post('/knowledge',   (req, res) => {
-  const item = { ...req.body, id: Date.now().toString(), createdAt: new Date().toISOString() };
-  db.knowledge.push(item);
-  fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2));
-  res.status(201).json(item);
-});
-app.get('/knowledge/:id', (req, res) => {
-  const it = db.knowledge.find(x => x.id === req.params.id);
-  if (!it) return res.status(404).json({ error: 'Not found' });
-  res.json(it);
-});
-app.put('/knowledge/:id', (req, res) => {
-  const idx = db.knowledge.findIndex(x => x.id === req.params.id);
-  if (idx === -1) return res.status(404).json({ error: 'Not found' });
-  db.knowledge[idx] = { ...db.knowledge[idx], ...req.body, updatedAt: new Date().toISOString() };
-  fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2));
-  res.json(db.knowledge[idx]);
-});
-app.delete('/knowledge/:id', (req, res) => {
-  const idx = db.knowledge.findIndex(x => x.id === req.params.id);
-  if (idx === -1) return res.status(404).json({ error: 'Not found' });
-  db.knowledge.splice(idx, 1);
-  fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2));
-  res.status(204).send();
-});
-
-// --- 習慣API ---
-app.get('/habits',    (req, res) => res.json(db.habits));
-app.post('/habits',   (req, res) => {
-  const habit = { ...req.body, id: Date.now().toString(), records: {} };
-  db.habits.push(habit);
-  fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2));
-  res.status(201).json(habit);
-});
-app.put('/habits/:id', (req, res) => {
-  const idx = db.habits.findIndex(h => h.id === req.params.id);
-  if (idx === -1) return res.status(404).json({ error: 'Not found' });
-  db.habits[idx] = { ...db.habits[idx], ...req.body };
-  fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2));
-  res.json(db.habits[idx]);
-});
-app.delete('/habits/:id', (req, res) => {
-  const idx = db.habits.findIndex(h => h.id === req.params.id);
-  if (idx === -1) return res.status(404).json({ error: 'Not found' });
-  db.habits.splice(idx, 1);
-  fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2));
-  res.status(204).send();
+crud.forEach(({ name, defaults }) => {
+  app.get(`/${name}`, (req, res) => res.json(db[name]));
+  app.get(`/${name}/:id`, (req, res) => {
+    const item = db[name].find(x => x.id === req.params.id);
+    if (!item) return res.status(404).json({ error: `${name.slice(0,-1)} not found` });
+    res.json(item);
+  });
+  app.post(`/${name}`, (req, res) => {
+    const item = {
+      ...req.body,
+      ...defaults,
+      id: Date.now().toString(),
+      createdAt: new Date().toISOString()
+    };
+    db[name].push(item);
+    fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2));
+    res.status(201).json(item);
+  });
+  app.put(`/${name}/:id`, (req, res) => {
+    const idx = db[name].findIndex(x => x.id === req.params.id);
+    if (idx === -1) return res.status(404).json({ error: 'Not found' });
+    db[name][idx] = { ...db[name][idx], ...req.body };
+    fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2));
+    res.json(db[name][idx]);
+  });
+  app.delete(`/${name}/:id`, (req, res) => {
+    const idx = db[name].findIndex(x => x.id === req.params.id);
+    if (idx === -1) return res.status(404).json({ error: 'Not found' });
+    db[name].splice(idx, 1);
+    fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2));
+    res.status(204).send();
+  });
 });
 
 // --- アップロードAPI ---
-app.post('/upload', upload.single('image'), (req, res) => {
+app.post('/upload', (req, res, next) => upload.single('image')(req, res, next), (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No file' });
   res.json({ url: `http://localhost:8080/uploads/${req.file.filename}` });
 });
-app.post('/upload/multiple', upload.array('images'), (req, res) => {
+app.post('/upload/multiple', (req, res, next) => upload.array('images')(req, res, next), (req, res) => {
   if (!req.files || req.files.length === 0) return res.status(400).json({ error: 'No files' });
   const urls = req.files.map(f => `http://localhost:8080/uploads/${f.filename}`);
   res.json({ urls });
