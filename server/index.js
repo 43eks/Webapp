@@ -39,7 +39,7 @@ if (fs.existsSync(DATA_FILE)) {
   }
 }
 ['knowledge', 'tasks', 'habits', 'goals', 'history'].forEach(key => {
-  db[key] = db[key] || [];
+  db[key] = Array.isArray(db[key]) ? db[key] : [];
 });
 fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2));
 console.log('✅ data.json loaded');
@@ -81,8 +81,10 @@ app.post('/advice/logs', (req, res) => {
 app.get('/stats', (req, res) => {
   try {
     const data = JSON.parse(fs.readFileSync(DATA_FILE, 'utf-8'));
+    // タスク
     const totalTasks     = data.tasks.length;
     const completedTasks = data.tasks.filter(t => t.completed).length;
+    // 習慣達成率（過去30日）
     const habits = (data.habits || []).map(h => {
       const records = Object.entries(h.records || {})
         .filter(([date]) => new Date(date) >= new Date(Date.now() - 30*86400000));
@@ -90,8 +92,10 @@ app.get('/stats', (req, res) => {
       const rate = records.length ? (done / records.length) * 100 : 0;
       return { name: h.name, rate };
     });
+    // ゴール
     const totalGoals     = data.goals.length;
     const completedGoals = data.goals.filter(g => g.completed).length;
+    // アドバイス推移
     let logs = [];
     if (fs.existsSync(ADVICE_LOG_FILE)) {
       const raw = fs.readFileSync(ADVICE_LOG_FILE, 'utf-8').trim();
@@ -115,14 +119,14 @@ app.get('/stats', (req, res) => {
 });
 
 // --- 共通CRUD: tasks, knowledge, habits, goals ---
-const crud = [
-  { name: 'tasks',   defaults: { completed: false } },
+const entities = [
+  { name: 'tasks',    defaults: { completed: false } },
   { name: 'knowledge', defaults: {} },
-  { name: 'habits',   defaults: { records: {} } },
-  { name: 'goals',    defaults: { completed: false } }
+  { name: 'habits',    defaults: { records: {} } },
+  { name: 'goals',     defaults: { completed: false } }
 ];
 
-crud.forEach(({ name, defaults }) => {
+entities.forEach(({ name, defaults }) => {
   app.get(`/${name}`, (req, res) => res.json(db[name]));
   app.get(`/${name}/:id`, (req, res) => {
     const item = db[name].find(x => x.id === req.params.id);
@@ -156,7 +160,7 @@ crud.forEach(({ name, defaults }) => {
   });
 });
 
-// --- アップロードAPI ---
+// --- 画像アップロードAPI ---
 app.post('/upload', (req, res, next) => upload.single('image')(req, res, next), (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No file' });
   res.json({ url: `http://localhost:8080/uploads/${req.file.filename}` });
@@ -167,7 +171,7 @@ app.post('/upload/multiple', (req, res, next) => upload.array('images')(req, res
   res.json({ urls });
 });
 
-// --- キャラクター画像API ---
+// --- キャラクター画像一覧／削除 ---
 app.get('/character', (req, res) => {
   const dir = path.join(__dirname, 'uploads');
   fs.readdir(dir, (err, files) => {

@@ -1,96 +1,129 @@
+// ───────────────────────────────────────────────────────────
 // src/App.js
-import './App.css';               // ✅ 背景・スタイルのCSSを読み込み
+// アプリ全体のルーティング定義 & ナビゲーションバー
+// ───────────────────────────────────────────────────────────
+import './App.css';
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 
-// 📄 各ページ読み込み
-import Home from './pages/Home';
-import KnowledgeList from './pages/knowledgeList';
-import CreateKnowledge from './pages/Createknowledge';
-import EditKnowledge from './pages/Editknowledge';
-import ViewKnowledge from './pages/Viewknowledge';
-import TaskList from './pages/TaskList';
-import CreateTask from './pages/CreateTask';
-import TaskDetail from './pages/TaskDetail';
-import CreateHabit from './pages/CreateHabit';
-import HabitTracker from './pages/HabitTracker';
-import MonthlyView from './pages/MonthlyView';
-import GoalPage from './pages/GoalPage';
-import GoalForm from './pages/GoalForm';
-import SlideVideoPage from './pages/SlideVideoPage';
-import CharacterUpload from './pages/CharacterUpload';
-import DataSourceStep from './pages/DataSourceStep';
-import FieldDefinitionStep from './pages/FieldDefinitionStep';
-import ModelingStep from './pages/ModelingStep';
-import AdviceLogPage from './pages/AdviceLogPage';
-import DashboardPage from './pages/DashboardPage';
+/* 既存ページ群 */
+import Home                 from './pages/Home';
+import KnowledgeList        from './pages/knowledgeList';
+import CreateKnowledge      from './pages/Createknowledge';
+import EditKnowledge        from './pages/Editknowledge';
+import ViewKnowledge        from './pages/Viewknowledge';
+import TaskList             from './pages/TaskList';
+import CreateTask           from './pages/CreateTask';
+import TaskDetail           from './pages/TaskDetail';
+import CreateHabit          from './pages/CreateHabit';
+import HabitTracker         from './pages/HabitTracker';
+import MonthlyView          from './pages/MonthlyView';
+import GoalPage             from './pages/GoalPage';
+import GoalForm             from './pages/GoalForm';
+import SlideVideoPage       from './pages/SlideVideoPage';
+import CharacterUpload      from './pages/CharacterUpload';
+import DataSourceStep       from './pages/DataSourceStep';
+import FieldDefinitionStep  from './pages/FieldDefinitionStep';
+import ModelingStep         from './pages/ModelingStep';
+import AdviceLogPage        from './pages/AdviceLogPage';
+import DashboardPage        from './pages/DashboardPage';
 
-// 🧍 キャラクター表示
-import CharacterAvatar from './components/CharacterAvatar';
+/* ── ▼ 新規：上流工程支援モジュール ─────────────────── */
+import UpstreamDashboard    from './pages/upstream/UpstreamDashboard';
+/* ───────────────────────────────────────────────────────── */
 
-// ✅ 共通APIベースURL
+import CharacterAvatar      from './components/CharacterAvatar';
+
 export const API_BASE_URL = 'http://localhost:8080';
 
-function App() {
+/* ───────────────────────────────────────────────────────── */
+
+export default function App() {
   return (
     <>
       <Router>
-        {/* --- ナビゲーションバー --- */}
+        {/* ===== ナビゲーションバー ===== */}
         <nav style={navBarStyle}>
-          <Link to="/" style={navLinkStyle}>🏠 ホーム</Link>
-          <Link to="/tasks" style={navLinkStyle}>📝 タスク</Link>
-          <Link to="/knowledges" style={navLinkStyle}>📚 ナレッジ</Link>
-          <Link to="/habits" style={navLinkStyle}>📅 習慣</Link>
-          <Link to="/goals" style={navLinkStyle}>🎯 ゴール</Link>
-          <Link to="/slides/create" style={navLinkStyle}>🎞️ スライド</Link>
-          <Link to="/character" style={navLinkStyle}>🧍 キャラクター</Link>
-          <Link to="/datasource" style={navLinkStyle}>🧬 データソース</Link>
-          <Link to="/fields" style={navLinkStyle}>🧩 項目定義</Link>
-          <Link to="/modeling" style={navLinkStyle}>🧱 モデリング</Link>
-          <Link to="/advice" style={navLinkStyle}>🧠 アドバイス</Link>
-          <Link to="/dashboard" style={navLinkStyle}>📊 ダッシュボード</Link>
+          <NavLink to="/"              label="🏠 ホーム"         />
+          <NavLink to="/tasks"         label="📝 タスク"         />
+          <NavLink to="/knowledges"    label="📚 ナレッジ"       />
+          <NavLink to="/habits"        label="📅 習慣"           />
+          <NavLink to="/goals"         label="🎯 ゴール"         />
+          <NavLink to="/slides/create" label="🎞️ スライド"      />
+          <NavLink to="/character"     label="🧍 キャラクター"   />
+          <NavLink to="/datasource"    label="🧬 データソース"   />
+          <NavLink to="/fields"        label="🧩 項目定義"       />
+          <NavLink to="/modeling"      label="🧱 モデリング"     />
+          <NavLink to="/advice"        label="🧠 アドバイス"     />
+          <NavLink to="/dashboard"     label="📊 ダッシュボード" />
+          {/* ★ 上流工程 */}
+          <NavLink to="/upstream"      label="🛠 上流工程"       />
         </nav>
 
-        {/* --- メイン画面 --- */}
+        {/* ===== メインルーティング ===== */}
         <main className="app-overlay">
           <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/knowledges" element={<KnowledgeList />} />
-            <Route path="/knowledges/create" element={<CreateKnowledge />} />
-            <Route path="/knowledges/:id/edit" element={<EditKnowledge />} />
-            <Route path="/knowledges/:id" element={<ViewKnowledge />} />
-            <Route path="/tasks" element={<TaskList />} />
-            <Route path="/tasks/create" element={<CreateTask />} />
-            <Route path="/tasks/:id" element={<TaskDetail />} />
-            <Route path="/habits" element={<HabitTracker />} />
-            <Route path="/habits/create" element={<CreateHabit />} />
-            <Route path="/habits/monthly" element={<MonthlyView />} />
-            <Route path="/goals" element={<GoalPage />} />
-            <Route path="/goals/new" element={<GoalForm />} />
-            <Route path="/slides/create" element={<SlideVideoPage />} />
-            <Route path="/character" element={<CharacterUpload />} />
-            <Route path="/datasource" element={<DataSourceStep />} />
-            <Route path="/fields" element={<FieldDefinitionStep />} />
-            <Route path="/modeling" element={<ModelingStep />} />
-            <Route path="/advice" element={<AdviceLogPage />} />
-            <Route path="/dashboard" element={<DashboardPage />} />
+            {/* ホーム */}
+            <Route path="/"                       element={<Home />} />
+
+            {/* ナレッジ */}
+            <Route path="/knowledges"             element={<KnowledgeList />} />
+            <Route path="/knowledges/create"      element={<CreateKnowledge />} />
+            <Route path="/knowledges/:id/edit"    element={<EditKnowledge />} />
+            <Route path="/knowledges/:id"         element={<ViewKnowledge />} />
+
+            {/* タスク */}
+            <Route path="/tasks"                  element={<TaskList />} />
+            <Route path="/tasks/create"           element={<CreateTask />} />
+            <Route path="/tasks/:id"              element={<TaskDetail />} />
+
+            {/* 習慣 */}
+            <Route path="/habits"                 element={<HabitTracker />} />
+            <Route path="/habits/create"          element={<CreateHabit />} />
+            <Route path="/habits/monthly"         element={<MonthlyView />} />
+
+            {/* ゴール */}
+            <Route path="/goals"                  element={<GoalPage />} />
+            <Route path="/goals/new"              element={<GoalForm />} />
+
+            {/* スライド */}
+            <Route path="/slides/create"          element={<SlideVideoPage />} />
+
+            {/* キャラクター管理 */}
+            <Route path="/character"              element={<CharacterUpload />} />
+
+            {/* DWH 系 */}
+            <Route path="/datasource"             element={<DataSourceStep />} />
+            <Route path="/fields"                 element={<FieldDefinitionStep />} />
+            <Route path="/modeling"               element={<ModelingStep />} />
+
+            {/* アドバイス & ダッシュボード */}
+            <Route path="/advice"                 element={<AdviceLogPage />} />
+            <Route path="/dashboard"              element={<DashboardPage />} />
+
+            {/* ★ 上流工程モジュール（ネストされたルートを UpstreamDashboard に任せる） */}
+            <Route path="/upstream/*"             element={<UpstreamDashboard />} />
           </Routes>
         </main>
       </Router>
 
-      {/* --- 常駐キャラクター表示 --- */}
-      <CharacterAvatar
-        // サーバーから取得した最初の画像URLを props で渡しても良いですし、
-        // Component 内で自動フェッチする場合は props は不要です。
-        imageUrl="/uploads/your-uploaded-character.png"
-        message="今日もがんばろう！"
-        mood="happy"
-      />
+      {/* ===== 画面右下の常駐キャラクター ===== */}
+      {/* 画像・コメントは <CharacterAvatar /> 内で自動フェッチ */}
+      <CharacterAvatar initialMood="happy" />
     </>
   );
 }
 
-// --- ナビゲーションバー用スタイル ---
+/* ===== リンク用の小コンポーネント ===== */
+function NavLink({ to, label }) {
+  return (
+    <Link to={to} style={navLinkStyle}>
+      {label}
+    </Link>
+  );
+}
+
+/* ===== スタイル ===== */
 const navBarStyle = {
   padding: '10px',
   backgroundColor: '#f0f0f0',
@@ -105,5 +138,3 @@ const navLinkStyle = {
   fontSize: '16px',
   fontWeight: 'bold',
 };
-
-export default App;

@@ -28,37 +28,43 @@ export default function CharacterAvatar({ initialMood = 'happy' }) {
   const [draft, setDraft] = useState('');
   const [mood, setMood] = useState(initialMood);
 
-  // 画像とコメントの読み込み
+  // 画像と保存済コメントの読み込み
   useEffect(() => {
     fetch(`${API_BASE_URL}/character`)
-      .then(r => r.json())
+      .then(res => res.json())
       .then(imgs => {
         const urls = imgs.map(u => u.startsWith('http') ? u : `${API_BASE_URL}${u}`);
         setImages(urls);
 
         const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+        // 画像の数だけコメント配列を初期化
         const filled = urls.map((_, i) => saved[i] || '');
         setComments(filled);
       })
       .catch(console.error);
   }, []);
 
-  // テーブル操作
+  // 吹き出しダブルクリックで編集開始
   const beginEdit = () => {
     setDraft(comments[idx]);
     setEditing(true);
   };
+
+  // 編集確定
   const finishEdit = () => {
-    const updated = comments.slice();
+    const updated = [...comments];
     updated[idx] = draft;
     setComments(updated);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
     setEditing(false);
   };
+
+  // クリックで次のキャラクターへ
   const nextCharacter = () => {
     if (!images.length) return;
     const ni = (idx + 1) % images.length;
     setIdx(ni);
+    // ムードも順番に切り替え
     const moods = Object.keys(moodVariants);
     setMood(moods[ni % moods.length]);
     setEditing(false);
