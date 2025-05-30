@@ -1,42 +1,24 @@
-// ────────────────────────────────────────────────
-// 上流工程ダッシュボード
-// - ここから“概要フォーム(ステップ1)”などを段階的に呼び出す
-// ────────────────────────────────────────────────
+// 上流工程ダッシュボード（親コンテナ）
 import React from 'react';
-import { Routes, Route, Link } from 'react-router-dom';
-
-/* ▼ ステップ1：概要入力フォーム（下で作成） */
-import OverviewForm from './OverviewForm';
+import { Link, Routes, Route, Navigate } from 'react-router-dom';
+import FeatureList from './FeatureList';
 
 export default function UpstreamDashboard() {
   return (
-    <div style={{ padding: 24 }}>
-      <h2>🛠 上流工程支援ダッシュボード</h2>
+    <div style={{ padding: 20 }}>
+      <h2>🛠 上流工程ダッシュボード</h2>
 
-      {/* サブメニュー（必要に応じて増やす） */}
-      <nav style={{ margin: '20px 0', display: 'flex', gap: 12 }}>
-        <Link to="overview"   style={linkStyle}>① 概要フォーム</Link>
-        {/* ②以降を増やすときはここにリンク追加 */}
+      {/* サブメニュー */}
+      <nav style={{ marginBottom: 16, display: 'flex', gap: 12 }}>
+        <Link to="features">📋 機能一覧</Link>
+        {/* 今後ステップが増えたらここに追加 */}
       </nav>
 
-      {/* ネストされたルーティング */}
+      {/* ネストルート */}
       <Routes>
-        <Route path="overview" element={<OverviewForm />} />
-        {/* ②以降のステップ用 <Route> をここへ追加 */}
-        <Route
-          path="*"
-          element={<p style={{ color: '#666' }}>左のリンクから開始してください。</p>}
-        />
+        <Route path="/"        element={<Navigate to="features" replace />} />
+        <Route path="features" element={<FeatureList />} />
       </Routes>
     </div>
   );
 }
-
-const linkStyle = {
-  textDecoration: 'none',
-  padding: '6px 12px',
-  border: '1px solid #ccc',
-  borderRadius: 6,
-  background: '#fafafa',
-  fontSize: 14,
-};
