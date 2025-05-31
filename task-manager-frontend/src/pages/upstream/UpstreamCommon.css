@@ -1,0 +1,56 @@
+/* 共通カードレイアウト ----------------------------------------*/
+.up-card {
+  max-width: 960px;
+  margin: 0 auto 40px;
+  padding: 24px;
+  background: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+/* WBS テーブル --------------------------------------------------*/
+.wbs-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+}
+
+.wbs-table th,
+.wbs-table td {
+  border: 1px solid #d0d0d0;
+  padding: 6px 8px;
+  font-size: 14px;
+}
+
+.wbs-table th {
+  background: #f5f5f5;
+  text-align: left;
+}
+
+/* 入力フィールド共通 */
+.wbs-table input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 4px 6px;
+  font-size: 13px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+/* 行追加ボタン --------------------------------------------------*/
+.add-btn {
+  margin-top: 18px;
+  padding: 8px 16px;
+  font-size: 14px;
+  background: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.add-btn:hover {
+  background: #0069d9;
+}
