@@ -1,24 +1,28 @@
-// 上流工程ダッシュボード（親コンテナ）
+// UpstreamDashboard.jsx  ― 上流工程ダッシュボード
 import React from 'react';
-import { Link, Routes, Route, Navigate } from 'react-router-dom';
-import FeatureList from './FeatureList';
+import { Routes, Route, Link } from 'react-router-dom';
+import OverviewForm   from './OverviewForm';   // ステップ①
+import FeatureList    from './FeatureList';    // ステップ③
+import WbsPage        from './WbsPage';        // ⭐ ステップ④ ←追加
 
 export default function UpstreamDashboard() {
   return (
-    <div style={{ padding: 20 }}>
-      <h2>🛠 上流工程ダッシュボード</h2>
+    <div className="upstream-container">
+      {/* 左メニュー */}
+      <aside className="up-nav">
+        <Link to=""          >① 概要フォーム</Link>
+        <Link to="features"  >③ 機能一覧</Link>
+        <Link to="wbs"       >④ WBS / マイルストーン</Link>{/* ⭐ */}
+      </aside>
 
-      {/* サブメニュー */}
-      <nav style={{ marginBottom: 16, display: 'flex', gap: 12 }}>
-        <Link to="features">📋 機能一覧</Link>
-        {/* 今後ステップが増えたらここに追加 */}
-      </nav>
-
-      {/* ネストルート */}
-      <Routes>
-        <Route path="/"        element={<Navigate to="features" replace />} />
-        <Route path="features" element={<FeatureList />} />
-      </Routes>
+      {/* 右ペイン */}
+      <section className="up-main">
+        <Routes>
+          <Route path="/"         element={<OverviewForm />} />
+          <Route path="features"  element={<FeatureList />} />
+          <Route path="wbs"       element={<WbsPage />} />   {/* ⭐ */}
+        </Routes>
+      </section>
     </div>
   );
 }
