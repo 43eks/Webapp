@@ -94,8 +94,9 @@ const entities = [
   { name: 'habits',    defaults: { records: {} } },
   { name: 'goals',     defaults: { completed: false } },
   { name: 'features',  defaults: { priority: 'M', owner: '' } },
-  { name: 'wbs',       defaults: { owner: '', progress: 0 } }   // ⭐ 追加
-];
+  { name: 'wbs',       defaults: { owner: '', progress: 0 } } ,  // ⭐ 追加
+  { name: 'requirements', defaults: { type: 'FR', priority: 'M', status: '検討中' } }
+  ];
 
 entities.forEach(({ name, defaults }) => {
   /* 一覧 */
