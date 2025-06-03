@@ -1,0 +1,126 @@
+import React, { useEffect, useState } from 'react';
+import { API_BASE_URL } from '../../../App';
+import '../UpstreamCommon.css';           // 共通スタイル
+
+export default function UseCaseList() {
+  /* ---------------- state ---------------- */
+  const [list,    setList]    = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  /* ---------------- CRUD helpers ---------------- */
+  const load = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/usecases`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      setList(await res.json());
+    } catch (e) {
+      console.error('❌ UseCase load error', e);
+      alert('ユースケース一覧の取得に失敗しました');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /** フィールド変更（ローカル state だけ） */
+  const updateCell = (id, key, value) => {
+    setList(prev => prev.map(u => u.id === id ? { ...u, [key]: value } : u));
+  };
+
+  /** 行保存（PUT） */
+  const save = async (row) => {
+    await fetch(`${API_BASE_URL}/usecases/${row.id}`, {
+      method : 'PUT',
+      headers: { 'Content-Type':'application/json' },
+      body   : JSON.stringify(row),
+    });
+  };
+
+  /** 行追加（POST） */
+  const addRow = async () => {
+    const blank = { title:'', actor:'', goal:'', priority:'M' };
+    await fetch(`${API_BASE_URL}/usecases`, {
+      method : 'POST',
+      headers: { 'Content-Type':'application/json' },
+      body   : JSON.stringify(blank),
+    });
+    load();
+  };
+
+  /** 行削除（DELETE） */
+  const remove = async (id) => {
+    if (!window.confirm('削除しますか？')) return;
+    await fetch(`${API_BASE_URL}/usecases/${id}`, { method:'DELETE' });
+    load();
+  };
+
+  /* ---------------- 初回ロード ---------------- */
+  useEffect(() => { load(); }, []);
+
+  if (loading) return <p>読み込み中…</p>;
+
+  /* ---------------- view ---------------- */
+  return (
+    <div className="up-card">
+      <h2>📝 ユースケース一覧</h2>
+
+      <table className="up-table">
+        <thead>
+          <tr>
+            <th>タイトル</th>
+            <th>アクター</th>
+            <th>ゴール</th>
+            <th>優先度</th>
+            <th></th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {list.map(u => (
+            <tr key={u.id}>
+              <td>
+                <input
+                  value={u.title}
+                  onChange={e => updateCell(u.id, 'title', e.target.value)}
+                  onBlur={() => save(u)}
+                  placeholder="例) 検索する"
+                />
+              </td>
+              <td>
+                <input
+                  value={u.actor}
+                  onChange={e => updateCell(u.id, 'actor', e.target.value)}
+                  onBlur={() => save(u)}
+                  placeholder="例) ユーザ"
+                />
+              </td>
+              <td>
+                <input
+                  value={u.goal}
+                  onChange={e => updateCell(u.id, 'goal', e.target.value)}
+                  onBlur={() => save(u)}
+                  placeholder="アクターが達成したいゴール"
+                />
+              </td>
+              <td>
+                <select
+                  value={u.priority}
+                  onChange={e => { updateCell(u.id, 'priority', e.target.value); save(u);} }
+                >
+                  <option value="H">H</option>
+                  <option value="M">M</option>
+                  <option value="L">L</option>
+                </select>
+              </td>
+              <td>
+                <button onClick={() => remove(u.id)}>🗑</button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      <button onClick={addRow} className="add-btn">➕ 行を追加</button>
+    </div>
+  );
+}
