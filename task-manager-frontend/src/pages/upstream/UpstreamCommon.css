@@ -1,6 +1,38 @@
-/* 共通カードレイアウト ----------------------------------------*/
+/* ========== ① 左メニュー（サイドナビ） =============================== */
+.upstream-container {
+  display: flex;
+  min-height: 80vh;
+}
+
+.up-nav {
+  width: 220px;
+  border-right: 1px solid #ddd;
+  padding: 16px 8px;
+}
+
+.up-nav-link {
+  display: block;
+  margin: 4px 0;
+  padding: 6px 10px;
+  text-decoration: none;
+  color: #333;
+  border-radius: 4px;
+  transition: background .15s;
+}
+
+.up-nav-link:hover {
+  background: #f1f1f1;
+}
+
+/* ========== ② 右側メインペイン ====================================== */
+.up-main {
+  flex: 1;
+  padding: 24px;
+}
+
+/* ========== ③ 共通カードレイアウト ================================== */
 .up-card {
-  max-width: 960px;
+  max-width: 960px;          /* ★ 中央寄せの幅を指定 */
   margin: 0 auto 40px;
   padding: 24px;
   background: #ffffff;
@@ -9,26 +41,29 @@
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
-/* WBS テーブル --------------------------------------------------*/
+/* ========== ④ 汎用テーブル（Requirements / Stakeholders など） ====== */
+.up-table,
 .wbs-table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 12px;
 }
 
-.wbs-table th,
-.wbs-table td {
+/* 共通 th / td */
+.up-table th,  .up-table td,
+.wbs-table th, .wbs-table td {
   border: 1px solid #d0d0d0;
   padding: 6px 8px;
   font-size: 14px;
 }
 
+.up-table th,
 .wbs-table th {
   background: #f5f5f5;
   text-align: left;
 }
 
-/* 入力フィールド共通 */
+/* ======== ⑤ WBS 専用入力フィールド ================================ */
 .wbs-table input {
   width: 100%;
   box-sizing: border-box;
@@ -38,7 +73,7 @@
   border-radius: 4px;
 }
 
-/* 行追加ボタン --------------------------------------------------*/
+/* ========== ⑥ 行追加ボタン ========================================== */
 .add-btn {
   margin-top: 18px;
   padding: 8px 16px;
@@ -48,7 +83,7 @@
   border: none;
   border-radius: 6px;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background .2s;
 }
 
 .add-btn:hover {
