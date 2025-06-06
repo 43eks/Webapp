@@ -101,7 +101,8 @@ const entities = [
   { name: 'goals',        defaults: { completed: false } },
   { name: 'features',     defaults: { priority: 'M', owner: '' } },
   { name: 'wbs',          defaults: { owner: '', progress: 0 } },
-  { name: 'requirements', defaults: { type: 'FR', priority: 'M', status: '検討中' } }
+  { name: 'requirements', defaults: { type: 'FR', priority: 'M', status: '検討中' } },
+  { name:'stakeholders', defaults:{ role:'', influence:'中', interest:'中' } }
 ];
 
 entities.forEach(({ name, defaults }) => {
