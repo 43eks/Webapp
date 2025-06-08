@@ -1,23 +1,25 @@
+// ③ 機能一覧ページ
 import React, { useEffect, useState } from 'react';
 import { API_BASE_URL } from '../../App';
+import './UpstreamCommon.css';         // 既存の共通スタイルを流用
 
-// テーブル行の初期テンプレ
-const blankRow = () => ({
-  id: null,
+// 新規行のテンプレート
+const newFeature = () => ({
+  id: null,               // ← 未保存行は id が無い
   name: '',
   overview: '',
-  priority: 'M',
+  priority: 'M',          // H / M / L
   owner: '',
 });
 
-/* ------------------------------ */
-
 export default function FeatureList() {
-  const [rows, setRows] = useState([]);
+  /* -------------------- state -------------------- */
+  const [rows,    setRows]    = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // 一覧取得
-  const fetchFeatures = async () => {
+  /* ------------------ CRUD ------------------ */
+  /** 一覧取得 */
+  const load = async () => {
     setLoading(true);
     try {
       const res  = await fetch(`${API_BASE_URL}/features`);
@@ -25,117 +27,132 @@ export default function FeatureList() {
       setRows(data);
     } catch (e) {
       console.error('❌ 機能一覧取得失敗:', e);
+      alert('機能一覧の取得に失敗しました');
     } finally {
       setLoading(false);
     }
   };
+  useEffect(() => { load(); }, []);
 
-  useEffect(() => { fetchFeatures(); }, []);
+  /** 行追加（未保存行をテーブルに挿入） */
+  const addRow = () => setRows(prev => [...prev, newFeature()]);
 
-  // 追加
-  const addRow = () => setRows([...rows, blankRow()]);
+  /** セル編集 */
+  const updateCell = (index, key, value) =>
+    setRows(prev => prev.map((r, i) => (i === index ? { ...r, [key]: value } : r)));
 
-  // 行更新
-  const updateRow = (idx, key, value) => {
-    setRows(rows.map((r, i) => (i === idx ? { ...r, [key]: value } : r)));
-  };
-
-  // 行削除
-  const deleteRow = (idx) => {
-    const target = rows[idx];
+  /** 行削除（保存済みなら DELETE、未保存ならフロントだけ削除） */
+  const deleteRow = async index => {
+    const target = rows[index];
     if (target.id) {
-      // 既存行なら DELETE
-      fetch(`${API_BASE_URL}/features/${target.id}`, { method: 'DELETE' })
-        .then(() => fetchFeatures());
-    } else {
-      // 未保存行ならフロントで消すだけ
-      setRows(rows.filter((_, i) => i !== idx));
+      if (!window.confirm('サーバーからも削除します。よろしいですか？')) return;
+      await fetch(`${API_BASE_URL}/features/${target.id}`, { method: 'DELETE' });
     }
+    setRows(prev => prev.filter((_, i) => i !== index));
   };
 
-  // 保存（新規は POST, 既存は PUT）
+  /** 保存：POST（新規） or PUT（更新）を一括で走らせる */
   const saveAll = async () => {
-    for (const r of rows) {
-      // 空行はスキップ
-      if (!r.name.trim()) continue;
+    try {
+      for (const r of rows) {
+        // 空行はスキップ
+        if (!r.name.trim()) continue;
 
-      if (r.id) {
-        await fetch(`${API_BASE_URL}/features/${r.id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(r),
-        });
-      } else {
-        await fetch(`${API_BASE_URL}/features`, {
-          method: 'POST',
+        const method = r.id ? 'PUT' : 'POST';
+        const url    = r.id
+          ? `${API_BASE_URL}/features/${r.id}`
+          : `${API_BASE_URL}/features`;
+
+        await fetch(url, {
+          method,
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(r),
         });
       }
+      alert('保存しました');
+      load();                      // リロードして最新状態を反映
+    } catch (e) {
+      console.error('❌ 保存失敗:', e);
+      alert('保存に失敗しました');
     }
-    alert('保存しました');
-    fetchFeatures();
   };
 
-  /* -------------- 画面 -------------- */
+  /* -------------------- UI -------------------- */
   if (loading) return <p>読み込み中…</p>;
 
   return (
-    <div>
-      <h3>📋 機能一覧</h3>
+    <div className="up-card">
+      <h2>🛠 機能一覧</h2>
 
-      <table className="feature-table">
+      <table className="up-table">
         <thead>
           <tr>
             <th style={{ width: 200 }}>機能名</th>
             <th>概要</th>
-            <th style={{ width: 80 }}>優先度</th>
+            <th style={{ width: 90 }}>優先度</th>
             <th style={{ width: 120 }}>担当</th>
-            <th style={{ width: 60 }}></th>
+            <th style={{ width: 50 }}></th>
           </tr>
         </thead>
+
         <tbody>
           {rows.map((row, idx) => (
-            <tr key={row.id ?? `new-${idx}`}>
+            <tr key={row.id ?? `tmp-${idx}`}>
+              {/* 機能名 */}
               <td>
                 <input
                   value={row.name}
-                  onChange={e => updateRow(idx, 'name', e.target.value)}
+                  onChange={e => updateCell(idx, 'name', e.target.value)}
                 />
               </td>
+
+              {/* 概要 */}
               <td>
                 <input
                   value={row.overview}
-                  onChange={e => updateRow(idx, 'overview', e.target.value)}
+                  onChange={e => updateCell(idx, 'overview', e.target.value)}
                 />
               </td>
+
+              {/* 優先度 */}
               <td>
                 <select
                   value={row.priority}
-                  onChange={e => updateRow(idx, 'priority', e.target.value)}
+                  onChange={e => updateCell(idx, 'priority', e.target.value)}
                 >
                   <option value="H">H</option>
                   <option value="M">M</option>
                   <option value="L">L</option>
                 </select>
               </td>
+
+              {/* 担当 */}
               <td>
                 <input
                   value={row.owner}
-                  onChange={e => updateRow(idx, 'owner', e.target.value)}
+                  onChange={e => updateCell(idx, 'owner', e.target.value)}
                 />
               </td>
+
+              {/* 削除ボタン */}
               <td>
-                <button onClick={() => deleteRow(idx)}>🗑️</button>
+                <button onClick={() => deleteRow(idx)}>🗑</button>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
 
-      <div style={{ marginTop: 12 }}>
-        <button onClick={addRow}>➕ 行を追加</button>
-        <button onClick={saveAll} style={{ marginLeft: 8 }}>💾 保存</button>
+      {/* 行追加 & 保存 */}
+      <div style={{ marginTop: 14 }}>
+        <button className="add-btn" onClick={addRow}>➕ 行を追加</button>
+        <button
+          className="add-btn"
+          style={{ marginLeft: 8, background: '#28a745' }}
+          onClick={saveAll}
+        >
+          💾 保存
+        </button>
       </div>
     </div>
   );
