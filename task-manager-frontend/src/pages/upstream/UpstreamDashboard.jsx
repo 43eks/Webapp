@@ -1,18 +1,11 @@
 /*  ------------------------------------------------------------
  *  UpstreamDashboard.jsx
- *  ─ 上流工程ダッシュボード
+ *  ─ 上流工程ダッシュボード（レイアウト専用）
+ *     右ペインの中身は <Outlet/> に差し込まれます。
  *  ------------------------------------------------------------ */
 import React from 'react';
-import { Routes, Route, Link } from 'react-router-dom';
-
-/* ===== 各ステップ画面 ===== */
-import OverviewForm       from './OverviewForm';        // ① 概要フォーム（Scope）
-import RequirementsPage   from './RequirementsPage';    // ② 要求定義
-import FeatureList        from './FeatureList';         // ③ 機能一覧
-import WbsPage            from './WbsPage';             // ④ WBS／マイルストーン
-import StakeholdersPage   from './StakeholdersPage';    // ⑤ ステークホルダー分析
-
-import './UpstreamCommon.css';                          // 共通スタイル
+import { Outlet, NavLink } from 'react-router-dom';
+import './UpstreamCommon.css';      // 共通スタイル
 
 /* ============================================================ */
 export default function UpstreamDashboard() {
@@ -20,39 +13,36 @@ export default function UpstreamDashboard() {
     <div className="upstream-container">
       {/* ---------- 左メニュー ---------- */}
       <aside className="up-nav">
-        <NavItem to="."              label="① 概要フォーム" />
-        <NavItem to="requirements"   label="② 要求定義"     />
-        <NavItem to="features"       label="③ 機能一覧"     />
-        <NavItem to="wbs"            label="④ WBS / マイルストーン" />
-        <NavItem to="stakeholders"   label="⑤ ステークホルダー"     />
+        <SideLink to=""               label="① 概要フォーム"          end />
+        <SideLink to="requirements"   label="② 要求定義"              />
+        <SideLink to="features"       label="③ 機能一覧"              />
+        <SideLink to="wbs"            label="④ WBS / マイルストーン" />
+        <SideLink to="stakeholders"   label="⑤ ステークホルダー"      />
       </aside>
 
       {/* ---------- 右メインペイン ---------- */}
       <section className="up-main">
-        <Routes>
-          {/* /upstream */}
-          <Route index                element={<OverviewForm />} />
-          {/* /upstream/requirements */}
-          <Route path="requirements"  element={<RequirementsPage />} />
-          {/* /upstream/features */}
-          <Route path="features"      element={<FeatureList />} />
-          {/* /upstream/wbs */}
-          <Route path="wbs"           element={<WbsPage />} />
-          {/* /upstream/stakeholders */}
-          <Route path="stakeholders"  element={<StakeholdersPage />} />
-        </Routes>
+        {/* 子ルート（Overview / Requirements / …）がここに差し込まれる */}
+        <Outlet />
       </section>
     </div>
   );
 }
 
 /* -------------------------------------------------------------
- * ナビゲーションリンク（DRY 用の小コンポーネント）
+ * 左サイドメニュー用リンク
+ * active 時に .active クラスを付与
  * ----------------------------------------------------------- */
-function NavItem({ to, label }) {
+function SideLink({ to, label, end = false }) {
   return (
-    <Link to={to} className="up-nav-link">
+    <NavLink
+      to={to}
+      end={end}                             /* index ルートの active 判定 */
+      className={({ isActive }) =>
+        'up-nav-link' + (isActive ? ' active' : '')
+      }
+    >
       {label}
-    </Link>
+    </NavLink>
   );
 }

@@ -106,7 +106,17 @@
     }
   ],
   "features": [],
-  "wbs": [],
+  "wbs": [
+    {
+      "id": "1749425706152",
+      "createdAt": "2025-06-08T23:35:06.153Z",
+      "owner": "",
+      "progress": 0,
+      "title": "",
+      "start": "",
+      "end": ""
+    }
+  ],
   "requirements": [],
   "history": [],
   "scope": {}
