@@ -1,12 +1,12 @@
-// ───────────────────────────────────────────────────────────
-// src/App.js
-// アプリ全体のルーティング定義 & ナビゲーションバー
-// ───────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────
+//  src/App.js
+//  アプリ全体のルーティング定義 & ナビゲーションバー
+// ──────────────────────────────────────────────
 import './App.css';
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 
-/* 既存ページ群 */
+/* ===== 既存ページ ===== */
 import Home                 from './pages/Home';
 import KnowledgeList        from './pages/knowledgeList';
 import CreateKnowledge      from './pages/Createknowledge';
@@ -28,39 +28,40 @@ import ModelingStep         from './pages/ModelingStep';
 import AdviceLogPage        from './pages/AdviceLogPage';
 import DashboardPage        from './pages/DashboardPage';
 
-/* ── ▼ 新規：上流工程支援モジュール ─────────────────── */
+/* ===== 上流工程モジュール（ネストルート） ===== */
 import UpstreamDashboard    from './pages/upstream/UpstreamDashboard';
-/* ───────────────────────────────────────────────────────── */
 
+/* ===== 画面右下キャラクター ===== */
 import CharacterAvatar      from './components/CharacterAvatar';
 
+/* ===== API ベース URL ===== */
 export const API_BASE_URL = 'http://localhost:8080';
 
-/* ───────────────────────────────────────────────────────── */
+/* ────────────────────────────────────────────── */
 
 export default function App() {
   return (
     <>
       <Router>
-        {/* ===== ナビゲーションバー ===== */}
+        {/* --------------- ナビゲーションバー --------------- */}
         <nav style={navBarStyle}>
-          <NavLink to="/"              label="🏠 ホーム"         />
-          <NavLink to="/tasks"         label="📝 タスク"         />
-          <NavLink to="/knowledges"    label="📚 ナレッジ"       />
-          <NavLink to="/habits"        label="📅 習慣"           />
-          <NavLink to="/goals"         label="🎯 ゴール"         />
-          <NavLink to="/slides/create" label="🎞️ スライド"      />
-          <NavLink to="/character"     label="🧍 キャラクター"   />
-          <NavLink to="/datasource"    label="🧬 データソース"   />
-          <NavLink to="/fields"        label="🧩 項目定義"       />
-          <NavLink to="/modeling"      label="🧱 モデリング"     />
-          <NavLink to="/advice"        label="🧠 アドバイス"     />
-          <NavLink to="/dashboard"     label="📊 ダッシュボード" />
-          {/* ★ 上流工程 */}
-          <NavLink to="/upstream"      label="🛠 上流工程"       />
+          <NavItem to="/"              label="🏠 ホーム"         />
+          <NavItem to="/tasks"         label="📝 タスク"         />
+          <NavItem to="/knowledges"    label="📚 ナレッジ"       />
+          <NavItem to="/habits"        label="📅 習慣"           />
+          <NavItem to="/goals"         label="🎯 ゴール"         />
+          <NavItem to="/slides/create" label="🎞️ スライド作成"   />
+          <NavItem to="/character"     label="🧍 キャラクター"   />
+          <NavItem to="/datasource"    label="🧬 データソース"   />
+          <NavItem to="/fields"        label="🧩 項目定義"       />
+          <NavItem to="/modeling"      label="🧱 モデリング"     />
+          <NavItem to="/advice"        label="🧠 アドバイス"     />
+          <NavItem to="/dashboard"     label="📊 ダッシュボード" />
+          {/* ▼ 上流工程モジュール */}
+          <NavItem to="/upstream"      label="🛠 上流工程"       />
         </nav>
 
-        {/* ===== メインルーティング ===== */}
+        {/* --------------- メインルーティング --------------- */}
         <main className="app-overlay">
           <Routes>
             {/* ホーム */}
@@ -92,7 +93,7 @@ export default function App() {
             {/* キャラクター管理 */}
             <Route path="/character"              element={<CharacterUpload />} />
 
-            {/* DWH 系 */}
+            {/* DWH 関連 */}
             <Route path="/datasource"             element={<DataSourceStep />} />
             <Route path="/fields"                 element={<FieldDefinitionStep />} />
             <Route path="/modeling"               element={<ModelingStep />} />
@@ -101,21 +102,21 @@ export default function App() {
             <Route path="/advice"                 element={<AdviceLogPage />} />
             <Route path="/dashboard"              element={<DashboardPage />} />
 
-            {/* ★ 上流工程モジュール（ネストされたルートを UpstreamDashboard に任せる） */}
+            {/* ★ 上流工程モジュール（子ルートを UpstreamDashboard が保持） */}
             <Route path="/upstream/*"             element={<UpstreamDashboard />} />
           </Routes>
         </main>
       </Router>
 
-      {/* ===== 画面右下の常駐キャラクター ===== */}
-      {/* 画像・コメントは <CharacterAvatar /> 内で自動フェッチ */}
+      {/* --------------- 常駐キャラクター --------------- */}
+      {/* ※画像・吹き出しは <CharacterAvatar /> 内部で自動フェッチ */}
       <CharacterAvatar initialMood="happy" />
     </>
   );
 }
 
-/* ===== リンク用の小コンポーネント ===== */
-function NavLink({ to, label }) {
+/* ---------- 共通リンク ---------- */
+function NavItem({ to, label }) {
   return (
     <Link to={to} style={navLinkStyle}>
       {label}
@@ -123,7 +124,7 @@ function NavLink({ to, label }) {
   );
 }
 
-/* ===== スタイル ===== */
+/* ---------- スタイル ---------- */
 const navBarStyle = {
   padding: '10px',
   backgroundColor: '#f0f0f0',
