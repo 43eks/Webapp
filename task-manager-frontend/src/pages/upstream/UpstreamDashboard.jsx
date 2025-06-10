@@ -1,25 +1,23 @@
 /*  ------------------------------------------------------------
  *  src/pages/upstream/UpstreamDashboard.jsx
  *  ─ 上流工程ダッシュボード
- *     ・左側にステップ用メニュー
- *     ・右側 <Outlet /> に各ステップページを差し込む
  *  ------------------------------------------------------------ */
 import React from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
-import './UpstreamCommon.css';              // 共通スタイル
+import './UpstreamCommon.css';
 
-/* ──────────────────────────────────────────────
- * 左側メニューで使うリンク情報を配列でまとめておく
- * ──────────────────────────────────────────── */
+/* ------------------------------------------------------------
+ * 左メニュー定義
+ *   - すべて “/upstream/…” で始まる **絶対パス** に統一
+ *   - トップページ（概要フォーム）は `/upstream` を end 指定
+ * ---------------------------------------------------------- */
 const MENU = [
-  { path: '.',            label: '① 概要フォーム',        end: true },
-  { path: 'requirements', label: '② 要求定義'               },
-  { path: 'features',     label: '③ 機能一覧'               },
-  { path: 'wbs',          label: '④ WBS / マイルストーン'   },
-  { path: 'stakeholders', label: '⑤ ステークホルダー分析'   },
+  { path: '/upstream',              label: '① 概要フォーム',        end: true },
+  { path: '/upstream/requirements', label: '② 要求定義'               },
+  { path: '/upstream/features',     label: '③ 機能一覧'               },
+  { path: '/upstream/wbs',          label: '④ WBS / マイルストーン'   },
+  { path: '/upstream/stakeholders', label: '⑤ ステークホルダー分析'   },
 ];
-
-/* ------------------------------------------------------------ */
 
 export default function UpstreamDashboard() {
   return (
@@ -31,9 +29,8 @@ export default function UpstreamDashboard() {
         ))}
       </aside>
 
-      {/* ---------- 右メインペイン ---------- */}
+      {/* ---------- 右メインペイン（子ルート挿入） ---------- */}
       <section className="up-main">
-        {/* 子ルート（Routes は App.js 側でネスト定義済み） */}
         <Outlet />
       </section>
     </div>
@@ -41,9 +38,8 @@ export default function UpstreamDashboard() {
 }
 
 /* ------------------------------------------------------------
- * NavLink をラップして共通クラスと active 判定を付与
- *   - `end` を渡すと「完全一致」で active 判定
- *     （トップ = “.” のリンクで使用）
+ * サイドリンク共通コンポーネント
+ *   - active 時は .active クラスを付与
  * ---------------------------------------------------------- */
 function SideLink({ to, label, end = false }) {
   return (
