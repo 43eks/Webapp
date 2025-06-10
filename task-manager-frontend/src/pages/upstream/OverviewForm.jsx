@@ -1,30 +1,66 @@
+// src/pages/upstream/OverviewForm.jsx
 // ────────────────────────────────────────────────
-// ステップ1：概要情報入力フォーム（プロジェクト基本情報など）
+// ステップ① : 概要情報入力フォーム
+//   - /scope へ GET／PUT して基本情報を保存
 // ────────────────────────────────────────────────
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { API_BASE_URL } from '../../App';          // ← 共通定義
 
 export default function OverviewForm() {
-  const [form, setForm] = useState({
+  /* ---------------- ローカル state ---------------- */
+  const [form, setForm]   = useState({
     projectName: '',
-    owner: '',
-    purpose: '',
-    deadline: '',
+    owner      : '',
+    purpose    : '',
+    deadline   : '',
   });
+  const [loading, setLoading] = useState(true);
 
+  /* ---------------- 初期読み込み ---------------- */
+  useEffect(() => {
+    (async () => {
+      try {
+        const res  = await fetch(`${API_BASE_URL}/scope`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        setForm({ ...form, ...data });             // 既存値をマージ
+      } catch (e) {
+        console.warn('⚠️ 既存 Scope なし（新規作成モード）');
+      } finally {
+        setLoading(false);
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  /* ---------------- 入力ハンドラ ---------------- */
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
-  const handleSubmit = (e) => {
+  /* ---------------- 保存 ---------------- */
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // ★ ここでバックエンドへ POST するなど保存処理を追加予定
-    console.table(form);
-    alert('概要を保存しました（仮実装）');
+    try {
+      const res = await fetch(`${API_BASE_URL}/scope`, {
+        method : 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body   : JSON.stringify(form),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      alert('概要を保存しました ✅');
+    } catch (err) {
+      console.error('❌ 概要保存失敗:', err);
+      alert('概要の保存に失敗しました');
+    }
   };
 
+  /* ---------------- 画面描画 ---------------- */
+  if (loading) return <p>読み込み中…</p>;
+
   return (
-    <div style={{ maxWidth: 600 }}>
+    <div style={{ maxWidth: 640 }}>
       <h3>① 概要フォーム</h3>
-      <form onSubmit={handleSubmit} style={{ display: 'grid', gap: 12 }}>
+      <form onSubmit={handleSubmit} style={formGrid}>
         <label>
           プロジェクト名
           <input
@@ -70,11 +106,17 @@ export default function OverviewForm() {
   );
 }
 
+/* ---------------- スタイル ---------------- */
+const formGrid = {
+  display: 'grid',
+  gap    : 12,
+};
+
 const saveBtnStyle = {
-  padding: '8px 16px',
-  background: '#4CAF50',
-  color: '#fff',
-  border: 'none',
-  borderRadius: 6,
-  cursor: 'pointer',
+  padding      : '8px 16px',
+  background   : '#4CAF50',
+  color        : '#fff',
+  border       : 'none',
+  borderRadius : 6,
+  cursor       : 'pointer',
 };
