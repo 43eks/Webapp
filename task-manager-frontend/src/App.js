@@ -1,7 +1,7 @@
-// ──────────────────────────────────────────────
-//  src/App.js
-//  アプリ全体のルーティング定義 & ナビゲーションバー
-// ──────────────────────────────────────────────
+/*  ------------------------------------------------------------
+ *  src/App.js   （2025/06 修正版）
+ *  アプリ全体のルーティング定義 & ナビゲーションバー
+ *  ------------------------------------------------------------ */
 import './App.css';
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
@@ -28,44 +28,32 @@ import ModelingStep         from './pages/ModelingStep';
 import AdviceLogPage        from './pages/AdviceLogPage';
 import DashboardPage        from './pages/DashboardPage';
 
-/* ===== 上流工程モジュール（ネストルート） ===== */
+/* ===== 上流工程ダッシュボード（ネスト先） ===== */
 import UpstreamDashboard    from './pages/upstream/UpstreamDashboard';
 
-/* ===== 画面右下キャラクター ===== */
+/* ===== 右下キャラクター ===== */
 import CharacterAvatar      from './components/CharacterAvatar';
 
 /* ===== API ベース URL ===== */
 export const API_BASE_URL = 'http://localhost:8080';
 
-/* ────────────────────────────────────────────── */
-
+/* ------------------------------------------------------------ */
 export default function App() {
   return (
     <>
       <Router>
-        {/* --------------- ナビゲーションバー --------------- */}
+        {/* ===== ナビゲーションバー ===== */}
         <nav style={navBarStyle}>
-          <NavItem to="/"              label="🏠 ホーム"         />
-          <NavItem to="/tasks"         label="📝 タスク"         />
-          <NavItem to="/knowledges"    label="📚 ナレッジ"       />
-          <NavItem to="/habits"        label="📅 習慣"           />
-          <NavItem to="/goals"         label="🎯 ゴール"         />
-          <NavItem to="/slides/create" label="🎞️ スライド作成"   />
-          <NavItem to="/character"     label="🧍 キャラクター"   />
-          <NavItem to="/datasource"    label="🧬 データソース"   />
-          <NavItem to="/fields"        label="🧩 項目定義"       />
-          <NavItem to="/modeling"      label="🧱 モデリング"     />
-          <NavItem to="/advice"        label="🧠 アドバイス"     />
-          <NavItem to="/dashboard"     label="📊 ダッシュボード" />
-          {/* ▼ 上流工程モジュール */}
-          <NavItem to="/upstream"      label="🛠 上流工程"       />
+          {NAV_ITEMS.map(({ to, label }) => (
+            <NavItem key={to} to={to} label={label} />
+          ))}
         </nav>
 
-        {/* --------------- メインルーティング --------------- */}
+        {/* ===== ルーティング ===== */}
         <main className="app-overlay">
           <Routes>
             {/* ホーム */}
-            <Route path="/"                       element={<Home />} />
+            <Route path="/" element={<Home />} />
 
             {/* ナレッジ */}
             <Route path="/knowledges"             element={<KnowledgeList />} />
@@ -90,7 +78,7 @@ export default function App() {
             {/* スライド */}
             <Route path="/slides/create"          element={<SlideVideoPage />} />
 
-            {/* キャラクター管理 */}
+            {/* キャラクター */}
             <Route path="/character"              element={<CharacterUpload />} />
 
             {/* DWH 関連 */}
@@ -102,20 +90,41 @@ export default function App() {
             <Route path="/advice"                 element={<AdviceLogPage />} />
             <Route path="/dashboard"              element={<DashboardPage />} />
 
-            {/* ★ 上流工程モジュール（子ルートを UpstreamDashboard が保持） */}
+            {/* ★ 上流工程モジュール  (子ルートは UpstreamDashboard 内で完結) */}
             <Route path="/upstream/*"             element={<UpstreamDashboard />} />
           </Routes>
         </main>
       </Router>
 
-      {/* --------------- 常駐キャラクター --------------- */}
-      {/* ※画像・吹き出しは <CharacterAvatar /> 内部で自動フェッチ */}
+      {/* ===== 画面右下キャラクター ===== */}
       <CharacterAvatar initialMood="happy" />
     </>
   );
 }
 
-/* ---------- 共通リンク ---------- */
+/* ------------------------------------------------------------
+ * ナビゲーションバー構成
+ * ここを編集するだけでリンクが増減出来る
+ * ---------------------------------------------------------- */
+const NAV_ITEMS = [
+  { to: '/',              label: '🏠 ホーム' },
+  { to: '/tasks',         label: '📝 タスク' },
+  { to: '/knowledges',    label: '📚 ナレッジ' },
+  { to: '/habits',        label: '📅 習慣' },
+  { to: '/goals',         label: '🎯 ゴール' },
+  { to: '/slides/create', label: '🎞️ スライド作成' },
+  { to: '/character',     label: '🧍 キャラクター' },
+  { to: '/datasource',    label: '🧬 データソース' },
+  { to: '/fields',        label: '🧩 項目定義' },
+  { to: '/modeling',      label: '🧱 モデリング' },
+  { to: '/advice',        label: '🧠 アドバイス' },
+  { to: '/dashboard',     label: '📊 ダッシュボード' },
+  { to: '/upstream',      label: '🛠 上流工程' },
+];
+
+/* ------------------------------------------------------------
+ * 小さな NavLink ヘルパー
+ * ---------------------------------------------------------- */
 function NavItem({ to, label }) {
   return (
     <Link to={to} style={navLinkStyle}>
@@ -124,7 +133,9 @@ function NavItem({ to, label }) {
   );
 }
 
-/* ---------- スタイル ---------- */
+/* ------------------------------------------------------------
+ * スタイル
+ * ---------------------------------------------------------- */
 const navBarStyle = {
   padding: '10px',
   backgroundColor: '#f0f0f0',
