@@ -12,7 +12,8 @@ import {
   ListItemText,
   IconButton,
   Paper,
-  Box
+  Box,
+  Checkbox
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 
@@ -21,16 +22,22 @@ const API_BASE_URL = 'http://localhost:8080';
 
 export default function SimpleTaskApp() {
   /* ---------------- state ---------------- */
-  const [tasks, setTasks]   = useState([]);
-  const [taskName, setTask] = useState('');
+  const [tasks, setTasks]       = useState([]);     // { id, taskName, completed }
+  const [taskName, setTaskName] = useState('');
 
   /* ---------------- 初期ロード ---------------- */
-  useEffect(() => {
-    fetch(`${API_BASE_URL}/tasks`)
-      .then(r => r.json())
-      .then(setTasks)
-      .catch(e => console.error('❌ タスク取得失敗:', e));
-  }, []);
+  useEffect(() => { load(); }, []);
+
+  const load = async () => {
+    try {
+      const res  = await fetch(`${API_BASE_URL}/tasks`);
+      const json = await res.json();
+      setTasks(json);
+    } catch (e) {
+      console.error('❌ タスク取得失敗:', e);
+      alert('タスク一覧の取得に失敗しました');
+    }
+  };
 
   /* ---------------- 追加 ---------------- */
   const addTask = async () => {
@@ -38,25 +45,45 @@ export default function SimpleTaskApp() {
     if (!name) return;
 
     try {
-      const res  = await fetch(`${API_BASE_URL}/tasks`, {
+      const res = await fetch(`${API_BASE_URL}/tasks`, {
         method : 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body   : JSON.stringify({ name, completed:false })
+        headers: { 'Content-Type':'application/json' },
+        body   : JSON.stringify({ taskName: name, completed:false })
       });
       if (!res.ok) throw new Error(res.status);
       const saved = await res.json();
       setTasks(prev => [...prev, saved]);
-      setTask('');
+      setTaskName('');
     } catch (e) {
       console.error('❌ 追加失敗:', e);
       alert('タスク追加に失敗しました');
     }
   };
 
+  /* ---------------- 完了状態トグル ---------------- */
+  const toggleDone = async (task) => {
+    const updated = { ...task, completed: !task.completed };
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/tasks/${task.id}`, {
+        method : 'PUT',
+        headers: { 'Content-Type':'application/json' },
+        body   : JSON.stringify(updated)
+      });
+      if (!res.ok) throw new Error(res.status);
+      setTasks(prev => prev.map(t => (t.id === task.id ? updated : t)));
+    } catch (e) {
+      console.error('❌ 完了更新失敗:', e);
+      alert('更新に失敗しました');
+    }
+  };
+
   /* ---------------- 削除 ---------------- */
   const deleteTask = async (id) => {
+    if (!window.confirm('削除しますか？')) return;
     try {
-      await fetch(`${API_BASE_URL}/tasks/${id}`, { method:'DELETE' });
+      const res = await fetch(`${API_BASE_URL}/tasks/${id}`, { method:'DELETE' });
+      if (!res.ok) throw new Error(res.status);
       setTasks(prev => prev.filter(t => t.id !== id));
     } catch (e) {
       console.error('❌ 削除失敗:', e);
@@ -67,14 +94,15 @@ export default function SimpleTaskApp() {
   /* ---------------- 画面 ---------------- */
   return (
     <div>
+      {/* --- ヘッダー --- */}
       <AppBar position="static">
         <Toolbar>
-          <Typography variant="h6">タスク管理アプリ</Typography>
+          <Typography variant="h6">簡易タスク管理</Typography>
         </Toolbar>
       </AppBar>
 
       <Container maxWidth="sm" sx={{ mt: 4 }}>
-        {/* 追加フォーム */}
+        {/* --- 追加フォーム --- */}
         <Paper elevation={3} sx={{ p: 3 }}>
           <Typography variant="h6" gutterBottom>
             新しいタスクを追加
@@ -85,7 +113,8 @@ export default function SimpleTaskApp() {
               variant="outlined"
               fullWidth
               value={taskName}
-              onChange={(e) => setTask(e.target.value)}
+              onChange={e => setTaskName(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && addTask()}
             />
             <Button variant="contained" onClick={addTask}>
               追加
@@ -93,21 +122,28 @@ export default function SimpleTaskApp() {
           </Box>
         </Paper>
 
-        {/* 一覧 */}
+        {/* --- タスク一覧 --- */}
         <Typography variant="h6" sx={{ mt: 4 }}>
           タスク一覧
         </Typography>
         <List>
-          {tasks.map(({ id, name }) => (
+          {tasks.map(task => (
             <ListItem
-              key={id}
+              key={task.id}
               secondaryAction={
-                <IconButton edge="end" color="error" onClick={() => deleteTask(id)}>
+                <IconButton edge="end" color="error" onClick={() => deleteTask(task.id)}>
                   <DeleteIcon />
                 </IconButton>
               }
             >
-              <ListItemText primary={name} />
+              <Checkbox
+                checked={task.completed}
+                onChange={() => toggleDone(task)}
+              />
+              <ListItemText
+                primary={task.taskName}
+                sx={{ textDecoration: task.completed ? 'line-through' : 'none' }}
+              />
             </ListItem>
           ))}
         </List>
