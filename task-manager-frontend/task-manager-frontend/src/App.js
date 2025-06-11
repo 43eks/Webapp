@@ -1,3 +1,4 @@
+// src/pages/SimpleTaskApp.jsx
 import React, { useEffect, useState } from 'react';
 import {
   AppBar,
@@ -15,50 +16,55 @@ import {
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 
-function App() {
-  const [tasks, setTasks] = useState([]);
-  const [taskName, setTaskName] = useState('');
+/* ===== API ベース URL ===== */
+const API_BASE_URL = 'http://localhost:8080';
 
-  // タスクの取得
+export default function SimpleTaskApp() {
+  /* ---------------- state ---------------- */
+  const [tasks, setTasks]   = useState([]);
+  const [taskName, setTask] = useState('');
+
+  /* ---------------- 初期ロード ---------------- */
   useEffect(() => {
-    fetch('http://localhost:8080/tasks')
-      .then(response => response.json())
-      .then(data => setTasks(data))
-      .catch(error => console.error('エラー:', error));
+    fetch(`${API_BASE_URL}/tasks`)
+      .then(r => r.json())
+      .then(setTasks)
+      .catch(e => console.error('❌ タスク取得失敗:', e));
   }, []);
 
-  // タスクの追加
-  const addTask = () => {
-    if (!taskName) return;
+  /* ---------------- 追加 ---------------- */
+  const addTask = async () => {
+    const name = taskName.trim();
+    if (!name) return;
 
-    const newTask = { taskName: taskName, completed: false };
-
-    fetch('http://localhost:8080/tasks', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(newTask),
-    })
-      .then(response => response.json())
-      .then(data => {
-        setTasks([...tasks, data]);
-        setTaskName('');
-      })
-      .catch(error => console.error('エラー:', error));
+    try {
+      const res  = await fetch(`${API_BASE_URL}/tasks`, {
+        method : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body   : JSON.stringify({ name, completed:false })
+      });
+      if (!res.ok) throw new Error(res.status);
+      const saved = await res.json();
+      setTasks(prev => [...prev, saved]);
+      setTask('');
+    } catch (e) {
+      console.error('❌ 追加失敗:', e);
+      alert('タスク追加に失敗しました');
+    }
   };
 
-  // タスクの削除
-  const deleteTask = (id) => {
-    fetch(`http://localhost:8080/tasks/${id}`, {
-      method: 'DELETE',
-    })
-      .then(() => {
-        setTasks(tasks.filter(task => task.id !== id));
-      })
-      .catch(error => console.error('エラー:', error));
+  /* ---------------- 削除 ---------------- */
+  const deleteTask = async (id) => {
+    try {
+      await fetch(`${API_BASE_URL}/tasks/${id}`, { method:'DELETE' });
+      setTasks(prev => prev.filter(t => t.id !== id));
+    } catch (e) {
+      console.error('❌ 削除失敗:', e);
+      alert('削除に失敗しました');
+    }
   };
 
+  /* ---------------- 画面 ---------------- */
   return (
     <div>
       <AppBar position="static">
@@ -67,8 +73,9 @@ function App() {
         </Toolbar>
       </AppBar>
 
-      <Container maxWidth="sm" sx={{ marginTop: 4 }}>
-        <Paper elevation={3} sx={{ padding: 3 }}>
+      <Container maxWidth="sm" sx={{ mt: 4 }}>
+        {/* 追加フォーム */}
+        <Paper elevation={3} sx={{ p: 3 }}>
           <Typography variant="h6" gutterBottom>
             新しいタスクを追加
           </Typography>
@@ -78,7 +85,7 @@ function App() {
               variant="outlined"
               fullWidth
               value={taskName}
-              onChange={(e) => setTaskName(e.target.value)}
+              onChange={(e) => setTask(e.target.value)}
             />
             <Button variant="contained" onClick={addTask}>
               追加
@@ -86,20 +93,21 @@ function App() {
           </Box>
         </Paper>
 
-        <Typography variant="h6" sx={{ marginTop: 4 }}>
+        {/* 一覧 */}
+        <Typography variant="h6" sx={{ mt: 4 }}>
           タスク一覧
         </Typography>
         <List>
-          {tasks.map((task) => (
+          {tasks.map(({ id, name }) => (
             <ListItem
-              key={task.id}
+              key={id}
               secondaryAction={
-                <IconButton edge="end" color="error" onClick={() => deleteTask(task.id)}>
+                <IconButton edge="end" color="error" onClick={() => deleteTask(id)}>
                   <DeleteIcon />
                 </IconButton>
               }
             >
-              <ListItemText primary={task.taskName} />
+              <ListItemText primary={name} />
             </ListItem>
           ))}
         </List>
@@ -107,5 +115,3 @@ function App() {
     </div>
   );
 }
-
-export default App;
