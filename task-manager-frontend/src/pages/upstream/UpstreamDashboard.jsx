@@ -1,54 +1,40 @@
-/*  ------------------------------------------------------------
- *  src/pages/upstream/UpstreamDashboard.jsx         ★修正版★
- *  ─ 上流工程ダッシュボード  (左:メニュー / 右:<Outlet />)
- *  ------------------------------------------------------------ */
+// src/pages/upstream/UpstreamDashboard.jsx
 import React from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import './UpstreamCommon.css';
 
-/* ------------------------------------------------------------
- * 左サイドメニュー  
- *   - ルートは *すべて絶対パス* に統一  
- *   - index（=概要フォーム）は `/upstream` を end 指定で active 判定
- * ---------------------------------------------------------- */
+/* 左メニュー情報（相対パス・末尾スラッシュ不要） */
 const MENU = [
-  { to: '/upstream',              label: '① 概要フォーム',        end: true },
-  { to: '/upstream/requirements', label: '② 要求定義'                           },
-  { to: '/upstream/features',     label: '③ 機能一覧'                           },
-  { to: '/upstream/wbs',          label: '④ WBS / マイルストーン'               },
-  { to: '/upstream/stakeholders', label: '⑤ ステークホルダー分析'               },
+  { path: '',            label: '① 概要フォーム',        end: true },
+  { path: 'requirements', label: '② 要求定義'            },
+  { path: 'features',     label: '③ 機能一覧'            },
+  { path: 'wbs',          label: '④ WBS / マイルストーン'},
+  { path: 'stakeholders', label: '⑤ ステークホルダー分析'},
 ];
 
-/* ============================================================ */
 export default function UpstreamDashboard() {
   return (
     <div className="upstream-container">
-      {/* ---------- 左メニュー ---------- */}
+      {/* 左メニュー */}
       <aside className="up-nav">
-        {MENU.map(({ to, label, end }) => (
-          <SideLink key={to} to={to} label={label} end={end} />
+        {MENU.map(({ path, label, end }) => (
+          <NavLink
+            key={path || 'index'}
+            to={path}         /* ← 相対パス */
+            end={end}
+            className={({ isActive }) =>
+              `up-nav-link${isActive ? ' active' : ''}`
+            }
+          >
+            {label}
+          </NavLink>
         ))}
       </aside>
 
-      {/* ---------- 右側：子ルートを表示 ---------- */}
+      {/* 右ペインに子ルートを表示 */}
       <section className="up-main">
-        <Outlet />  {/* App.js 側でネスト指定した画面がここに挿入される */}
+        <Outlet />
       </section>
     </div>
-  );
-}
-
-/* ------------------------------------------------------------
- * NavLink ラッパー  … active 時に .active クラスを付与
- * ---------------------------------------------------------- */
-function SideLink({ to, label, end = false }) {
-  return (
-    <NavLink
-      to={to}
-      end={end}
-      className={({ isActive }) => `up-nav-link${isActive ? ' active' : ''}`}
-    >
-      {label}
-    </NavLink>
   );
 }
