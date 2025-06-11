@@ -1,27 +1,28 @@
-/*  ------------------------------------------------------------
- *  src/pages/upstream/UpstreamDashboard.jsx   2025-06 修正版
+/* ------------------------------------------------------------
  *  上流工程ダッシュボード
- *    ├─ 左: ステップメニュー
- *    └─ 右: 選択中ステップの画面を表示
- *  ---------------------------------------------------------- */
+ *    ・左 = ステップメニュー（絶対パスで遷移）
+ *    ・右 = <Routes> で各ステップを表示
+ * ---------------------------------------------------------- */
 import React from 'react';
 import { NavLink, Routes, Route } from 'react-router-dom';
 import './UpstreamCommon.css';
 
-/* ===== ステップごとの画面 ===== */
-import OverviewForm       from './OverviewForm';        // ①
-import RequirementsPage   from './RequirementsPage';    // ②
-import FeatureList        from './FeatureList';         // ③
-import WbsPage            from './WbsPage';             // ④
-import StakeholdersPage   from './StakeholdersPage';    // ⑤
+/* ===== 各ステップ画面 ===== */
+import OverviewForm       from './OverviewForm';
+import RequirementsPage   from './RequirementsPage';
+import FeatureList        from './FeatureList';
+import WbsPage            from './WbsPage';
+import StakeholdersPage   from './StakeholdersPage';
 
-/* ===== 左メニュー定義（相対パス） ===== */
+/* ----------------------------------------------------------------
+ * 左メニュー（**すべて絶対パス**）
+ * ---------------------------------------------------------------- */
 const MENU = [
-  { path: '',             label: '① 概要フォーム',        end: true },
-  { path: 'requirements', label: '② 要求定義'               },
-  { path: 'features',     label: '③ 機能一覧'               },
-  { path: 'wbs',          label: '④ WBS / マイルストーン'   },
-  { path: 'stakeholders', label: '⑤ ステークホルダー分析'   },
+  { path: '/upstream',              label: '① 概要フォーム',        end: true },
+  { path: '/upstream/requirements', label: '② 要求定義'               },
+  { path: '/upstream/features',     label: '③ 機能一覧'               },
+  { path: '/upstream/wbs',          label: '④ WBS / マイルストーン'   },
+  { path: '/upstream/stakeholders', label: '⑤ ステークホルダー分析'   },
 ];
 
 /* ============================================================ */
@@ -31,19 +32,24 @@ export default function UpstreamDashboard() {
       {/* ---------- 左メニュー ---------- */}
       <aside className="up-nav">
         {MENU.map(({ path, label, end }) => (
-          <SideLink key={path || 'index'} to={path} label={label} end={end} />
+          <SideLink key={path} to={path} label={label} end={end} />
         ))}
       </aside>
 
       {/* ---------- 右メインペイン ---------- */}
       <section className="up-main">
         <Routes>
-          <Route index               element={<OverviewForm />} />
-          <Route path="requirements" element={<RequirementsPage />} />
-          <Route path="features"     element={<FeatureList />} />
-          <Route path="wbs"          element={<WbsPage />} />
-          <Route path="stakeholders" element={<StakeholdersPage />} />
-          {/* 万一の 404 */}
+          {/* /upstream                         */}
+          <Route path="/"               element={<OverviewForm />} />
+          {/* /upstream/requirements           */}
+          <Route path="requirements"    element={<RequirementsPage />} />
+          {/* /upstream/features               */}
+          <Route path="features"        element={<FeatureList />} />
+          {/* /upstream/wbs                    */}
+          <Route path="wbs"             element={<WbsPage />} />
+          {/* /upstream/stakeholders           */}
+          <Route path="stakeholders"    element={<StakeholdersPage />} />
+          {/* 404 フォールバック                */}
           <Route path="*" element={<p>ページが見つかりません</p>} />
         </Routes>
       </section>
@@ -51,14 +57,16 @@ export default function UpstreamDashboard() {
   );
 }
 
-/* ---------- サイドバー用リンク ---------- */
+/* ------------------------------------------------------------
+ * active 判定付きリンク
+ * ---------------------------------------------------------- */
 function SideLink({ to, label, end = false }) {
   return (
     <NavLink
       to={to}
-      end={end}                             /* index (= "") では完全一致 */
+      end={end}                      /* `/upstream` 用に完全一致させる */
       className={({ isActive }) =>
-        'up-nav-link' + (isActive ? ' active' : '')
+        `up-nav-link${isActive ? ' active' : ''}`
       }
     >
       {label}
