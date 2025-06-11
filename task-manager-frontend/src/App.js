@@ -1,10 +1,15 @@
 /*  ------------------------------------------------------------
- *  src/App.js   （2025/06 修正版）
- *  アプリ全体のルーティング定義 & ナビゲーションバー
- *  ------------------------------------------------------------ */
+ *  src/App.js  （2025/06 リファクタ版）
+ *  ---------------------------------------------------------- */
+
 import './App.css';
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  NavLink,
+} from 'react-router-dom';
 
 /* ===== 既存ページ ===== */
 import Home                 from './pages/Home';
@@ -28,7 +33,7 @@ import ModelingStep         from './pages/ModelingStep';
 import AdviceLogPage        from './pages/AdviceLogPage';
 import DashboardPage        from './pages/DashboardPage';
 
-/* ===== 上流工程ダッシュボード（ネスト先） ===== */
+/* ===== 上流工程ダッシュボード（入れ子ルート） ===== */
 import UpstreamDashboard    from './pages/upstream/UpstreamDashboard';
 
 /* ===== 右下キャラクター ===== */
@@ -38,76 +43,101 @@ import CharacterAvatar      from './components/CharacterAvatar';
 export const API_BASE_URL = 'http://localhost:8080';
 
 /* ------------------------------------------------------------ */
+
 export default function App() {
   return (
     <>
       <Router>
-        {/* ===== ナビゲーションバー ===== */}
+        {/* ===== ナビバー ===== */}
         <nav style={navBarStyle}>
-          {NAV_ITEMS.map(({ to, label }) => (
-            <NavItem key={to} to={to} label={label} />
+          {NAV_ITEMS.map(({ to, label, end }) => (
+            <NavItem key={to} to={to} end={end} label={label} />
           ))}
         </nav>
 
-        {/* ===== ルーティング ===== */}
+        {/* ===== ルート定義 ===== */}
         <main className="app-overlay">
           <Routes>
-            {/* ホーム */}
-            <Route path="/" element={<Home />} />
+            {/* ------------- ホーム ------------- */}
+            <Route index element={<Home />} />
 
-            {/* ナレッジ */}
-            <Route path="/knowledges"             element={<KnowledgeList />} />
-            <Route path="/knowledges/create"      element={<CreateKnowledge />} />
-            <Route path="/knowledges/:id/edit"    element={<EditKnowledge />} />
-            <Route path="/knowledges/:id"         element={<ViewKnowledge />} />
+            {/* ------------- タスク ------------- */}
+            <Route path="tasks">
+              <Route index          element={<TaskList />} />
+              <Route path="create"  element={<CreateTask />} />
+              <Route path=":id"     element={<TaskDetail />} />
+            </Route>
 
-            {/* タスク */}
-            <Route path="/tasks"                  element={<TaskList />} />
-            <Route path="/tasks/create"           element={<CreateTask />} />
-            <Route path="/tasks/:id"              element={<TaskDetail />} />
+            {/* ------------- ナレッジ ------------- */}
+            <Route path="knowledges">
+              <Route index          element={<KnowledgeList />} />
+              <Route path="create"  element={<CreateKnowledge />} />
+              <Route path=":id">
+                <Route index        element={<ViewKnowledge />} />
+                <Route path="edit"  element={<EditKnowledge />} />
+              </Route>
+            </Route>
 
-            {/* 習慣 */}
-            <Route path="/habits"                 element={<HabitTracker />} />
-            <Route path="/habits/create"          element={<CreateHabit />} />
-            <Route path="/habits/monthly"         element={<MonthlyView />} />
+            {/* ------------- 習慣 ------------- */}
+            <Route path="habits">
+              <Route index          element={<HabitTracker />} />
+              <Route path="create"  element={<CreateHabit />} />
+              <Route path="monthly" element={<MonthlyView />} />
+            </Route>
 
-            {/* ゴール */}
-            <Route path="/goals"                  element={<GoalPage />} />
-            <Route path="/goals/new"              element={<GoalForm />} />
+            {/* ------------- ゴール ------------- */}
+            <Route path="goals">
+              <Route index          element={<GoalPage />} />
+              <Route path="new"     element={<GoalForm />} />
+            </Route>
 
-            {/* スライド */}
-            <Route path="/slides/create"          element={<SlideVideoPage />} />
+            {/* ------------- その他単独画面 ------------- */}
+            <Route path="slides/create" element={<SlideVideoPage />} />
+            <Route path="character"     element={<CharacterUpload />} />
+            <Route path="datasource"    element={<DataSourceStep />} />
+            <Route path="fields"        element={<FieldDefinitionStep />} />
+            <Route path="modeling"      element={<ModelingStep />} />
+            <Route path="advice"        element={<AdviceLogPage />} />
+            <Route path="dashboard"     element={<DashboardPage />} />
 
-            {/* キャラクター */}
-            <Route path="/character"              element={<CharacterUpload />} />
+            {/* ------------- 上流工程 (子ルートは内部で定義) ------------- */}
+            <Route path="upstream/*"    element={<UpstreamDashboard />} />
 
-            {/* DWH 関連 */}
-            <Route path="/datasource"             element={<DataSourceStep />} />
-            <Route path="/fields"                 element={<FieldDefinitionStep />} />
-            <Route path="/modeling"               element={<ModelingStep />} />
-
-            {/* アドバイス & ダッシュボード */}
-            <Route path="/advice"                 element={<AdviceLogPage />} />
-            <Route path="/dashboard"              element={<DashboardPage />} />
-
-            {/* ★ 上流工程モジュール  (子ルートは UpstreamDashboard 内で完結) */}
-            <Route path="/upstream/*"             element={<UpstreamDashboard />} />
+            {/* ------------- 404 ------------- */}
+            <Route path="*" element={<p style={{ padding: 20 }}>ページが見つかりません</p>} />
           </Routes>
         </main>
       </Router>
 
-      {/* ===== 画面右下キャラクター ===== */}
+      {/* ===== キャラクター ===== */}
       <CharacterAvatar initialMood="happy" />
     </>
   );
 }
 
 /* ------------------------------------------------------------
- * ナビゲーションバー構成
- * ここを編集するだけでリンクが増減出来る
+ * ナビゲーションアイテム
+ * ---------------------------------------------------------- */
+function NavItem({ to, label, end = false }) {
+  return (
+    <NavLink
+      to={to}
+      end={end}
+      style={({ isActive }) => ({
+        ...navLinkStyle,
+        color: isActive ? '#d63384' : '#333',
+      })}
+    >
+      {label}
+    </NavLink>
+  );
+}
+
+/* ------------------------------------------------------------
+ * 定義をまとめて管理しやすく
  * ---------------------------------------------------------- */
 const NAV_ITEMS = [
-  { to: '/',              label: '🏠 ホーム' },
+  { to: '/',              label: '🏠 ホーム',            end: true },
   { to: '/tasks',         label: '📝 タスク' },
   { to: '/knowledges',    label: '📚 ナレッジ' },
   { to: '/habits',        label: '📅 習慣' },
@@ -123,22 +153,11 @@ const NAV_ITEMS = [
 ];
 
 /* ------------------------------------------------------------
- * 小さな NavLink ヘルパー
- * ---------------------------------------------------------- */
-function NavItem({ to, label }) {
-  return (
-    <Link to={to} style={navLinkStyle}>
-      {label}
-    </Link>
-  );
-}
-
-/* ------------------------------------------------------------
  * スタイル
  * ---------------------------------------------------------- */
 const navBarStyle = {
   padding: '10px',
-  backgroundColor: '#f0f0f0',
+  backgroundColor: '#f8f9fa',
   display: 'flex',
   flexWrap: 'wrap',
   gap: '10px',
@@ -146,7 +165,6 @@ const navBarStyle = {
 
 const navLinkStyle = {
   textDecoration: 'none',
-  color: '#333',
-  fontSize: '16px',
-  fontWeight: 'bold',
+  fontSize: '15px',
+  fontWeight: 600,
 };
