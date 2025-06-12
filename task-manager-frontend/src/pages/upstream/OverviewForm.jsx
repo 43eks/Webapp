@@ -1,10 +1,12 @@
-// -------------------------------------------------------------
-//  OverviewForm.jsx   （ステップ① : プロジェクト概要フォーム）
-// -------------------------------------------------------------
+// ------------------------------------------------------------------
+//  OverviewForm.jsx   – ① プロジェクト概要フォーム（リファイン版）
+// ------------------------------------------------------------------
 import React, { useState } from 'react';
-import './UpstreamCommon.css';                   // 既存共通スタイル
+import './UpstreamCommon.css';   // 既存共通カード等
+import './OverviewForm.css';    // ⭐ 今回の専用スタイル
 
 export default function OverviewForm() {
+  /* ---------------- state ---------------- */
   const [form, setForm] = useState({
     projectName: '',
     owner      : '',
@@ -12,62 +14,74 @@ export default function OverviewForm() {
     deadline   : '',
   });
 
+  /* ---------------- handler ---------------- */
   const handleChange = e =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
-  /* --- 送信（★いまはローカル表示のみ） --- */
   const handleSubmit = e => {
     e.preventDefault();
+    // TODO: /scope エンドポイントへ PUT するなど実装
     console.table(form);
-    alert('概要を保存しました（仮）');
+    alert('概要を保存しました（仮実装）');
   };
 
+  /* ---------------- view ---------------- */
   return (
-    <div className="up-card">
-      <h2>① 概要フォーム</h2>
+    <div className="up-card overview-card">
+      <h2>📄 プロジェクト概要</h2>
 
-      <form onSubmit={handleSubmit} className="scope-form">
-        <label>
-          プロジェクト名
+      <form className="ov-form" onSubmit={handleSubmit}>
+        <FormRow label="プロジェクト名 *">
           <input
             name="projectName"
             value={form.projectName}
             onChange={handleChange}
             required
           />
-        </label>
+        </FormRow>
 
-        <label>
-          オーナー / 責任者
+        <FormRow label="オーナー / 責任者">
           <input
             name="owner"
             value={form.owner}
             onChange={handleChange}
           />
-        </label>
+        </FormRow>
 
-        <label>
-          目的・背景
+        <FormRow label="目的・背景">
           <textarea
             name="purpose"
             rows={4}
+            className="ov-purpose"
+            placeholder="例）業務効率化のため ×× を Web 化し、△△% の工数削減を目指す…"
             value={form.purpose}
             onChange={handleChange}
           />
-        </label>
+        </FormRow>
 
-        <label>
-          目標期限
+        <FormRow label="目標期限">
           <input
             type="date"
             name="deadline"
             value={form.deadline}
             onChange={handleChange}
           />
-        </label>
+        </FormRow>
 
-        <button className="add-btn">💾 保存</button>
+        <div className="ov-actions">
+          <button type="submit" className="ov-save-btn">💾 保存</button>
+        </div>
       </form>
     </div>
+  );
+}
+
+/* ---------- 行レイアウトの小コンポーネント ---------- */
+function FormRow({ label, children }) {
+  return (
+    <label className="ov-row">
+      <span className="ov-label">{label}</span>
+      {children}
+    </label>
   );
 }
