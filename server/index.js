@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------------
- * server/index.js
+ * server/index.js   (2025-06 修正版)
  * -------------------------------------------------------------------- */
 require('dotenv').config();
 const express = require('express');
@@ -12,12 +12,12 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-/* =============== 静的ファイル ========================================= */
+/* =============== 静的ファイル ================================================= */
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/videos',  express.static(path.join(__dirname, 'videos')));
 app.use('/music',   express.static(path.join(__dirname, 'music')));
 
-/* =============== multer（画像アップロード用） ========================= */
+/* =============== multer（画像アップロード） ==================================== */
 const storage = multer.diskStorage({
   destination: (_req, _file, cb) => {
     const dir = path.join(__dirname, 'uploads');
@@ -28,14 +28,21 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-/* =============== data.json 初期化 ===================================== */
+/* =============== data.json 初期化 ============================================= */
 const DATA_FILE = path.join(__dirname, 'data.json');
 let db = {
-  /* array 型 */
-  knowledge: [], tasks: [], habits: [], goals: [],
-  features : [], wbs  : [], requirements: [],
-  /* object 型 */
-  history  : [], scope: {}
+  /* array 型 ------------------ */
+  knowledge    : [],
+  tasks        : [],
+  habits       : [],
+  goals        : [],
+  features     : [],
+  wbs          : [],
+  requirements : [],
+  stakeholders : [],      // ⭐ 追加（ステークホルダー用）
+  history      : [],
+  /* object 型 ----------------- */
+  scope        : {}
 };
 
 if (fs.existsSync(DATA_FILE)) {
@@ -45,16 +52,18 @@ if (fs.existsSync(DATA_FILE)) {
     console.error('❌ data.json parse error:', e);
   }
 }
+
+/* 型を保証 --------------------------------------------------------- */
 [
   'knowledge','tasks','habits','goals',
-  'features','wbs','requirements','history'
+  'features','wbs','requirements','stakeholders','history'
 ].forEach(k => { db[k] = Array.isArray(db[k]) ? db[k] : []; });
 if (typeof db.scope !== 'object' || Array.isArray(db.scope)) db.scope = {};
 
 fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2));
 console.log('✅ data.json loaded');
 
-/* =============== アドバイスログ ======================================= */
+/* =============== アドバイスログ =============================================== */
 const ADVICE_LOG_FILE = path.join(__dirname, 'advice_logs.json');
 
 app.get('/advice/logs', (_q, res) => {
@@ -85,7 +94,7 @@ app.post('/advice/logs', (req, res) => {
   }
 });
 
-/* =============== Scope（概要フォーム） =============================== */
+/* =============== Scope（概要フォーム保存） ==================================== */
 app.get('/scope', (_q, res) => res.json(db.scope));
 app.put('/scope', (req, res) => {
   db.scope = req.body || {};
@@ -93,7 +102,43 @@ app.put('/scope', (req, res) => {
   res.json({ message: 'Scope saved' });
 });
 
-/* =============== 共通 CRUD （tasks / goals / …） ==================== */
+/* =============== 統計 API（ダッシュボード用） ================================ */
+app.get('/stats', (_q, res) => {
+  try {
+    const { tasks, habits, goals } = db;
+
+    /* タスク進捗 */
+    const totalTasks     = tasks.length;
+    const completedTasks = tasks.filter(t => t.completed).length;
+
+    /* ゴール進捗 */
+    const totalGoals     = goals.length;
+    const completedGoals = goals.filter(g => g.completed).length;
+
+    /* 日別アドバイス数 */
+    let advLogs = [];
+    if (fs.existsSync(ADVICE_LOG_FILE)) {
+      const raw = fs.readFileSync(ADVICE_LOG_FILE, 'utf-8').trim();
+      advLogs   = raw ? JSON.parse(raw) : [];
+    }
+    const adviceTrend = advLogs.reduce((acc, { timestamp }) => {
+      const day = timestamp.slice(0, 10);
+      acc[day] = (acc[day] || 0) + 1;
+      return acc;
+    }, {});
+
+    res.json({
+      tasks:  { total: totalTasks,  completed: completedTasks },
+      goals:  { total: totalGoals,  completed: completedGoals },
+      adviceTrend
+    });
+  } catch (e) {
+    console.error('❌ /stats error:', e);
+    res.status(500).json({ error: 'Stats calculation failed' });
+  }
+});
+
+/* =============== 共通 CRUD =================================================== */
 const entities = [
   { name: 'tasks',        defaults: { completed: false } },
   { name: 'knowledge',    defaults: {} },
@@ -102,26 +147,25 @@ const entities = [
   { name: 'features',     defaults: { priority: 'M', owner: '' } },
   { name: 'wbs',          defaults: { owner: '', progress: 0 } },
   { name: 'requirements', defaults: { type: 'FR', priority: 'M', status: '検討中' } },
-  { name:'stakeholders', defaults:{ role:'', influence:'中', interest:'中' } }
+  { name: 'stakeholders', defaults: { role: '', influence: '中', interest: '中' } } // ⭐
 ];
 
 entities.forEach(({ name, defaults }) => {
-  /* 一覧取得 --------------------------------------------------------- */
+  /* 一覧 */
   app.get(`/${name}`, (_q, res) => res.json(db[name]));
 
-  /* 単一取得 --------------------------------------------------------- */
+  /* 単一 */
   app.get(`/${name}/:id`, (req, res) => {
     const item = db[name].find(x => x.id === req.params.id);
-    return item
-      ? res.json(item)
-      : res.status(404).json({ error: `${name.slice(0, -1)} not found` });
+    item ? res.json(item)
+         : res.status(404).json({ error: `${name.slice(0,-1)} not found` });
   });
 
-  /* 作成 ------------------------------------------------------------- */
+  /* 作成 */
   app.post(`/${name}`, (req, res) => {
     const item = {
-      id: Date.now().toString(),
-      createdAt: new Date().toISOString(),
+      id        : Date.now().toString(),
+      createdAt : new Date().toISOString(),
       ...defaults,
       ...req.body
     };
@@ -130,61 +174,61 @@ entities.forEach(({ name, defaults }) => {
     res.status(201).json(item);
   });
 
-  /* 更新 ------------------------------------------------------------- */
+  /* 更新 */
   app.put(`/${name}/:id`, (req, res) => {
     const idx = db[name].findIndex(x => x.id === req.params.id);
-    if (idx === -1) return res.status(404).json({ error: 'Not found' });
+    if (idx === -1) return res.status(404).json({ error:'Not found' });
     db[name][idx] = { ...db[name][idx], ...req.body };
     fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2));
     res.json(db[name][idx]);
   });
 
-  /* 削除 ------------------------------------------------------------- */
+  /* 削除 */
   app.delete(`/${name}/:id`, (req, res) => {
     const idx = db[name].findIndex(x => x.id === req.params.id);
-    if (idx === -1) return res.status(404).json({ error: 'Not found' });
+    if (idx === -1) return res.status(404).json({ error:'Not found' });
     db[name].splice(idx, 1);
     fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2));
     res.status(204).send();
   });
 });
 
-/* =============== 画像アップロード ==================================== */
+/* =============== 画像アップロード ============================================ */
 app.post('/upload', upload.single('image'), (req, res) => {
-  if (!req.file) return res.status(400).json({ error: 'No file' });
-  res.json({ url: `/uploads/${req.file.filename}` });
+  if (!req.file) return res.status(400).json({ error:'No file' });
+  res.json({ url:`/uploads/${req.file.filename}` });
 });
 app.post('/upload/multiple', upload.array('images'), (req, res) => {
-  if (!req.files?.length) return res.status(400).json({ error: 'No files' });
+  if (!req.files?.length) return res.status(400).json({ error:'No files' });
   res.json({ urls: req.files.map(f => `/uploads/${f.filename}`) });
 });
 
-/* =============== キャラクター画像一覧／削除 ========================= */
-app.get('/character', (_q, res) => {
-  fs.readdir(path.join(__dirname, 'uploads'), (e, files) => {
-    if (e) return res.status(500).json({ error: 'Read failed' });
+/* =============== キャラクター画像一覧／削除 =================================== */
+app.get('/character', (_q,res) => {
+  fs.readdir(path.join(__dirname,'uploads'), (e, files) => {
+    if (e) return res.status(500).json({ error:'Read failed' });
     res.json(files.map(f => `/uploads/${f}`));
   });
 });
-app.delete('/character/:filename', (req, res) => {
-  const p = path.join(__dirname, 'uploads', req.params.filename);
-  if (!fs.existsSync(p)) return res.status(404).json({ error: 'Not found' });
+app.delete('/character/:filename', (req,res) => {
+  const p = path.join(__dirname,'uploads',req.params.filename);
+  if (!fs.existsSync(p)) return res.status(404).json({ error:'Not found' });
   fs.unlinkSync(p);
-  res.json({ message: 'Deleted' });
+  res.json({ message:'Deleted' });
 });
 
-/* =============== DWH モデリング ====================================== */
-const MODEL_FILE = path.join(__dirname, 'modeling.json');
-app.post('/dwh/model', (req, res) => {
-  fs.writeFileSync(MODEL_FILE, JSON.stringify(req.body, null, 2));
-  res.status(201).json({ message: 'Saved' });
+/* =============== DWH モデリング ============================================== */
+const MODEL_FILE = path.join(__dirname,'modeling.json');
+app.post('/dwh/model', (req,res) => {
+  fs.writeFileSync(MODEL_FILE, JSON.stringify(req.body,null,2));
+  res.status(201).json({ message:'Saved' });
 });
-app.get('/dwh/model', (_q, res) => {
-  if (!fs.existsSync(MODEL_FILE)) return res.json({ tables: [], relations: [] });
-  res.json(JSON.parse(fs.readFileSync(MODEL_FILE, 'utf-8')));
+app.get('/dwh/model', (_q,res) => {
+  if (!fs.existsSync(MODEL_FILE)) return res.json({ tables:[], relations:[] });
+  res.json(JSON.parse(fs.readFileSync(MODEL_FILE,'utf-8')));
 });
 
-/* =============== サーバー起動 ======================================== */
+/* =============== サーバー起動 ================================================ */
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () =>
   console.log(`✅ Server started: http://localhost:${PORT}`)
