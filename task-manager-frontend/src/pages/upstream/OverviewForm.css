@@ -1,0 +1,61 @@
+/* ------------------------------------------------------------------
+ *  OverviewForm – 専用スタイル           src/pages/upstream/OverviewForm.css
+ * ----------------------------------------------------------------*/
+.overview-card {           /* up-card を継承しつつ幅を調整 */
+  max-width: 720px;
+}
+
+.ov-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ラベル＋入力欄を 2 列で揃える */
+.ov-row {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  align-items: center;
+  gap: 12px;
+}
+
+.ov-label {
+  font-weight: 600;
+  color: #444;
+}
+
+/* 共通フィールド */
+.ov-row input,
+.ov-row textarea {
+  font-size: 15px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 6px 8px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+/* 付箋風テキストエリア */
+.ov-purpose {
+  min-height: 100px;
+  resize: vertical;          /* ユーザーが高さ変更可 */
+  background: #fffae6;
+  line-height: 1.5;
+}
+
+/* 保存ボタンを右寄せ */
+.ov-actions {
+  text-align: right;
+}
+
+.ov-save-btn {
+  padding: 8px 20px;
+  background: #4caf50;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.ov-save-btn:hover { background: #43a047; }
