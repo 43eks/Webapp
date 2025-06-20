@@ -117,7 +117,22 @@
       "end": ""
     }
   ],
-  "requirements": [],
+  "requirements": [
+    {
+      "id": "1749813419404",
+      "createdAt": "2025-06-13T11:16:59.406Z",
+      "type": "FR",
+      "priority": "M",
+      "status": "検討中",
+      "title": "",
+      "detail": ""
+    }
+  ],
   "history": [],
-  "scope": {}
+  "scope": {
+    "projectName": "問い合わせ自動化",
+    "owner": "Test",
+    "purpose": "業務効率化",
+    "deadline": "2025-06-30"
+  }
 }
