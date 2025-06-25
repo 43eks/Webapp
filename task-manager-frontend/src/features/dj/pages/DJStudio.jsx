@@ -1,38 +1,31 @@
-// src/features/dj/pages/DJStudio.tsx
-// -----------------------------------------------------------------------------
-// 2-Deck DJ Studio – Deck A / Deck B + クロスフェーダーの最小実装サンプル
-// -----------------------------------------------------------------------------
+// src/features/dj/pages/DJStudio.jsx
 import React, { useEffect, useState } from "react";
 import { Box, Typography, Slider } from "@mui/material";
 import * as Tone from "tone";
 import Deck from "../components/Deck";
 
 export default function DJStudio() {
-  /* ---------------- Audio Nodes ---------------- */
-  const [cross, setCross] = useState<Tone.CrossFade | null>(null);
+  /* CrossFade ノードを保持 */
+  const [cross, setCross] = useState(null);
 
+  /* 初回だけ生成 */
   useEffect(() => {
-    // AudioContext がユーザー操作までロックされている場合があるが、
-    // Deck 側のクリックで resume されるのでここでは生成のみ。
-    const crossfade = new Tone.CrossFade().toDestination();
-    setCross(crossfade);
-    return () => {
-      crossfade.dispose();
-    };
+    const node = new Tone.CrossFade().toDestination();
+    setCross(node);
+    return () => node.dispose();
   }, []);
 
-  /** Deck から Player を受け取って CrossFade に接続 */
-  const handlePlayerReady = (side: "A" | "B") => (player: Tone.Player) => {
+  /* Deck が ready になったら A/B に接続 */
+  const handlePlayerReady = (side) => (player) => {
     if (!cross) return;
     if (side === "A") player.connect(cross.a);
     if (side === "B") player.connect(cross.b);
   };
 
-  /** クロスフェーダー変更 */
-  const handleFaderChange = (_: Event, v: number | number[]) => {
+  /* クロスフェーダー操作 */
+  const handleFader = (_, v) => {
     if (!cross) return;
-    const value = Array.isArray(v) ? v[0] : v;
-    cross.fade.value = value; // 0〜1
+    cross.fade.value = Array.isArray(v) ? v[0] : v; // 0–1
   };
 
   return (
@@ -41,22 +34,14 @@ export default function DJStudio() {
         DJ Studio
       </Typography>
 
-      {/* Decks */}
       <Box display="flex" gap={2} flexWrap="wrap" mb={4}>
         <Deck id="A" onPlayerReady={handlePlayerReady("A")} />
         <Deck id="B" onPlayerReady={handlePlayerReady("B")} />
       </Box>
 
-      {/* Crossfader */}
       <Box width={300}>
         <Typography gutterBottom>Crossfader</Typography>
-        <Slider
-          defaultValue={0.5}
-          min={0}
-          max={1}
-          step={0.01}
-          onChange={handleFaderChange}
-        />
+        <Slider defaultValue={0.5} min={0} max={1} step={0.01} onChange={handleFader} />
       </Box>
     </Box>
   );
