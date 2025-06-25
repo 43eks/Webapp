@@ -1,47 +1,116 @@
-// src/features/dj/pages/DJStudio.jsx
-import React, { useEffect, useState } from "react";
-import { Box, Typography, Slider } from "@mui/material";
+// src/features/dj/components/Deck.jsx
+// -----------------------------------------------------------------------------
+// 2-Deck DJ アプリ – 単独デッキ (React + Tone.js + WaveSurfer.js)
+// 2025-06-25  シンプル化: Dropzone を <div> に変更して string-ref 警告を解消
+// -----------------------------------------------------------------------------
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import * as Tone from "tone";
-import Deck from "../components/Deck";
+import WaveSurfer from "wavesurfer.js";
+import { Box, Button, Slider, Typography } from "@mui/material";
+import { useDropzone } from "react-dropzone";
 
-export default function DJStudio() {
-  /* CrossFade ノードを保持 */
-  const [cross, setCross] = useState(null);
+export default function Deck({ id, onPlayerReady }) {
+  const [isPlaying, setPlaying] = useState(false);
+  const [pitch, setPitch] = useState(0);
+  const waveDivRef = useRef(null);
+  const waveRef = useRef(null);
+  const playerRef = useRef(null);
 
-  /* 初回だけ生成 */
+  /* ---------------- ドロップ処理 ---------------- */
+  const onDrop = useCallback((accepted) => {
+    const file = accepted[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+
+    // WaveSurfer
+    waveRef.current?.load(url);
+
+    // Tone.Player
+    playerRef.current?.dispose();
+    const p = new Tone.Player({ url, autostart: false }).toDestination();
+    p.sync().start(0);
+    playerRef.current = p;
+    onPlayerReady?.(p);
+    setPlaying(false);
+  }, [onPlayerReady]);
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: {
+      "audio/*": [".wav", ".mp3", ".aac", ".flac", ".ogg"],
+    },
+    multiple: false,
+  });
+
+  /* ---------------- WaveSurfer init ---------------- */
   useEffect(() => {
-    const node = new Tone.CrossFade().toDestination();
-    setCross(node);
-    return () => node.dispose();
+    if (!waveDivRef.current) return;
+    const ws = WaveSurfer.create({
+      container: waveDivRef.current,
+      waveColor: "#a0c4ff",
+      progressColor: "#4361ee",
+      height: 80,
+      cursorWidth: 1,
+      responsive: true,
+    });
+    waveRef.current = ws;
+    ws.on("seek", (progress) => {
+      const p = playerRef.current;
+      if (!p) return;
+      Tone.Transport.seconds = p.buffer.duration * progress;
+    });
+    return () => ws.destroy();
   }, []);
 
-  /* Deck が ready になったら A/B に接続 */
-  const handlePlayerReady = (side) => (player) => {
-    if (!cross) return;
-    if (side === "A") player.connect(cross.a);
-    if (side === "B") player.connect(cross.b);
+  /* ---------------- Play / Pause ---------------- */
+  const handlePlayPause = () => {
+    const p = playerRef.current;
+    if (!p) return;
+    if (Tone.Transport.state === "stopped") Tone.Transport.start();
+    if (isPlaying) {
+      Tone.Transport.pause();
+    } else {
+      Tone.Transport.start();
+    }
+    setPlaying(!isPlaying);
   };
 
-  /* クロスフェーダー操作 */
-  const handleFader = (_, v) => {
-    if (!cross) return;
-    cross.fade.value = Array.isArray(v) ? v[0] : v; // 0–1
+  /* ---------------- Pitch (+-8%) ---------------- */
+  const handlePitch = (_, v) => {
+    const val = Array.isArray(v) ? v[0] : v;
+    setPitch(val);
+    const p = playerRef.current;
+    if (p) p.playbackRate = 1 + val / 100;
   };
 
   return (
-    <Box sx={{ p: 4 }}>
-      <Typography variant="h4" gutterBottom>
-        DJ Studio
-      </Typography>
+    <Box sx={{ border: "2px dashed #ccc", borderRadius: 2, p: 2, width: "100%", maxWidth: 480 }}>
+      <Typography variant="h6" mb={1}>Deck {id}</Typography>
 
-      <Box display="flex" gap={2} flexWrap="wrap" mb={4}>
-        <Deck id="A" onPlayerReady={handlePlayerReady("A")} />
-        <Deck id="B" onPlayerReady={handlePlayerReady("B")} />
-      </Box>
+      <div
+        {...getRootProps()}
+        style={{
+          height: 100,
+          marginBottom: 16,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          background: "#f1f3f5",
+          cursor: "pointer",
+        }}
+      >
+        <input {...getInputProps()} />
+        <div ref={waveDivRef} style={{ width: "100%", height: "100%" }}>
+          {isDragActive ? "Drop audio here…" : "Click or drop audio file"}
+        </div>
+      </div>
 
-      <Box width={300}>
-        <Typography gutterBottom>Crossfader</Typography>
-        <Slider defaultValue={0.5} min={0} max={1} step={0.01} onChange={handleFader} />
+      <Box display="flex" alignItems="center" gap={2}>
+        <Button variant="contained" disabled={!playerRef.current} onClick={handlePlayPause}>
+          {isPlaying ? "Pause" : "Play"}
+        </Button>
+        <Typography variant="body2">Pitch</Typography>
+        <Slider value={pitch} onChange={handlePitch} min={-8} max={8} step={0.1} sx={{ width: 120 }} />
       </Box>
     </Box>
   );
