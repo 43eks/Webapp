@@ -1,56 +1,74 @@
 // src/components/CharacterAvatar.jsx
-import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
-import { API_BASE_URL } from '../App';
-import './CharacterAvatar.css';
+// -----------------------------------------------------------------------------
+// キャラクターアバター – バックエンドが落ちていても UI を壊さない安全版
+// -----------------------------------------------------------------------------
+import React, { useEffect, useState, useCallback } from "react";
+import { motion } from "framer-motion";
+import { API_BASE_URL } from "../App";
+import "./CharacterAvatar.css";
 
+/* ---------------- モーション設定 ---------------- */
 const moodVariants = {
   happy: { y: [0, -8, 0], rotate: [0, 2, 0] },
-  sad:   { y: [0, -4, 0], rotate: [0, 0, 0] },
+  sad: { y: [0, -4, 0], rotate: [0, 0, 0] },
   angry: { y: [0, -6, 0], rotate: [0, -4, 0] },
-  calm:  { y: [0, -2, 0], rotate: [0, 0, 0] },
+  calm: { y: [0, -2, 0], rotate: [0, 0, 0] },
 };
-
 const moodTransition = {
-  happy: { repeat: Infinity, duration: 2, ease: 'easeInOut' },
-  sad:   { repeat: Infinity, duration: 3, ease: 'linear' },
-  angry: { repeat: Infinity, duration: 1.5, ease: 'easeInOut' },
-  calm:  { repeat: Infinity, duration: 4, ease: 'easeInOut' },
+  happy: { repeat: Infinity, duration: 2, ease: "easeInOut" },
+  sad: { repeat: Infinity, duration: 3, ease: "linear" },
+  angry: { repeat: Infinity, duration: 1.5, ease: "easeInOut" },
+  calm: { repeat: Infinity, duration: 4, ease: "easeInOut" },
 };
 
-const STORAGE_KEY = 'characterComments';
+const STORAGE_KEY = "characterComments";
+const FALLBACK_IMG = "https://placekitten.com/160/160"; // オフライン時のプレースホルダ
 
-export default function CharacterAvatar({ initialMood = 'happy' }) {
+export default function CharacterAvatar({ initialMood = "happy" }) {
   const [images, setImages] = useState([]);
   const [idx, setIdx] = useState(0);
   const [comments, setComments] = useState([]);
   const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState('');
+  const [draft, setDraft] = useState("");
   const [mood, setMood] = useState(initialMood);
+  const [error, setError] = useState(false);
 
-  // 画像と保存済コメントの読み込み
+  /* ---------------- 画像 + コメント読み込み ---------------- */
   useEffect(() => {
-    fetch(`${API_BASE_URL}/character`)
-      .then(res => res.json())
-      .then(imgs => {
-        const urls = imgs.map(u => u.startsWith('http') ? u : `${API_BASE_URL}${u}`);
+    const controller = new AbortController();
+
+    const load = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/character`, {
+          signal: controller.signal,
+        });
+        if (!res.ok) throw new Error(res.status);
+        const json = await res.json();
+        const urls = json.map((u) => (u.startsWith("http") ? u : `${API_BASE_URL}${u}`));
+        if (!urls.length) throw new Error("empty");
         setImages(urls);
 
-        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-        // 画像の数だけコメント配列を初期化
-        const filled = urls.map((_, i) => saved[i] || '');
-        setComments(filled);
-      })
-      .catch(console.error);
+        // コメント
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+        setComments(urls.map((_, i) => saved[i] || ""));
+      } catch (e) {
+        console.error("Avatar fetch failed:", e);
+        // フォールバック: 1 枚だけ placeholder を表示
+        setImages([FALLBACK_IMG]);
+        setComments([""]);
+        setError(true);
+      }
+    };
+    load();
+
+    return () => controller.abort();
   }, []);
 
-  // 吹き出しダブルクリックで編集開始
+  /* ---------------- コメント編集 ---------------- */
   const beginEdit = () => {
     setDraft(comments[idx]);
     setEditing(true);
   };
-
-  // 編集確定
   const finishEdit = () => {
     const updated = [...comments];
     updated[idx] = draft;
@@ -59,16 +77,15 @@ export default function CharacterAvatar({ initialMood = 'happy' }) {
     setEditing(false);
   };
 
-  // クリックで次のキャラクターへ
-  const nextCharacter = () => {
+  /* ---------------- キャラクター切替 ---------------- */
+  const nextCharacter = useCallback(() => {
     if (!images.length) return;
     const ni = (idx + 1) % images.length;
     setIdx(ni);
-    // ムードも順番に切り替え
     const moods = Object.keys(moodVariants);
     setMood(moods[ni % moods.length]);
     setEditing(false);
-  };
+  }, [idx, images]);
 
   if (!images.length) return null;
 
@@ -78,11 +95,12 @@ export default function CharacterAvatar({ initialMood = 'happy' }) {
       onClick={nextCharacter}
       animate={moodVariants[mood]}
       transition={moodTransition[mood]}
-      style={{ cursor: 'pointer' }}
+      style={{ position: "fixed", bottom: 20, right: 20, cursor: "pointer", zIndex: 99 }}
     >
+      {/* スピーチバブル */}
       <div
         className="speech-bubble"
-        onDoubleClick={e => {
+        onDoubleClick={(e) => {
           e.stopPropagation();
           beginEdit();
         }}
@@ -91,21 +109,19 @@ export default function CharacterAvatar({ initialMood = 'happy' }) {
           <input
             className="speech-input"
             value={draft}
-            onChange={e => setDraft(e.target.value)}
+            onChange={(e) => setDraft(e.target.value)}
             onBlur={finishEdit}
-            onKeyDown={e => e.key === 'Enter' && finishEdit()}
+            onKeyDown={(e) => e.key === "Enter" && finishEdit()}
             autoFocus
           />
         ) : (
-          comments[idx] || '（ダブルクリックでコメント追加）'
+          comments[idx] || (error ? "オフライン中…" : "（ダブルクリックでコメント追加）")
         )}
         <div className="speech-arrow" />
       </div>
-      <img
-        src={images[idx]}
-        alt="キャラクター"
-        className={`character-image mood-${mood}`}
-      />
+
+      {/* キャラクター画像 */}
+      <img src={images[idx]} alt="avatar" className={`character-image mood-${mood}`} />
     </motion.div>
   );
 }
