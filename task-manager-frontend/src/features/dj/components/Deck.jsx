@@ -1,12 +1,23 @@
 // src/features/dj/components/Deck.tsx
 // -----------------------------------------------------------------------------
-// 2-Deck DJ – 片側デッキ (UX 向上 + 読み込み状態表示)
+// 2-Deck DJ – 片側デッキ (アップロード進捗バー付き)
+//   ・axios + onUploadProgress で実ファイル送信率を表示
+//   ・LinearProgress を波形領域の下側に重ねる
 // -----------------------------------------------------------------------------
 import React, { useCallback, useRef, useState } from "react";
 import * as Tone from "tone";
 import WaveSurfer from "wavesurfer.js";
-import { Box, Button, Slider, Typography, CircularProgress } from "@mui/material";
+import axios from "axios";
+import {
+  Box,
+  Button,
+  Slider,
+  Typography,
+  CircularProgress,
+  LinearProgress,
+} from "@mui/material";
 import { useDropzone } from "react-dropzone";
+import { API_BASE_URL } from "../../../App"; // ← フロントのベース URL を流用
 
 export interface DeckProps {
   id: "A" | "B";
@@ -18,7 +29,8 @@ export default function Deck({ id, onPlayerReady }: DeckProps) {
   const [fileName, setFileName] = useState<string | null>(null);
   const [isPlaying, setPlaying] = useState(false);
   const [pitch, setPitch] = useState(0);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);         // WaveSurfer ready
+  const [uploadPct, setUploadPct] = useState<number | null>(null); // 0-100
 
   /* ---------------- refs ---------------- */
   const waveDivRef = useRef<HTMLDivElement | null>(null);
@@ -47,15 +59,29 @@ export default function Deck({ id, onPlayerReady }: DeckProps) {
   /* ---------------- file handler ---------------- */
   const handleFile = useCallback(async (file: File) => {
     if (!file) return;
+
+    /* ① サーバーへアップロード (プログレス取得) */
+    setUploadPct(0);
+    const fd = new FormData();
+    fd.append("file", file);
+    await axios.post(`${API_BASE_URL}/upload`, fd, {
+      headers: { "Content-Type": "multipart/form-data" },
+      onUploadProgress: (e) => {
+        if (!e.total) return;
+        const pct = Math.round((e.loaded / e.total) * 100);
+        setUploadPct(pct);
+      },
+    });
+    setUploadPct(null); // 完了 → バー非表示
+
+    /* ② ローカル再生準備 */
     setLoading(true);
     await Tone.start();
     initWave();
 
-    // WaveSurfer load
     const ws: any = waveRef.current;
     if (ws.loadBlob) ws.loadBlob(file); else ws.load(URL.createObjectURL(file));
 
-    // Tone.Player
     playerRef.current?.dispose();
     const p = new Tone.Player({ url: URL.createObjectURL(file), autostart: false }).toDestination();
     p.sync().start(0);
@@ -97,20 +123,15 @@ export default function Deck({ id, onPlayerReady }: DeckProps) {
   /* ---------------- UI ---------------- */
   return (
     <Box sx={{ border: "2px dashed #ccc", borderRadius: 2, p: 2, width: "100%", maxWidth: 480 }}>
-      <Typography variant="h6" mb={1}>
-        Deck {id}
-      </Typography>
+      <Typography variant="h6" mb={1}>Deck {id}</Typography>
 
       {/* Waveform / Drop */}
-      <Box
-        {...getRootProps()}
-        sx={{ position: "relative", height: 100, mb: 2, bgcolor: "#f1f3f5" }}
-      >
+      <Box {...getRootProps()} sx={{ position: "relative", height: 100, mb: 2, bgcolor: "#f1f3f5" }}>
         <input {...getInputProps()} />
         <div ref={waveDivRef} style={{ width: "100%", height: "100%" }} />
 
-        {/* Overlay */}
-        {!fileName && !loading && (
+        {/* オーバーレイメッセージ or スピナー */}
+        {!fileName && uploadPct === null && !loading && (
           <Button variant="outlined" onClick={open} sx={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)" }}>
             {isDragActive ? "Drop audio" : "Select audio"}
           </Button>
@@ -119,6 +140,11 @@ export default function Deck({ id, onPlayerReady }: DeckProps) {
           <Box sx={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)" }}>
             <CircularProgress size={32} />
           </Box>
+        )}
+
+        {/* アップロード進捗バー */}
+        {uploadPct !== null && (
+          <LinearProgress variant="determinate" value={uploadPct} sx={{ position: "absolute", bottom: 0, left: 0, width: "100%" }} />
         )}
       </Box>
 
