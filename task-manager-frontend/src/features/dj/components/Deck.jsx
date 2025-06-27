@@ -1,15 +1,11 @@
 // src/features/dj/components/Deck.tsx
 // -----------------------------------------------------------------------------
-// 2-Deck DJ – 片側デッキ (アップロード不具合修正版)
-//  ◇ 改善点
-//    1. WaveSurfer の <div ref> を常に描画 → ref == null で初期化エラーが起きない
-//    2. WaveSurfer 7系なら loadBlob / 6系なら load を自動判定
-//    3. Drag & Drop と『Select Audio』ボタンのどちらでも確実に動く
+// 2-Deck DJ – 片側デッキ (UX 向上 + 読み込み状態表示)
 // -----------------------------------------------------------------------------
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import * as Tone from "tone";
 import WaveSurfer from "wavesurfer.js";
-import { Box, Button, Slider, Typography } from "@mui/material";
+import { Box, Button, Slider, Typography, CircularProgress } from "@mui/material";
 import { useDropzone } from "react-dropzone";
 
 export interface DeckProps {
@@ -18,16 +14,19 @@ export interface DeckProps {
 }
 
 export default function Deck({ id, onPlayerReady }: DeckProps) {
+  /* ---------------- state ---------------- */
+  const [fileName, setFileName] = useState<string | null>(null);
   const [isPlaying, setPlaying] = useState(false);
   const [pitch, setPitch] = useState(0);
-  const [fileName, setFileName] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
+  /* ---------------- refs ---------------- */
   const waveDivRef = useRef<HTMLDivElement | null>(null);
-  const waveRef    = useRef<WaveSurfer | null>(null);
-  const playerRef  = useRef<Tone.Player | null>(null);
+  const waveRef = useRef<WaveSurfer | null>(null);
+  const playerRef = useRef<Tone.Player | null>(null);
 
-  /* ---------------- WaveSurfer ライフサイクル ---------------- */
-  const ensureWaveSurfer = () => {
+  /* ---------------- helper ---------------- */
+  const initWave = () => {
     if (waveRef.current || !waveDivRef.current) return;
     const ctx = Tone.getContext().rawContext as AudioContext;
     waveRef.current = WaveSurfer.create({
@@ -37,32 +36,28 @@ export default function Deck({ id, onPlayerReady }: DeckProps) {
       waveColor: "#a0c4ff",
       progressColor: "#4361ee",
       height: 80,
-      responsive: true,
     });
-    waveRef.current.on("seek", (progress: number) => {
-      const p = playerRef.current;
-      if (p) Tone.Transport.seconds = p.buffer.duration * progress;
+    waveRef.current.on("seek", (p: number) => {
+      const player = playerRef.current;
+      if (player) Tone.Transport.seconds = player.buffer.duration * p;
     });
+    waveRef.current.on("ready", () => setLoading(false));
   };
 
-  /* ---------------- ファイル処理 ---------------- */
+  /* ---------------- file handler ---------------- */
   const handleFile = useCallback(async (file: File) => {
     if (!file) return;
+    setLoading(true);
     await Tone.start();
-    ensureWaveSurfer();
+    initWave();
 
-    // WaveSurfer load (Blob if 7系, fallback to ObjectURL)
-    if ((waveRef.current! as any).loadBlob) {
-      (waveRef.current! as any).loadBlob(file);
-    } else {
-      const url = URL.createObjectURL(file);
-      waveRef.current!.load(url);
-    }
+    // WaveSurfer load
+    const ws: any = waveRef.current;
+    if (ws.loadBlob) ws.loadBlob(file); else ws.load(URL.createObjectURL(file));
 
     // Tone.Player
     playerRef.current?.dispose();
-    const url = URL.createObjectURL(file);
-    const p = new Tone.Player({ url, autostart: false }).toDestination();
+    const p = new Tone.Player({ url: URL.createObjectURL(file), autostart: false }).toDestination();
     p.sync().start(0);
     playerRef.current = p;
     onPlayerReady?.(p);
@@ -71,13 +66,13 @@ export default function Deck({ id, onPlayerReady }: DeckProps) {
     setPlaying(false);
   }, [onPlayerReady]);
 
+  /* ---------------- dropzone ---------------- */
   const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
     onDrop: (files) => handleFile(files[0]),
-    noClick: true,
     accept: { "audio/*": [".mp3", ".wav", ".aac", ".flac", ".ogg"] },
   });
 
-  /* ---------------- 再生 / 停止 ---------------- */
+  /* ---------------- controls ---------------- */
   const togglePlay = async () => {
     const p = playerRef.current;
     if (!p) return;
@@ -102,27 +97,46 @@ export default function Deck({ id, onPlayerReady }: DeckProps) {
   /* ---------------- UI ---------------- */
   return (
     <Box sx={{ border: "2px dashed #ccc", borderRadius: 2, p: 2, width: "100%", maxWidth: 480 }}>
-      <Typography variant="h6" mb={1}>Deck {id}</Typography>
+      <Typography variant="h6" mb={1}>
+        Deck {id}
+      </Typography>
 
-      <Box {...getRootProps()} sx={{ position: "relative", height: 100, mb: 2, bgcolor: "#f1f3f5", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      {/* Waveform / Drop */}
+      <Box
+        {...getRootProps()}
+        sx={{ position: "relative", height: 100, mb: 2, bgcolor: "#f1f3f5" }}
+      >
         <input {...getInputProps()} />
-        {/* WaveSurfer Canvas (常に描画) */}
         <div ref={waveDivRef} style={{ width: "100%", height: "100%" }} />
-        {/* オーバーレイメッセージ */}
-        {!fileName && (
-          <Button variant="outlined" onClick={open} sx={{ position: "absolute" }}>
+
+        {/* Overlay */}
+        {!fileName && !loading && (
+          <Button variant="outlined" onClick={open} sx={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)" }}>
             {isDragActive ? "Drop audio" : "Select audio"}
           </Button>
         )}
+        {loading && (
+          <Box sx={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)" }}>
+            <CircularProgress size={32} />
+          </Box>
+        )}
       </Box>
 
+      {/* Controls */}
       <Box display="flex" alignItems="center" gap={2}>
-        <Button variant="contained" disabled={!fileName} onClick={togglePlay}>
+        <Button variant="contained" disabled={!fileName || loading} onClick={togglePlay}>
           {isPlaying ? "Pause" : "Play"}
         </Button>
         <Typography variant="body2">Pitch</Typography>
         <Slider value={pitch} onChange={changePitch} min={-8} max={8} step={0.1} sx={{ width: 120 }} />
       </Box>
+
+      {/* File name */}
+      {fileName && (
+        <Typography variant="caption" color="text.secondary" noWrap>
+          {fileName}
+        </Typography>
+      )}
     </Box>
   );
 }
