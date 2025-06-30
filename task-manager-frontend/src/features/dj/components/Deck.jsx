@@ -1,9 +1,9 @@
 // src/features/dj/components/Deck.jsx
 // -----------------------------------------------------------------------------
-// 2-Deck DJ – 単独デッキ (表示 & アップロード完全版)
-//   ✓ minHeight で UI が潰れない
-//   ✓ FormData キーは "image" に統一
-//   ✓ WaveSurfer を先に初期化して seek エラー防止
+// 2-Deck DJ – UI が潰れず常に見える最終版
+//   • 波形 <div> を absolute + zIndex:1
+//   • オーバーレイボタンを zIndex:2 で確実に前面
+//   • 親 Box は minHeight:140 で余裕を確保
 // -----------------------------------------------------------------------------
 import React, { useCallback, useRef, useState } from "react";
 import * as Tone from "tone";
@@ -31,7 +31,7 @@ export default function Deck({ id, onPlayerReady }) {
   const waveRef = useRef(null);
   const playerRef = useRef(null);
 
-  /* WaveSurfer ----------------------------------------------------- */
+  /* WaveSurfer -------------------------------------------------- */
   const ensureWave = () => {
     if (waveRef.current || !waveDivRef.current) return;
     waveRef.current = WaveSurfer.create({
@@ -41,62 +41,56 @@ export default function Deck({ id, onPlayerReady }) {
       height: 80,
     });
     waveRef.current.on("seek", (p) => {
-      const pl = playerRef.current;
-      if (pl?.seek) pl.seek(p);
+      playerRef.current?.seek?.(p);
     });
     waveRef.current.on("ready", () => setLoading(false));
   };
 
-  /* ファイル取り込み ------------------------------------------------ */
-  const handleFile = useCallback(
-    async (file) => {
-      if (!file) return;
-      ensureWave();
+  /* ファイル取り込み -------------------------------------------- */
+  const handleFile = useCallback(async (file) => {
+    if (!file) return;
+    ensureWave();
 
-      /* ① サーバーへアップロード */
-      setUploadPct(0);
-      const fd = new FormData();
-      fd.append("image", file); // ← server の multer が "image" を期待
-      try {
-        await axios.post(`${API_BASE_URL}/upload`, fd, {
-          headers: { "Content-Type": "multipart/form-data" },
-          onUploadProgress: (e) => {
-            if (!e.total) return;
-            setUploadPct(Math.round((e.loaded / e.total) * 100));
-          },
-        });
-      } catch (e) {
-        console.warn("Upload failed, continue offline", e);
-      }
-      setUploadPct(null);
+    // アップロード
+    setUploadPct(0);
+    const fd = new FormData();
+    fd.append("image", file);
+    try {
+      await axios.post(`${API_BASE_URL}/upload`, fd, {
+        headers: { "Content-Type": "multipart/form-data" },
+        onUploadProgress: ({ loaded, total }) => {
+          if (!total) return;
+          setUploadPct(Math.round((loaded / total) * 100));
+        },
+      });
+    } catch (e) {
+      console.warn("upload fail -> local only", e);
+    }
+    setUploadPct(null);
 
-      /* ② ローカル再生準備 */
-      setLoading(true);
-      await Tone.start();
+    // ローカル再生
+    setLoading(true);
+    await Tone.start();
+    const url = URL.createObjectURL(file);
+    waveRef.current?.loadBlob ? waveRef.current.loadBlob(file) : waveRef.current.load(url);
 
-      const objectURL = URL.createObjectURL(file);
-      if (waveRef.current.loadBlob) waveRef.current.loadBlob(file);
-      else waveRef.current.load(objectURL);
+    playerRef.current?.dispose();
+    const pl = new Tone.Player({ url, autostart: false }).toDestination();
+    playerRef.current = pl;
+    onPlayerReady?.(pl);
 
-      playerRef.current?.dispose();
-      const pl = new Tone.Player({ url: objectURL, autostart: false }).toDestination();
-      playerRef.current = pl;
-      onPlayerReady?.(pl);
+    setFileName(file.name);
+    setPlaying(false);
+    setPitch(0);
+  }, [onPlayerReady]);
 
-      setFileName(file.name);
-      setPlaying(false);
-      setPitch(0);
-    },
-    [onPlayerReady]
-  );
-
-  /* Dropzone ------------------------------------------------------- */
+  /* Dropzone ---------------------------------------------------- */
   const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
     onDrop: (files) => handleFile(files[0]),
     accept: { "audio/*": [".mp3", ".wav", ".flac", ".ogg", ".aac"] },
   });
 
-  /* Play / Stop ---------------------------------------------------- */
+  /* 再生 ------------------------------------------------------ */
   const togglePlay = async () => {
     const pl = playerRef.current;
     if (!pl) return;
@@ -110,45 +104,38 @@ export default function Deck({ id, onPlayerReady }) {
     }
   };
 
-  /* Pitch ---------------------------------------------------------- */
   const changePitch = (_, v) => {
     const val = Array.isArray(v) ? v[0] : v;
     setPitch(val);
-    const pl = playerRef.current;
-    if (pl) pl.playbackRate = 1 + val / 100;
+    playerRef.current && (playerRef.current.playbackRate = 1 + val / 100);
   };
 
-  /* UI ------------------------------------------------------------- */
+  /* UI --------------------------------------------------------- */
   return (
     <Box sx={{ border: "2px dashed #ccc", borderRadius: 2, p: 2, width: "100%", maxWidth: 480 }}>
-      <Typography variant="h6" mb={1}>
-        Deck {id}
-      </Typography>
+      <Typography variant="h6" mb={1}>Deck {id}</Typography>
 
-      {/* Dropzone / Waveform */}
-      <Box
-        {...getRootProps()}
-        sx={{ position: "relative", minHeight: 120, mb: 2, bgcolor: "#f1f3f5" }}
-      >
+      <Box {...getRootProps()} sx={{ position: "relative", minHeight: 140, mb: 2, bgcolor: "#f1f3f5" }}>
         <input {...getInputProps()} />
-        <div ref={waveDivRef} style={{ width: "100%", height: "100%" }} />
 
+        {/* 波形 Canvas */}
+        <div ref={waveDivRef} style={{ position: "absolute", inset: 0, zIndex: 1 }} />
+
+        {/* 初期ボタン */}
         {!fileName && uploadPct === null && !loading && (
-          <Button
-            variant="outlined"
-            onClick={open}
-            sx={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)" }}
-          >
+          <Button variant="outlined" onClick={open} sx={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", zIndex: 2 }}>
             {isDragActive ? "Drop audio" : "Select audio"}
           </Button>
         )}
 
+        {/* 進捗バー */}
         {uploadPct !== null && (
-          <LinearProgress variant="determinate" value={uploadPct} sx={{ position: "absolute", bottom: 0, width: "100%" }} />
+          <LinearProgress variant="determinate" value={uploadPct} sx={{ position: "absolute", bottom: 0, width: "100%", zIndex: 2 }} />
         )}
 
+        {/* ローディング */}
         {loading && (
-          <Box sx={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)" }}>
+          <Box sx={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", zIndex: 2 }}>
             <CircularProgress size={32} />
           </Box>
         )}
@@ -164,9 +151,7 @@ export default function Deck({ id, onPlayerReady }) {
       </Box>
 
       {fileName && (
-        <Typography variant="caption" color="text.secondary" noWrap>
-          {fileName}
-        </Typography>
+        <Typography variant="caption" color="text.secondary" noWrap>{fileName}</Typography>
       )}
     </Box>
   );
