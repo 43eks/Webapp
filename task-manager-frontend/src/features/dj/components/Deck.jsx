@@ -1,6 +1,6 @@
 // src/features/dj/components/Deck.jsx
 // -----------------------------------------------------------------------------
-// 2-Deck DJ – UI が潰れず常に見える最終版
+// 2‑Deck DJ – UI が潰れず常に見える最終版
 //   • 波形 <div> を absolute + zIndex:1
 //   • オーバーレイボタンを zIndex:2 で確実に前面
 //   • 親 Box は minHeight:140 で余裕を確保
