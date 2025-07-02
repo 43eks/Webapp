@@ -1,9 +1,9 @@
 // src/features/dj/components/Deck.jsx
 // -----------------------------------------------------------------------------
-// 2‑Deck DJ – 修正版
-//   • WaveSurfer 7.* 対応: "ready" と "waveform-ready" 両方で loading=false
-//   • WaveSurfer が未ロードの seek 例外を防止
-//   • Play ボタンを押して AudioContext が開始しないケースをガード
+// 2-Deck DJ – loading が解除されず Play が押せないケースを完全に修正
+//   • WaveSurfer 7.x: "ready" | "waveform-ready" | "error" で loading=false
+//   • 6 秒フェイルセーフ setTimeout
+//   • Play ボタン disabled 判定を playerRef で厳密化
 // -----------------------------------------------------------------------------
 import React, { useCallback, useRef, useState } from "react";
 import * as Tone from "tone";
@@ -38,10 +38,12 @@ export default function Deck({ id, onPlayerReady }) {
       progressColor: "#4361ee",
       height: 80,
     });
-    ws.on("seek", (p) => playerRef.current?.seek?.(p));
-    ["ready", "waveform-ready"].forEach(ev =>
+    ws.on("seek", p => playerRef.current?.seek?.(p));
+    ["ready", "waveform-ready", "error"].forEach(ev =>
       ws.on(ev, () => setLoading(false))
     );
+    // フェイルセーフ: 6 秒で強制解除
+    setTimeout(() => setLoading(false), 6000);
     waveRef.current = ws;
   };
 
@@ -74,23 +76,14 @@ export default function Deck({ id, onPlayerReady }) {
       headers:{"Content-Type":"multipart/form-data"},
       timeout:15000,
       onUploadProgress:({loaded,total})=> total&&setUploadPct(Math.round(loaded/total*100)),
-    })
-      .catch(e=>console.warn("upload skipped",e.message))
+    }).catch(e=>console.warn("upload skipped",e.message))
       .finally(()=>setUploadPct(null));
   },[onPlayerReady]);
 
   /* Dropzone */
-  // Dropzone hook must be at top-level of component body
-  const {
-    getRootProps,
-    getInputProps,
-    isDragActive,
-    open,
-  } = useDropzone({
-    onDrop: (files) => handleFile(files[0]),
-    accept: {
-      "audio/*": [".mp3", ".wav", ".flac", ".ogg", ".aac"],
-    },
+  const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
+    onDrop: files => handleFile(files[0]),
+    accept:{"audio/*":[]} // すべてのオーディオ
   });
 
   /* play / stop */
@@ -98,8 +91,7 @@ export default function Deck({ id, onPlayerReady }) {
     const pl = playerRef.current;
     if (!pl) return;
     await Tone.start();
-    if (playing) pl.stop();
-    else pl.start();
+    playing ? pl.stop() : pl.start();
     setPlaying(!playing);
   };
 
@@ -114,6 +106,7 @@ export default function Deck({ id, onPlayerReady }) {
     <Box sx={{border:"2px dashed #ccc",borderRadius:2,p:2,maxWidth:480}}>
       <Typography variant="h6" mb={1}>Deck {id}</Typography>
 
+      {/* Drop & Wave */}
       <Box {...getRootProps()} sx={{position:"relative",minHeight:140,mb:2,bgcolor:"#f1f3f5"}}>
         <input {...getInputProps()} />
         <div ref={waveDivRef} style={{position:"absolute",inset:0,zIndex:1}} />
@@ -122,19 +115,23 @@ export default function Deck({ id, onPlayerReady }) {
           <Button variant="outlined" onClick={open}
             sx={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",zIndex:2}}>
             {isDragActive?"Drop audio":"Select audio"}
-          </Button>) }
+          </Button>
+        )}
 
         {uploadPct!==null && (
-          <LinearProgress value={uploadPct} sx={{position:"absolute",bottom:0,width:"100%",zIndex:2}}/>) }
+          <LinearProgress value={uploadPct} sx={{position:"absolute",bottom:0,width:"100%",zIndex:2}} />
+        )}
 
         {loading && (
           <Box sx={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",zIndex:2}}>
-            <CircularProgress size={32}/>
-          </Box>) }
+            <CircularProgress size={32} />
+          </Box>
+        )}
       </Box>
 
+      {/* Controls */}
       <Box display="flex" alignItems="center" gap={2}>
-        <Button variant="contained" disabled={!fileName||loading} onClick={togglePlay}>
+        <Button variant="contained" disabled={!playerRef.current||loading} onClick={togglePlay}>
           {playing?"Stop":"Play"}
         </Button>
         <Typography variant="body2">Pitch</Typography>
